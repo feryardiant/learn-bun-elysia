@@ -1,6 +1,4 @@
-import { Type as t } from '@sinclair/typebox'
 import { drizzle } from 'drizzle-orm/bun-sql'
-import { createSelectSchema } from 'drizzle-typebox'
 import { ENV, isLocal } from '~/config'
 import * as schema from './schemas'
 
@@ -17,16 +15,3 @@ export const db = drizzle({
 })
 
 export type AppDatabase = typeof db
-
-export const PostSchema = createSelectSchema(schema.posts, {
-  createdAt: t.Number(),
-})
-
-export const CommentSchema = createSelectSchema(schema.comments, {
-  createdAt: t.Number(),
-})
-
-export type Post = typeof PostSchema.static
-
-export type Comment = typeof CommentSchema.static
-
