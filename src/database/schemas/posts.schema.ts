@@ -4,7 +4,7 @@ export const posts = pgTable(
   'posts',
   {
     id: varchar('id').primaryKey(),
-    content: text('content'),
+    content: text('content').notNull(),
     createdAt: bigint('created_at', { mode: 'number' }).notNull(),
     updatedAt: bigint('updated_at', { mode: 'number' }),
   },

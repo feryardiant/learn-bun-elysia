@@ -4,8 +4,8 @@ export const comments = pgTable(
   'comments',
   {
     id: varchar('id').primaryKey(),
-    postId: varchar('post_id'),
-    content: text('content'),
+    postId: varchar('post_id').notNull(),
+    content: text('content').notNull(),
     createdAt: bigint('created_at', { mode: 'number' }).notNull(),
     updatedAt: bigint('updated_at', { mode: 'number' }),
   },
