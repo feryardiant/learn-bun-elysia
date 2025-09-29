@@ -1,0 +1,50 @@
+# dependencies (bun install)
+node_modules
+
+# output
+dist
+*.bun-build
+
+# Finder (MacOS) folder config
+*.DS_Store
+.DS_Store
+
+# Misc
+*.bun
+*.log
+*.pem
+*.tgz
+*.tar.gz
+*.trace
+*.zip
+
+# code coverage
+coverage
+*.lcov
+
+# caches
+.cache
+*.tsbuildinfo
+
+# IDE and AI Agents
+.idea
+.tool-versions
+.vscode
+GEMINI.md
+
+# Local Docker Compose Files
+compose.*.yml
+
+# Other package managers
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+bun.lockb
+
+# dotenv environment variable files
+.env
+.env.*
+
+# Do not ignore template files
+!.env.example
+!.env.*.example

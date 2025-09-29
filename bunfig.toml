@@ -1,0 +1,11 @@
+# Bun configuration file
+# This file configures Bun's behavior for the project
+
+[test]
+# Test configuration
+root = "./test"
+preload = ["./test/setup.ts"]
+
+[run]
+# Runtime configuration
+bun = true

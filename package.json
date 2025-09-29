@@ -1,0 +1,22 @@
+{
+  "name": "drizzle-stable",
+  "version": "0.0.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.41",
+    "drizzle-orm": "^0.44.5",
+    "drizzle-typebox": "^0.3.3",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "bun-types": "1.2.20",
+    "drizzle-kit": "^0.31.5",
+    "pg": "^8.16.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
