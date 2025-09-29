@@ -1,16 +1,26 @@
-import { z } from 'zod'
+import { Type as t } from '@sinclair/typebox'
+import { Value } from '@sinclair/typebox/value'
 import { dbConfig } from './db.config'
 
-const envSchema = z
-  .object({
-    HOST: z.string().default('localhost'),
-    PORT: z.coerce.number().default(3000),
-    NODE_ENV: z
-      .enum(['local', 'test', 'development', 'qa', 'production'])
-      .default('production'),
-  })
-  .extend(dbConfig.shape)
+const envSchema = t.Object({
+  HOST: t.String({ default: 'localhost' }),
+  PORT: t.Number({ default: 3000 }),
+  NODE_ENV: t.Union(
+    [
+      t.Literal('local'),
+      t.Literal('test'),
+      t.Literal('development'),
+      t.Literal('qa'),
+      t.Literal('production'),
+    ],
+    { default: 'production' },
+  ),
 
-export const ENV = envSchema.parse(Bun.env)
+  ...dbConfig.properties,
+})
+
+export const ENV = Value.Parse(envSchema, Bun.env)
 
 export const isLocal = ['local', 'test'].includes(ENV.NODE_ENV)
+
+export { dbConfig } from './db.config'

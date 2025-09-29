@@ -1,9 +1,9 @@
-import { z } from 'zod'
+import { Type as t } from '@sinclair/typebox'
 
-export const dbConfig = z.object({
-  DB_USER: z.string(),
-  DB_PASS: z.string(),
-  DB_NAME: z.string(),
-  DB_PORT: z.coerce.number().default(5432),
-  DB_HOST: z.string().default('localhost'),
+export const dbConfig = t.Object({
+  DB_USER: t.String({ default: 'postgres' }),
+  DB_PASS: t.String({ default: 'secret' }),
+  DB_HOST: t.String({ default: 'localhost' }),
+  DB_PORT: t.Number({ default: 5432 }),
+  DB_NAME: t.String(),
 })

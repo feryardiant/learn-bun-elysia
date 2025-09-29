@@ -4,11 +4,13 @@
   "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "test": "bun test"
+  },
   "dependencies": {
     "@sinclair/typebox": "^0.34.41",
     "drizzle-orm": "^0.44.5",
-    "drizzle-typebox": "^0.3.3",
-    "zod": "^4.1.11"
+    "drizzle-typebox": "^0.3.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
