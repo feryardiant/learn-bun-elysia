@@ -1,5 +1,6 @@
 import { Type as t } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
+import { authConfig } from './auth.config'
 import { dbConfig } from './db.config'
 
 const envSchema = t.Object({
@@ -16,11 +17,13 @@ const envSchema = t.Object({
     { default: 'production' },
   ),
 
+  APP_URL: t.String({ default: 'http://localhost:3000' }),
+  BASE_PATH: t.String({ default: '' }),
+
+  ...authConfig.properties,
   ...dbConfig.properties,
 })
 
 export const ENV = Value.Parse(envSchema, Bun.env)
 
 export const isLocal = ['local', 'test'].includes(ENV.NODE_ENV)
-
-export { dbConfig } from './db.config'

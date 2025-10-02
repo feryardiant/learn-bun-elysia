@@ -15,6 +15,13 @@
       "when": 1759123336460,
       "tag": "0001_luxuriant_romulus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759267855095,
+      "tag": "0002_sharp_sunfire",
+      "breakpoints": true
     }
   ]
 }

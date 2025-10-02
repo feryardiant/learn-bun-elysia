@@ -1,6 +1,6 @@
 import { bigint, index, pgTable, text, varchar } from 'drizzle-orm/pg-core'
 
-export const posts = pgTable(
+export const post = pgTable(
   'posts',
   {
     id: varchar('id').primaryKey(),

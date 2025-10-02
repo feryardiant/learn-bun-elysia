@@ -10,7 +10,7 @@ export class CommentRepository {
   }
 
   async getAll(): Promise<Comment[]> {
-    const items = await this.db.query.comments.findMany({
+    const items = await this.db.query.comment.findMany({
       //
     })
 
@@ -20,7 +20,7 @@ export class CommentRepository {
   async getAllByPostId(id: Post['id']): Promise<Comment[]> {
     const post = await this.postRepo.getById(id)
 
-    const items = await this.db.query.comments.findMany({
+    const items = await this.db.query.comment.findMany({
       where(field, { eq }) {
         return eq(field.postId, post.id)
       },

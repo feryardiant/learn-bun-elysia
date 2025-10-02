@@ -1,7 +1,8 @@
+import { Value } from '@sinclair/typebox/value'
 import { defineConfig } from 'drizzle-kit'
-import { dbConfig } from './src/config/db.config'
+import { dbConfig } from '~/config/db.config'
 
-const ENV = dbConfig.parse(process.env)
+const ENV = Value.Parse(dbConfig, process.env)
 const isLocal = ['local', 'test'].includes(process.env.NODE_ENV || 'local')
 
 export default defineConfig({
