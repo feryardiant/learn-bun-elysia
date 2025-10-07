@@ -3,6 +3,7 @@ import pino from 'pino'
 import { ENV } from '~/config'
 
 export const logger = pino({
+  name: ENV.APP_NAME,
   level: ENV.LOG_LEVEL,
   transport: {
     targets: [
@@ -13,25 +14,23 @@ export const logger = pino({
 })
 
 export const loggerPlugin = new Elysia({ name: 'logger' })
+  .as('scoped')
   .decorate('logger', logger)
-  .guard({
-    as: 'scoped',
-    async beforeHandle({ headers, request }) {
-      const url = new URL(request.url)
-      const obj: Record<string, any> = {
-        headers: {},
-      }
+  .onBeforeHandle(async ({ body, request }) => {
+    const url = new URL(request.url)
+    const obj: Record<string, any> = {
+      headers: {},
+      payload: body,
+    }
 
-      for (const [key, val] of request.headers.entries()) {
-        if (['cookie'].includes(key)) continue
+    for (const [key, val] of request.headers.entries()) {
+      if (['cookie'].includes(key)) continue
 
-        obj.headers[key] = val
-      }
+      obj.headers[key] = val
+    }
 
-      if (request.body && headers['content-type'] === 'application/json') {
-        obj.payload = await request.body.json()
-      }
-
-      logger.debug(obj, `Request received: ${request.method} ${url.pathname}`)
-    },
+    logger.debug(
+      obj,
+      `Request received: ${request.method} ${url.pathname}${url.search}`,
+    )
   })

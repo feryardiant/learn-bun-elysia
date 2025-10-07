@@ -7,27 +7,23 @@ import {
   spyOn,
   type Mock,
 } from 'bun:test'
-import Elysia, { t } from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
-
-const app = new Elysia()
-  .use(loggerPlugin)
-  .get('/', () => 'Ok')
-  .post('/', () => 'Ok')
 
 describe('Logger Plugin', () => {
   let loggerSpy: Mock<(typeof logger)['debug']>
+  let loggerApp: typeof loggerPlugin
 
   beforeEach(() => {
     loggerSpy = spyOn(logger, 'debug')
+    loggerApp = loggerPlugin.get('/', () => 'Ok').post('/', () => 'Ok')
   })
 
   afterEach(() => {
-    loggerSpy.mockClear()
+    loggerSpy.mockReset()
   })
 
   it('should log GET request', async () => {
-    const response = await app.handle(
+    const response = await loggerApp.handle(
       new Request('http://localhost', { method: 'GET' }),
     )
 
@@ -39,10 +35,9 @@ describe('Logger Plugin', () => {
   })
 
   it('should log POST request with JSON payload', async () => {
-    const response = await app.handle(
+    const response = await loggerApp.handle(
       new Request('http://localhost', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ foo: 'bar' }),
       }),
     )
@@ -58,13 +53,13 @@ describe('Logger Plugin', () => {
 
   it('should log POST request with File payload', async () => {
     const body = new FormData()
+    const file = new File([''], 'test.txt', { type: 'plain/text' })
 
-    body.append('file', new File([''], 'test.txt'))
+    body.append('file', file)
 
-    const response = await app.handle(
+    const response = await loggerApp.handle(
       new Request('http://localhost', {
         method: 'POST',
-        headers: { 'Content-Type': 'multipart/form-data' },
         body,
       }),
     )
@@ -74,7 +69,7 @@ describe('Logger Plugin', () => {
     const [obj, msg] = loggerSpy.mock.calls[0] || [{}, '']
 
     expect(obj).toContainKey('headers')
-    expect(obj).not.toContainKey('payload')
+    expect(obj).toContainKey('payload')
     expect(msg).toContain('Request received')
   })
 })
