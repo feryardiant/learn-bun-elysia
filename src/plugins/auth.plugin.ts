@@ -5,8 +5,8 @@ import Elysia, { NotFoundError, t } from 'elysia'
 import { ENV } from '~/config'
 import { db } from '~/database'
 import { account, session, user, verification } from '~/database/schemas'
+import { ApiErrorSchema } from '~/utils/api-response.util'
 import { AuthenticationError } from '~/utils/errors.util'
-import { ApiErrorSchema } from './error-handler.plugin'
 
 export const auth = betterAuth({
   baseURL: `${ENV.APP_URL}${ENV.BASE_PATH}`,
