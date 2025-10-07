@@ -1,10 +1,11 @@
 import { Elysia, t } from 'elysia'
 import { ApiErrorSchema } from '~/utils/api-response.util'
-import { AuthenticationError, AuthorizationError } from '~/utils/errors.util'
+import { AuthenticationError, AuthorizationError, NotFoundError } from '~/utils/errors.util'
 
 const customErrors = {
   [AuthenticationError.code]: AuthenticationError,
   [AuthorizationError.code]: AuthorizationError,
+  [NotFoundError.code]: NotFoundError,
 }
 
 /**
