@@ -1,4 +1,4 @@
-import type { TNever, TSchema } from '@sinclair/typebox'
+import type { TSchema } from '@sinclair/typebox'
 import { t } from 'elysia'
 
 export const ApiErrorSchema = t.Object({
@@ -10,6 +10,22 @@ export const ApiItemsMetaSchema = t.Record(t.String(), t.Any())
 
 export type TApiItemsMeta = typeof ApiItemsMetaSchema
 export type ApiItemsMeta = (typeof ApiItemsMetaSchema)['static']
+
+export const ValidationValueErrorSchema = t.Object({
+  type: t.Number(),
+  path: t.String(),
+  value: t.Unknown(),
+  summary: t.String(),
+})
+
+export type ValidationValueError = (typeof ValidationValueErrorSchema)['static']
+
+export const ValidationErrorSchema = t.Object({
+  ...ApiErrorSchema.properties,
+  errors: t.Array(ValidationValueErrorSchema),
+})
+
+export type ValidationError = (typeof ValidationErrorSchema)['static']
 
 export const asItemResponse = <D extends TSchema>(data: D) => t.Object({ data })
 

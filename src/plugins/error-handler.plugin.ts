@@ -1,11 +1,16 @@
 import { Elysia } from 'elysia'
-import { ApiErrorSchema } from '~/utils/api-response.util'
+import {
+  ApiErrorSchema,
+  ValidationErrorSchema,
+  type ValidationValueError,
+} from '~/utils/api-response.util'
 import {
   AuthenticationError,
   AuthorizationError,
   NotFoundError,
 } from '~/utils/errors.util'
 import { logger } from './logger.plugin'
+import type { ValueError } from '@sinclair/typebox/errors'
 
 const customErrors = {
   [AuthenticationError.code]: AuthenticationError,
@@ -21,6 +26,7 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
   .guard({
     response: {
       500: ApiErrorSchema,
+      422: ValidationErrorSchema,
     },
   })
   .error(customErrors)
@@ -44,7 +50,16 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
     )
 
     if (code === 'VALIDATION') {
-      return error.toResponse()
+      const errors = error.all as (ValueError & ValidationValueError)[]
+      message = `Invalid request, found ${errors.length} validation issue`
+
+      return {
+        code,
+        message,
+        errors: errors.map(({ type, path, value, summary }) => {
+          return { type, path, value, summary }
+        }),
+      }
     }
 
     return { code, message }
