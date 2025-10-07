@@ -9,8 +9,8 @@ import { ApiErrorSchema } from '~/utils/api-response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 
 export const auth = betterAuth({
-  baseURL: `${ENV.APP_URL}${ENV.BASE_PATH}`,
-  basePath: '/auth',
+  baseURL: ENV.APP_URL,
+  basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
 
   database: drizzleAdapter(db, {
