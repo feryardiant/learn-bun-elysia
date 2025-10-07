@@ -1,15 +1,11 @@
 import { Elysia, t } from 'elysia'
+import { ApiErrorSchema } from '~/utils/api-response.util'
 import { AuthenticationError, AuthorizationError } from '~/utils/errors.util'
 
 const customErrors = {
   [AuthenticationError.code]: AuthenticationError,
   [AuthorizationError.code]: AuthorizationError,
 }
-
-export const ApiErrorSchema = t.Object({
-  code: t.String(),
-  message: t.String(),
-});
 
 /**
  * Error handler
