@@ -1,3 +1,5 @@
+import type { ValueError } from '@sinclair/typebox/errors'
+import { DrizzleQueryError } from 'drizzle-orm'
 import { Elysia } from 'elysia'
 import {
   ApiErrorSchema,
@@ -10,7 +12,6 @@ import {
   NotFoundError,
 } from '~/utils/errors.util'
 import { logger } from './logger.plugin'
-import type { ValueError } from '@sinclair/typebox/errors'
 
 const customErrors = {
   [AuthenticationError.code]: AuthenticationError,
@@ -34,24 +35,48 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
     set.status = 'status' in error ? error.status : 500
 
     let message = 'message' in error ? error.message : 'Unknown error'
-    const url = new URL(request.url)
+    const { pathname, search } = new URL(request.url)
+    const errorObj: Record<string, any> = {
+      error,
+      endpoint: `${request.method} ${pathname}${search}`,
+    }
+
+    if (error instanceof DrizzleQueryError) {
+      const causeCode =
+        error.cause && 'code' in error.cause
+          ? error.cause.code
+          : error.cause?.name
+
+      errorObj.error = error.cause
+      errorObj.query = error.query
+      errorObj.params = error.params
+
+      logger.fatal(errorObj, `${causeCode}: ${error.cause?.message}`)
+
+      return {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Something went wrong in our end',
+      }
+    }
 
     if (message === 'NOT_FOUND') {
       message = 'Page Not Found'
     }
 
-    logger.error(
-      {
-        error,
-        headers,
-        endpoint: `${request.method} ${url.pathname}${url.search}`,
+    errorObj.headers = Object.entries(headers).reduce(
+      (out, [key, val]) => {
+        if (['cookie'].includes(key)) return out
+        out[key] = val
+        return out
       },
-      code as string,
+      {} as typeof headers,
     )
 
     if (code === 'VALIDATION') {
       const errors = error.all as (ValueError & ValidationValueError)[]
       message = `Invalid request, found ${errors.length} validation issue`
+
+      logger.error(errorObj, message)
 
       return {
         code,
@@ -61,6 +86,8 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
         }),
       }
     }
+
+    logger.error(errorObj, message)
 
     return { code, message }
   })
