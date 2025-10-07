@@ -19,6 +19,6 @@ app.listen({ port: ENV.PORT, hostname: ENV.HOST }, ({ url }) => {
 
   console.info(
     ` 🦊 Elysia is running at ${ACCESS_URL}\n`,
-    `Access Swagger UI at ${ENV.APP_URL}${SWAGGER_PATH}\n`
+    `Access Swagger UI at ${ENV.APP_URL}${SWAGGER_PATH}\n`,
   )
 })

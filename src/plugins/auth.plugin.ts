@@ -58,8 +58,8 @@ export const authPlugin = new Elysia({ name: 'auth' })
     }),
     response: {
       400: ApiErrorSchema,
-      401: ApiErrorSchema
-    }
+      401: ApiErrorSchema,
+    },
   })
   .resolve(async ({ request }) => {
     if (!request.headers.has('authorization')) {

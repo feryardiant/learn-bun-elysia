@@ -5,7 +5,9 @@ import { Elysia, t } from 'elysia'
  * Provides basic endpoints for monitoring and load balancing
  */
 export const baseRoute = new Elysia()
-  .get('/', () => ({ message: 'Nothing to see here' }), { detail: { hide: true } })
+  .get('/', () => ({ message: 'Nothing to see here' }), {
+    detail: { hide: true },
+  })
   .get(
     '/health',
     async () => ({
@@ -17,7 +19,7 @@ export const baseRoute = new Elysia()
       detail: {
         summary: 'Health Status',
         description: 'Retrieve current service health',
-        tags: ['Default']
+        tags: ['Default'],
       },
       response: {
         200: t.Object({
