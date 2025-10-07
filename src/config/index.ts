@@ -3,6 +3,7 @@ import { Value } from '@sinclair/typebox/value'
 import { levels } from 'pino'
 import { authConfig } from './auth.config'
 import { dbConfig } from './db.config'
+import { name, version } from 'package.json'
 
 const logLevels: string[] = []
 
@@ -24,6 +25,8 @@ const envSchema = t.Object({
     { default: 'production' },
   ),
 
+  APP_NAME: t.String({ default: name }),
+  APP_VERSION: t.String({ default: version }),
   APP_URL: t.String({ default: 'http://localhost:3000' }),
   BASE_PATH: t.String({ default: '' }),
   LOG_LEVEL: t.Union(

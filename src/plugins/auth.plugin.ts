@@ -9,6 +9,7 @@ import { ApiErrorSchema } from '~/utils/api-response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 
 export const auth = betterAuth({
+  appName: ENV.APP_NAME,
   baseURL: ENV.APP_URL,
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
@@ -51,8 +52,8 @@ export const auth = betterAuth({
 })
 
 export const authPlugin = new Elysia({ name: 'auth' })
+  .as('scoped')
   .guard({
-    as: 'scoped',
     headers: t.Object({
       authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
     }),
