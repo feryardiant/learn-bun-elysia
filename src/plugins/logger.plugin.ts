@@ -1,17 +1,24 @@
 import Elysia from 'elysia'
-import pino from 'pino'
+import pino, { type TransportTargetOptions } from 'pino'
 import { ENV } from '~/config'
 import { reduceHeaders } from '~/utils/request.util'
+
+const targets: TransportTargetOptions[] = [
+  // See: https://getpino.io/#/docs/pretty
+  {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'HH:MM:ss Z',
+      ignore: 'pid,hostname',
+    },
+  },
+]
 
 export const logger = pino({
   name: ENV.APP_NAME,
   level: ENV.LOG_LEVEL,
-  transport: {
-    targets: [
-      // See: https://getpino.io/#/docs/pretty
-      { target: 'pino-pretty' },
-    ],
-  },
+  transport: { targets },
 })
 
 export const loggerPlugin = new Elysia({ name: 'logger' })
