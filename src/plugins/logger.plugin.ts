@@ -1,6 +1,7 @@
 import Elysia from 'elysia'
 import pino from 'pino'
 import { ENV } from '~/config'
+import { reduceHeaders } from '~/utils/request.util'
 
 export const logger = pino({
   name: ENV.APP_NAME,
@@ -16,21 +17,14 @@ export const logger = pino({
 export const loggerPlugin = new Elysia({ name: 'logger' })
   .as('scoped')
   .decorate('logger', logger)
-  .onBeforeHandle(async ({ body, request }) => {
-    const url = new URL(request.url)
-    const obj: Record<string, any> = {
-      headers: {},
-      payload: body,
-    }
-
-    for (const [key, val] of request.headers.entries()) {
-      if (['cookie'].includes(key)) continue
-
-      obj.headers[key] = val
-    }
+  .onBeforeHandle(async ({ body, headers, request }) => {
+    const { pathname, search } = new URL(request.url)
 
     logger.debug(
-      obj,
-      `Request received: ${request.method} ${url.pathname}${url.search}`,
+      {
+        headers: reduceHeaders(headers),
+        payload: body,
+      },
+      `Request received: ${request.method} ${pathname}${search}`,
     )
   })

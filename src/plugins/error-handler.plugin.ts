@@ -11,6 +11,7 @@ import {
   AuthorizationError,
   NotFoundError,
 } from '~/utils/errors.util'
+import { reduceHeaders } from '~/utils/request.util'
 import { logger } from './logger.plugin'
 
 const customErrors = {
@@ -63,14 +64,7 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
       message = 'Page Not Found'
     }
 
-    errorObj.headers = Object.entries(headers).reduce(
-      (out, [key, val]) => {
-        if (['cookie'].includes(key)) return out
-        out[key] = val
-        return out
-      },
-      {} as typeof headers,
-    )
+    errorObj.headers = reduceHeaders(headers)
 
     if (code === 'VALIDATION') {
       const errors = error.all as (ValueError & ValidationValueError)[]
