@@ -1,4 +1,4 @@
-# drizzle-stable
+# Learn Elysia.js & Bun
 
 To install dependencies:
 
@@ -9,7 +9,7 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun run dev
 ```
 
 This project was created using `bun init` in bun v1.2.22. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
