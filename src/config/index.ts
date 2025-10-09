@@ -18,8 +18,8 @@ const envSchema = t.Object({
     [
       t.Literal('local'),
       t.Literal('test'),
+      t.Literal('staging'),
       t.Literal('development'),
-      t.Literal('qa'),
       t.Literal('production'),
     ],
     { default: 'production' },

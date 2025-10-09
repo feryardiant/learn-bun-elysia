@@ -1,0 +1,76 @@
+name: Prepare
+run-name: 'prepare: environment for `${{ github.ref_name }}`'
+
+on:
+  workflow_call:
+    outputs:
+      repo-name:
+        value: ${{ jobs.environments.outputs.repo-name }}
+      repo-branch:
+        value: ${{ jobs.environments.outputs.branch-name }}
+      image-tag:
+        value: ${{ jobs.environments.outputs.image-tag }}
+      deploy-env:
+        value: ${{ jobs.environments.outputs.deploy-env }}
+      deployable:
+        value: ${{ jobs.environments.outputs.deployable }}
+
+jobs:
+  labels:
+    name: Labels
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Labeler
+        uses: actions/labeler@v6
+        with:
+          dot: true
+
+  environments:
+    name: Environments
+    runs-on: ubuntu-latest
+    outputs:
+      repo-name: ${{ steps.repo.outputs.repo-name }}
+      branch-name: ${{ steps.repo.outputs.branch-name }}
+      image-tag: ${{ steps.target.outputs.image-tag }}
+      deploy-env: ${{ steps.target.outputs.deploy-env }}
+      deployable: ${{ steps.target.outputs.deployable }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Repository
+        id: repo
+        run: |
+          # Extract repository name and convert to lowercase
+          echo "repo-name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+          # Extract repository branch name
+          echo "branch-name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+      - name: Target
+        id: target
+        env:
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+        run: |
+          # Generate image tag with timestamp and commit
+          echo "image-tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+          DEPLOYABLE=true
+
+          # Set deployment environment
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "deploy-env=staging" >> $GITHUB_OUTPUT
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "deploy-env=${{ inputs.deploy-env }}" >> $GITHUB_OUTPUT
+          else
+            echo "deploy-env=development" >> $GITHUB_OUTPUT
+            DEPLOYABLE=false
+          fi
+
+          echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT

@@ -1,0 +1,43 @@
+integration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/*.yml'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.env.example'
+          - '**.md'
+
+deployment:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'dockerfiles/**'
+
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/modules/*/*.controller.ts'
+          - 'src/routes/*.route.ts'
+
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/config/auth.config.ts
+          - src/plugins/auth.plugin.ts
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'drizzle/*.sql'
+          - 'src/config/db.config.ts'
+          - 'src/database/**.ts'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'test/**.test.ts'
+
+enhancement:
+  - changed-files:
+      - any-glob-to-any-file: '**'
