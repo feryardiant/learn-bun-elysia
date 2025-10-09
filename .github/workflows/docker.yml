@@ -60,6 +60,7 @@ jobs:
           push: true
 
       - uses: actions/attest-build-provenance@v2
+        if: ${{ github.event_name == 'push' }}
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
