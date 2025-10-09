@@ -48,3 +48,4 @@ bun.lockb
 # Do not ignore template files
 !.env.example
 !.env.*.example
+!compose.staging.yml

@@ -1,15 +1,13 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: ./dockerfiles/elysia-app.dockerfile
-      pull: false
-    image: ghcr.io/feryardiant/learn-bun-elysia:local
+    image: ghcr.io/feryardiant/learn-bun-elysia
     ports:
       - ${FORWARD_PORT:-3000}:3000
     env_file:
       - path: .env
         required: true
+      - path: .env.staging
+        required: false
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       APP_NAME: ${APP_NAME:-}
@@ -33,6 +31,8 @@ services:
     env_file:
       - path: .env
         required: true
+      - path: .env.staging
+        required: false
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PWD:-secret}
