@@ -1,8 +1,8 @@
 import {
   boolean,
-  timestamp,
   pgEnum,
   pgTable,
+  timestamp,
   varchar,
 } from 'drizzle-orm/pg-core'
 

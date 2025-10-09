@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { boolean, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { user } from './users.schema'
 
 // Defines the 'sessions' table for storing user session information.

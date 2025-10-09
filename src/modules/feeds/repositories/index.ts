@@ -1,6 +1,6 @@
 import { db } from '~/database'
-import { PostRepository } from './post.repository'
 import { CommentRepository } from './comment.repository'
+import { PostRepository } from './post.repository'
 
 export { CommentRepository, PostRepository }
 

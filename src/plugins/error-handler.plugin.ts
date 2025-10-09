@@ -37,7 +37,7 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
 
     let message = 'message' in error ? error.message : 'Unknown error'
     const { pathname, search } = new URL(request.url)
-    const errorObj: Record<string, any> = {
+    const errorObj: Record<string, unknown> = {
       error,
       endpoint: `${request.method} ${pathname}${search}`,
     }

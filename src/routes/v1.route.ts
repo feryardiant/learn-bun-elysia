@@ -1,9 +1,9 @@
 import { Elysia } from 'elysia'
-import { postsController } from '~/modules/feeds/posts.controller'
+import { postsController } from '~/modules/feeds'
 import { authPlugin } from '~/plugins/auth.plugin'
 import { loggerPlugin } from '~/plugins/logger.plugin'
 
-export const v1ApiRoute = new Elysia({
+export const v1Route = new Elysia({
   prefix: '/v1',
 })
   .use(authPlugin)

@@ -1,9 +1,9 @@
 import { Type as t } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
+import { name, version } from 'package.json'
 import { levels } from 'pino'
 import { authConfig } from './auth.config'
 import { dbConfig } from './db.config'
-import { name, version } from 'package.json'
 
 const logLevels: string[] = []
 

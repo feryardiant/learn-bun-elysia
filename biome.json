@@ -8,6 +8,7 @@
   "files": {
     "ignoreUnknown": false,
     "includes": [
+      ".github/**/*.yml",
       "*.json",
       "*.yml",
       "scripts/**/*.ts",
