@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    env:
+      APP_SECRET: asd
+      CORS_ORIGIN_LIST: http://localhost:3000
+      DB_NAME: ${{ github.repository }}
+      DB_USER: ${{ github.repository_owner }}
+      DB_PASS: secret
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASS }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Test
+        env:
+          DB_HOST: 127.0.0.1
+          SMTP_HOST: 127.0.0.1
+          SMTP_PORT: 1025
+          SMTP_USER: ${{ github.repository_owner }}
+          SMTP_PWD: secret
+          SMTP_EMAIL: test@example.com
+        run: bun run test
