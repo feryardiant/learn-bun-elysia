@@ -9,7 +9,7 @@ export const ApiErrorSchema = t.Object({
 export const ApiItemsMetaSchema = t.Record(t.String(), t.Any())
 
 export type TApiItemsMeta = typeof ApiItemsMetaSchema
-export type ApiItemsMeta = (typeof ApiItemsMetaSchema)['static']
+export type ApiItemsMeta = TApiItemsMeta['static']
 
 export const ValidationValueErrorSchema = t.Object({
   type: t.Number(),

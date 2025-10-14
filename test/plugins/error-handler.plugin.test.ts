@@ -14,7 +14,7 @@ import { InternalServerError, t } from 'elysia'
 import { db } from '~/database'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
 import { logger } from '~/plugins/logger.plugin'
-import type { ValidationError } from '~/utils/api-response.util'
+import type { ValidationError } from '~/utils/response.util'
 
 describe('Error Handler Plugin', () => {
   let logErrorSpy: Mock<typeof logger.error>

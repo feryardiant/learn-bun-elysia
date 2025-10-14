@@ -5,7 +5,7 @@ import {
   ApiErrorSchema,
   ValidationErrorSchema,
   type ValidationValueError,
-} from '~/utils/api-response.util'
+} from '~/utils/response.util'
 import {
   AuthenticationError,
   AuthorizationError,

@@ -5,7 +5,7 @@ import Elysia, { NotFoundError, t } from 'elysia'
 import { ENV } from '~/config'
 import { db } from '~/database'
 import { account, session, user, verification } from '~/database/schemas'
-import { ApiErrorSchema } from '~/utils/api-response.util'
+import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 
 export const auth = betterAuth({

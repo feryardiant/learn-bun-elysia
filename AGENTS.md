@@ -100,7 +100,7 @@ All commands are run using `bun`.
 ### API Design
 
 - **Versioning**: API is versioned under `/v1`. See `src/routes/v1-api.route.ts`.
-- **Successful Responses**: Standardized using `asItemResponse` and `asItemsResponse` from `~/utils/api-response.util.ts`.
+- **Successful Responses**: Standardized using `asItemResponse` and `asItemsResponse` from `~/utils/response.util.ts`.
   - Single item: `{ "data": { ... } }`
   - Collection: `{ "data": [ ... ], "meta": { ... } }`
 - **Error Responses**: Handled globally by `errorHandlerPlugin`. Custom errors are defined in `~/utils/errors.util.ts`. Validation errors have a specific structure:

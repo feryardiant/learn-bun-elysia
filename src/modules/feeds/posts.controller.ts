@@ -1,5 +1,5 @@
 import Elysia from 'elysia'
-import { asItemResponse, asItemsResponse } from '~/utils/api-response.util'
+import { asItemResponse, asItemsResponse } from '~/utils/response.util'
 import { postRepository } from './repositories'
 import { PostSchema } from './types'
 

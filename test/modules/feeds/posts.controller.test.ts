@@ -3,7 +3,7 @@ import { postsController } from '~/modules/feeds/posts.controller'
 import { post } from '~/database/schemas'
 import { db } from '~/database'
 import type { Post } from '~/modules/feeds/types'
-import type { ApiItemsMeta } from '~/utils/api-response.util'
+import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {
   beforeAll(async () => {
