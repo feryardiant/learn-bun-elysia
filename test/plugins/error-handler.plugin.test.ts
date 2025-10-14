@@ -11,49 +11,51 @@ import {
 } from 'bun:test'
 import { sql } from 'drizzle-orm'
 import { InternalServerError, t } from 'elysia'
+import type { LogFn } from 'pino'
 import { db } from '~/database'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
 import { logger } from '~/plugins/logger.plugin'
 import type { ValidationError } from '~/utils/response.util'
 
 describe('Error Handler Plugin', () => {
-  let logErrorSpy: Mock<typeof logger.error>
-  let logFatalSpy: Mock<typeof logger.fatal>
-  let errorHandlerApp: typeof errorHandlerPlugin
+  let logError: Mock<LogFn>
+  let logFatal: Mock<LogFn>
+
+  const errorHandlerApp = errorHandlerPlugin
+    .get('/', () => {
+      // Emulate error thrown from inside of request handler
+      throw new Error('Test Error')
+    })
+    .post('/', () => ({}), {
+      // Emulate error thrown from Elysia's built-in request validator
+      body: t.Object({
+        foo: t.Literal('bar'),
+      }),
+    })
+    .patch('/', async () => {
+      // Emulate error thrown from Drizzle ORM
+      await db.execute(sql`SELECT * FROM not_exists`)
+    })
 
   beforeEach(() => {
-    logErrorSpy = spyOn(logger, 'error')
-    logFatalSpy = spyOn(logger, 'fatal')
-
-    errorHandlerApp = errorHandlerPlugin
-      .get('/', () => {
-        // Emulate error thrown from inside of request handler
-        throw new Error('Test Error')
-      })
-      .post('/', () => ({}), {
-        // Emulate error thrown from Elysia's built-in request validator
-        body: t.Object({
-          foo: t.Literal('bar'),
-        }),
-      })
-      .patch('/', async () => {
-        // Emulate error thrown from Drizzle ORM
-        await db.execute(sql`SELECT * FROM not_exists`)
-      })
+    logError = spyOn(logger, 'error')
+    logFatal = spyOn(logger, 'fatal')
 
     mock.module('./logger.plugin', () => ({
-      error: logErrorSpy,
-      fatal: logFatalSpy,
+      logger: {
+        error: logError,
+        fatal: logFatal,
+      }
     }))
   })
 
   afterEach(() => {
-    logErrorSpy.mockReset()
-    logFatalSpy.mockReset()
+    logError.mockClear()
+    logFatal.mockClear()
   })
 
   afterAll(() => {
-    mock.restore()
+    mock.clearAllMocks()
   })
 
   it('should log error whenever an error thrown from handler', async () => {
@@ -61,11 +63,11 @@ describe('Error Handler Plugin', () => {
       new Request('http://localhost'),
     )
 
-    expect(logErrorSpy).toHaveBeenCalled()
+    expect(logError).toHaveBeenCalled()
     expect(response.status).toBe(500)
 
     const body = (await response.json()) as InternalServerError
-    const [obj, msg] = logErrorSpy.mock.calls[0] || [{}]
+    const [obj, msg] = logError.mock.calls[0] || [{}]
 
     expect(msg).toBe(body.message)
 
@@ -83,11 +85,11 @@ describe('Error Handler Plugin', () => {
       }),
     )
 
-    expect(logErrorSpy).toHaveBeenCalled()
+    expect(logError).toHaveBeenCalled()
     expect(response.status).toBe(422)
 
     const body = (await response.json()) as ValidationError
-    const [obj, msg] = logErrorSpy.mock.calls[0] || [{}]
+    const [obj, msg] = logError.mock.calls[0] || [{}]
 
     expect(body.errors).toBeArrayOfSize(1)
     expect(msg).toBe(body.message)
@@ -106,11 +108,11 @@ describe('Error Handler Plugin', () => {
       }),
     )
 
-    expect(logFatalSpy).toHaveBeenCalled()
+    expect(logFatal).toHaveBeenCalled()
     expect(response.status).toBe(500)
 
     const body = (await response.json()) as InternalServerError
-    const [obj, msg] = logFatalSpy.mock.calls[0] || [{}]
+    const [obj, msg] = logFatal.mock.calls[0] || [{}]
 
     expect(body.message).toBe('Something went wrong in our end')
     expect(msg).toContain('ERR_POSTGRES_SERVER_ERROR')
