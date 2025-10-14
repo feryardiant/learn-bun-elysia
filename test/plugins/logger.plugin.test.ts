@@ -12,12 +12,14 @@ import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 describe('Logger Plugin', () => {
   let logDebug: Mock<(typeof logger)['debug']>
 
-  let loggerApp: typeof loggerPlugin
+  const loggerApp = loggerPlugin
+    // Get /
+    .get('/', () => 'Ok')
+    // Post /
+    .post('/', () => 'Ok')
 
   beforeEach(() => {
     logDebug = spyOn(logger, 'debug').mockImplementation(() => {})
-
-    loggerApp = loggerPlugin.get('/', () => 'Ok').post('/', () => 'Ok')
   })
 
   afterEach(() => {

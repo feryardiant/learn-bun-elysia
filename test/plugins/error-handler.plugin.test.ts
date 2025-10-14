@@ -5,7 +5,6 @@ import {
   describe,
   expect,
   it,
-  mock,
   spyOn,
   type Mock,
 } from 'bun:test'
@@ -45,10 +44,6 @@ describe('Error Handler Plugin', () => {
   afterEach(() => {
     logError.mockRestore()
     logFatal.mockRestore()
-  })
-
-  afterAll(() => {
-    mock.clearAllMocks()
   })
 
   it('should log error whenever an error thrown from handler', async () => {
