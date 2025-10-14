@@ -38,20 +38,13 @@ describe('Error Handler Plugin', () => {
     })
 
   beforeEach(() => {
-    logError = spyOn(logger, 'error')
-    logFatal = spyOn(logger, 'fatal')
-
-    mock.module('./logger.plugin', () => ({
-      logger: {
-        error: logError,
-        fatal: logFatal,
-      }
-    }))
+    logError = spyOn(logger, 'error').mockImplementation(() => {})
+    logFatal = spyOn(logger, 'fatal').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    logError.mockClear()
-    logFatal.mockClear()
+    logError.mockRestore()
+    logFatal.mockRestore()
   })
 
   afterAll(() => {

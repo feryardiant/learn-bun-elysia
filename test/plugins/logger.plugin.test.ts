@@ -15,13 +15,13 @@ describe('Logger Plugin', () => {
   let loggerApp: typeof loggerPlugin
 
   beforeEach(() => {
-    logDebug = spyOn(logger, 'debug')
+    logDebug = spyOn(logger, 'debug').mockImplementation(() => {})
 
     loggerApp = loggerPlugin.get('/', () => 'Ok').post('/', () => 'Ok')
   })
 
   afterEach(() => {
-    logDebug.mockReset()
+    logDebug.mockRestore()
   })
 
   it('should log GET request', async () => {
