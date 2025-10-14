@@ -7,6 +7,7 @@ import { db } from '~/database'
 import { account, session, user, verification } from '~/database/schemas'
 import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
+import { logger } from './logger.plugin'
 
 export const auth = betterAuth({
   appName: ENV.APP_NAME,
@@ -15,9 +16,17 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   database: drizzleAdapter(db, {
+    camelCase: true,
     provider: 'pg',
     schema: { account, user, session, verification },
   }),
+
+  logger: {
+    level: 'warn',
+    log (level, message, ...args) {
+      logger[level]({ args }, message)
+    }
+  },
 
   user: {
     additionalFields: {
@@ -79,4 +88,3 @@ export const authPlugin = new Elysia({ name: 'auth' })
       user: authenticated.user,
     }
   })
-  .mount(auth.options.basePath, auth.handler)

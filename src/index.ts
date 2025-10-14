@@ -2,13 +2,17 @@ import { Elysia } from 'elysia'
 
 import { ENV } from './config'
 import { errorHandlerPlugin } from './plugins/error-handler.plugin'
+import { loggerPlugin } from './plugins/logger.plugin'
 import { openapiPlugin, SWAGGER_PATH } from './plugins/openapi.plugin'
+import { authRoute } from './routes/auth.route'
 import { baseRoute } from './routes/base.route'
 import { v1Route } from './routes/v1.route'
 
 const app = new Elysia({ prefix: ENV.BASE_PATH })
   .use(errorHandlerPlugin)
   .use(openapiPlugin)
+  .use(loggerPlugin)
+  .use(authRoute)
   .use(baseRoute)
   .use(v1Route)
 

@@ -13,6 +13,7 @@ import {
 } from '~/utils/errors.util'
 import { reduceHeaders } from '~/utils/request.util'
 import { logger } from './logger.plugin'
+import { APIError } from 'better-auth'
 
 const customErrors = {
   [AuthenticationError.code]: AuthenticationError,
@@ -40,6 +41,22 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
     const errorObj: Record<string, unknown> = {
       error,
       endpoint: `${request.method} ${pathname}${search}`,
+    }
+
+    if (error instanceof APIError) {
+      set.status = error.statusCode
+      errorObj.headers = error.headers
+      errorObj.error = {
+        name: error.name,
+        ...error.body,
+      }
+
+      logger.error(errorObj, `AuthError: ${error.message}`)
+
+      return {
+        code: error.status,
+        message: error.message
+      }
     }
 
     if (error instanceof DrizzleQueryError) {

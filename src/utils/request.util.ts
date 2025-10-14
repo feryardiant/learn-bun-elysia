@@ -1,5 +1,7 @@
-export const reduceHeaders = (headers: Record<string, string | undefined>) =>
-  Object.entries(headers).reduce(
+export const reduceHeaders = (headers?: Record<string, string | undefined>) => {
+  if (!headers) return {}
+
+  return Object.entries(headers).reduce(
     (out, [key, val]) => {
       if (['cookie'].includes(key)) return out
       out[key] = val
@@ -7,3 +9,4 @@ export const reduceHeaders = (headers: Record<string, string | undefined>) =>
     },
     {} as typeof headers,
   )
+}
