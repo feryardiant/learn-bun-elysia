@@ -23,9 +23,9 @@ export const auth = betterAuth({
 
   logger: {
     level: 'warn',
-    log (level, message, ...args) {
+    log(level, message, ...args) {
       logger[level]({ args }, message)
-    }
+    },
   },
 
   user: {

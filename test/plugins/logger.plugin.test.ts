@@ -10,16 +10,20 @@ import {
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
-  let loggerSpy: Mock<(typeof logger)['debug']>
-  let loggerApp: typeof loggerPlugin
+  let logDebug: Mock<(typeof logger)['debug']>
+
+  const loggerApp = loggerPlugin
+    // Get /
+    .get('/', () => 'Ok')
+    // Post /
+    .post('/', () => 'Ok')
 
   beforeEach(() => {
-    loggerSpy = spyOn(logger, 'debug')
-    loggerApp = loggerPlugin.get('/', () => 'Ok').post('/', () => 'Ok')
+    logDebug = spyOn(logger, 'debug').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    loggerSpy.mockReset()
+    logDebug.mockRestore()
   })
 
   it('should log GET request', async () => {
@@ -27,9 +31,9 @@ describe('Logger Plugin', () => {
       new Request('http://localhost', { method: 'GET' }),
     )
 
-    expect(loggerSpy).toHaveBeenCalled()
+    expect(logDebug).toHaveBeenCalled()
 
-    const [obj, msg] = loggerSpy.mock.calls[0] || [{}, '']
+    const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
     expect(obj).toContainKey('headers')
     expect(msg).toContain('Request received')
   })
@@ -42,9 +46,9 @@ describe('Logger Plugin', () => {
       }),
     )
 
-    expect(loggerSpy).toHaveBeenCalled()
+    expect(logDebug).toHaveBeenCalled()
 
-    const [obj, msg] = loggerSpy.mock.calls[0] || [{}, '']
+    const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
     expect(obj).toContainKey('headers')
     expect(obj).toContainKey('payload')
@@ -64,9 +68,9 @@ describe('Logger Plugin', () => {
       }),
     )
 
-    expect(loggerSpy).toHaveBeenCalled()
+    expect(logDebug).toHaveBeenCalled()
 
-    const [obj, msg] = loggerSpy.mock.calls[0] || [{}, '']
+    const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
     expect(obj).toContainKey('headers')
     expect(obj).toContainKey('payload')

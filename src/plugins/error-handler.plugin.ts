@@ -55,7 +55,7 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
 
       return {
         code: error.status,
-        message: error.message
+        message: error.message,
       }
     }
 
