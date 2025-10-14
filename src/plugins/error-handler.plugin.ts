@@ -24,7 +24,7 @@ const customErrors = {
 /**
  * Error handler
  */
-export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
+export const errorHandlerPlugin = () => new Elysia({ name: 'error-handler' })
   .as('global')
   .guard({
     response: {

@@ -7,12 +7,14 @@ import {
   spyOn,
   type Mock,
 } from 'bun:test'
+import Elysia from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
   let logDebug: Mock<(typeof logger)['debug']>
 
-  const loggerApp = loggerPlugin
+  const loggerApp = new Elysia()
+    .use(loggerPlugin)
     // Get /
     .get('/', () => 'Ok')
     // Post /

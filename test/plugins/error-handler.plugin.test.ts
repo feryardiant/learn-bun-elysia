@@ -9,7 +9,7 @@ import {
   type Mock,
 } from 'bun:test'
 import { sql } from 'drizzle-orm'
-import { InternalServerError, t } from 'elysia'
+import Elysia, { InternalServerError, t } from 'elysia'
 import type { LogFn } from 'pino'
 import { db } from '~/database'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
@@ -20,7 +20,8 @@ describe('Error Handler Plugin', () => {
   let logError: Mock<LogFn>
   let logFatal: Mock<LogFn>
 
-  const errorHandlerApp = errorHandlerPlugin
+  const errorHandlerApp = new Elysia()
+    .use(errorHandlerPlugin)
     .get('/', () => {
       // Emulate error thrown from inside of request handler
       throw new Error('Test Error')

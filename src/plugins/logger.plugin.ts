@@ -21,7 +21,7 @@ export const logger = pino({
   transport: { targets },
 })
 
-export const loggerPlugin = new Elysia({ name: 'logger' })
+export const loggerPlugin = () => new Elysia({ name: 'logger' })
   .as('scoped')
   .decorate('logger', logger)
   .onBeforeHandle(async ({ body, headers, request }) => {
