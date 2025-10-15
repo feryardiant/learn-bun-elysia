@@ -1,20 +1,20 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { postsController } from '~/modules/feeds/posts.controller'
-import { post } from '~/database/schemas'
+import { posts } from '~/database/schemas'
 import { db } from '~/database'
 import type { Post } from '~/modules/feeds/types'
 import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {
   beforeAll(async () => {
-    await db.insert(post).values([
+    await db.insert(posts).values([
       { id: '10', content: 'Post 10', createdAt: Date.now() },
       { id: '20', content: 'Post 20', createdAt: Date.now() },
     ])
   })
 
   afterAll(async () => {
-    await db.delete(post)
+    await db.delete(posts)
   })
 
   it('should retrieve posts collection', async () => {

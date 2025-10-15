@@ -8,20 +8,20 @@ describe('Comment Repository', () => {
 
   beforeAll(async () => {
     commentRepo = new CommentRepository(db)
-    await db.insert(schemas.post).values([
+    await db.insert(schemas.posts).values([
       { id: '30', content: 'Post 30', createdAt: Date.now() },
       { id: '40', content: 'Post 40', createdAt: Date.now() },
     ])
     await db
-      .insert(schemas.comment)
+      .insert(schemas.comments)
       .values([
         { id: '3', content: 'Comment 3', postId: '30', createdAt: Date.now() },
       ])
   })
 
   afterAll(async () => {
-    await db.delete(schemas.comment)
-    await db.delete(schemas.post)
+    await db.delete(schemas.comments)
+    await db.delete(schemas.posts)
   })
 
   it('should get all comments', async () => {

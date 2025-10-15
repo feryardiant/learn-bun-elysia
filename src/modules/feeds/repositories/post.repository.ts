@@ -5,7 +5,7 @@ export class PostRepository {
   constructor(private readonly db: AppDatabase) {}
 
   async getAll(): Promise<Post[]> {
-    const items = await this.db.query.post.findMany({
+    const items = await this.db.query.posts.findMany({
       //
     })
 
@@ -13,10 +13,8 @@ export class PostRepository {
   }
 
   async getById(id: Post['id']): Promise<Post> {
-    const item = await this.db.query.post.findFirst({
-      where(field, { eq }) {
-        return eq(field.id, id)
-      },
+    const item = await this.db.query.posts.findFirst({
+      where: (field, { eq }) => eq(field.id, id),
     })
 
     if (!item) {

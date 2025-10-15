@@ -1,14 +1,14 @@
 import { Type as t } from '@sinclair/typebox'
 import { createSelectSchema } from 'drizzle-typebox'
-import { comment, post } from '~/database/schemas'
+import { comments, posts } from '~/database/schemas'
 
-export const PostSchema = createSelectSchema(post, {
+export const PostSchema = createSelectSchema(posts, {
   createdAt: t.Number(),
 })
 
 export type Post = typeof PostSchema.static
 
-export const CommentSchema = createSelectSchema(comment, {
+export const CommentSchema = createSelectSchema(comments, {
   createdAt: t.Number(),
 })
 

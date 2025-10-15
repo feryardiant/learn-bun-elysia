@@ -8,14 +8,14 @@ describe('Post Repository', () => {
 
   beforeAll(async () => {
     postRepo = new PostRepository(db)
-    await db.insert(schemas.post).values([
+    await db.insert(schemas.posts).values([
       { id: '10', content: 'Post 10', createdAt: Date.now() },
       { id: '20', content: 'Post 20', createdAt: Date.now() },
     ])
   })
 
   afterAll(async () => {
-    await db.delete(schemas.post)
+    await db.delete(schemas.posts)
   })
 
   it('should get all posts', async () => {
