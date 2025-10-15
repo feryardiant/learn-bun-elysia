@@ -1,0 +1,14 @@
+import type { AppDatabase } from '~/database'
+import type { Session, User } from '../types'
+
+export class SessionRepository {
+  constructor(private readonly db: AppDatabase) {}
+
+  async getAllByUserId(userId: User['id']): Promise<Session[]> {
+    const data = await this.db.query.sessions.findMany({
+      where: (field, { eq }) => eq(field.userId, userId),
+    })
+
+    return data
+  }
+}

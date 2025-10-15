@@ -5,6 +5,8 @@
 # Test configuration
 root = "./test"
 preload = ["./test/setup.ts"]
+coverageReporter  = ["text", "lcov"]
+coverageDir = "tmp/coverage"
 
 [run]
 # Runtime configuration

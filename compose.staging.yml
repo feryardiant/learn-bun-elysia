@@ -14,6 +14,7 @@ services:
       APP_NAME: ${APP_NAME:-}
       APP_VERSION: ${APP_VERSION:-}
       APP_URL: ${APP_URL:-http://localhost:${FORWARD_PORT:-3000}}
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
       BASE_PATH: ${BASE_PATH:-}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       AUTH_SECRET: ${AUTH_SECRET:-}

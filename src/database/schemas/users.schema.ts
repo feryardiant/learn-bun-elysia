@@ -1,18 +1,9 @@
-import {
-  boolean,
-  pgEnum,
-  pgTable,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+import { boolean, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { sessions } from './sessions.schema'
+import { accounts } from './accounts.schema'
 
-export const onboardingStepEnum = pgEnum('onboarding_step', [
-  'step_1',
-  'step_2',
-  'completed',
-])
-
-export const user = pgTable('users', {
+export const users = pgTable('users', {
   id: varchar('id').primaryKey(),
   name: varchar('name').notNull(),
   handle: varchar('handle'),
@@ -23,3 +14,11 @@ export const user = pgTable('users', {
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
 })
+
+export const userSessions = relations(users, ({ many }) => ({
+  posts: many(sessions),
+}))
+
+export const userAccounts = relations(users, ({ many }) => ({
+  posts: many(accounts),
+}))

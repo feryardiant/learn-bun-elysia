@@ -4,7 +4,6 @@ import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import Elysia, { NotFoundError, t } from 'elysia'
 import { ENV } from '~/config'
 import { db } from '~/database'
-import { account, session, user, verification } from '~/database/schemas'
 import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 import { logger } from './logger.plugin'
@@ -15,14 +14,18 @@ export const auth = betterAuth({
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
 
+  onAPIError: {
+    throw: true,
+  },
+
   database: drizzleAdapter(db, {
-    camelCase: true,
     provider: 'pg',
-    schema: { account, user, session, verification },
+    usePlural: true,
   }),
 
   logger: {
-    level: 'warn',
+    level: 'error',
+    disabled: ENV.NODE_ENV === 'test',
     log(level, message, ...args) {
       logger[level]({ args }, message)
     },
@@ -33,6 +36,12 @@ export const auth = betterAuth({
       handle: {
         type: 'string',
         required: false,
+      },
+      isAnonymous: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        input: false,
       },
     },
   },
@@ -45,11 +54,7 @@ export const auth = betterAuth({
   plugins: [
     // https://www.better-auth.com/docs/plugins/anonymous
     anonymous({
-      schema: {
-        user: {
-          fields: { isAnonymous: 'is_anonymous' },
-        },
-      },
+      emailDomainName: ENV.APP_DOMAIN,
     }),
 
     // https://www.better-auth.com/docs/plugins/bearer
@@ -60,31 +65,32 @@ export const auth = betterAuth({
   ],
 })
 
-export const authPlugin = new Elysia({ name: 'auth' })
-  .as('scoped')
-  .guard({
-    headers: t.Object({
-      authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
-    }),
-    response: {
-      400: ApiErrorSchema,
-      401: ApiErrorSchema,
-    },
-  })
-  .resolve(async ({ request }) => {
-    if (!request.headers.has('authorization')) {
-      throw new NotFoundError('Page not found')
-    }
-
-    const authenticated = await auth.api.getSession({
-      headers: request.headers,
+export const authPlugin = () =>
+  new Elysia({ name: 'auth' })
+    .as('scoped')
+    .guard({
+      headers: t.Object({
+        authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
+      }),
+      response: {
+        400: ApiErrorSchema,
+        401: ApiErrorSchema,
+      },
     })
+    .resolve(async ({ request }) => {
+      if (!request.headers.has('authorization')) {
+        throw new NotFoundError('Page not found')
+      }
 
-    if (!authenticated) {
-      throw new AuthenticationError('Invalid credentials')
-    }
+      const authenticated = await auth.api.getSession({
+        headers: request.headers,
+      })
 
-    return {
-      user: authenticated.user,
-    }
-  })
+      if (!authenticated) {
+        throw new AuthenticationError('Invalid credentials')
+      }
+
+      return {
+        user: authenticated.user,
+      }
+    })
