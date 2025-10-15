@@ -1,13 +1,13 @@
 import { pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
-import { user } from './users.schema'
+import { users } from './users.schema'
 
-export const account = pgTable('accounts', {
+export const accounts = pgTable('accounts', {
   id: varchar('id').primaryKey(),
   accountId: varchar('account_id').notNull(),
   providerId: varchar('provider_id').notNull(),
   userId: varchar('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' }),
   accessToken: varchar('access_token'),
   accessTokenExpiresAt: timestamp('access_token_expires_at'),
   refreshToken: varchar('refresh_token'),

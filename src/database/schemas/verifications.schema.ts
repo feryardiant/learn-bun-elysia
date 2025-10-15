@@ -1,6 +1,6 @@
 import { pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
 
-export const verification = pgTable('verifications', {
+export const verifications = pgTable('verifications', {
   id: varchar('id').primaryKey(),
   identifier: varchar('identifier').notNull(),
   value: varchar('value').notNull(),

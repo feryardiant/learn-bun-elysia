@@ -1,18 +1,11 @@
 import {
   boolean,
-  pgEnum,
   pgTable,
   timestamp,
   varchar,
 } from 'drizzle-orm/pg-core'
 
-export const onboardingStepEnum = pgEnum('onboarding_step', [
-  'step_1',
-  'step_2',
-  'completed',
-])
-
-export const user = pgTable('users', {
+export const users = pgTable('users', {
   id: varchar('id').primaryKey(),
   name: varchar('name').notNull(),
   handle: varchar('handle'),

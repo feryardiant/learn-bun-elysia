@@ -15,8 +15,8 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   database: drizzleAdapter(db, {
-    camelCase: true,
     provider: 'pg',
+    usePlural: true
   }),
 
   logger: {

@@ -1,12 +1,12 @@
 import { boolean, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
-import { user } from './users.schema'
+import { users } from './users.schema'
 
 // Defines the 'sessions' table for storing user session information.
-export const session = pgTable('sessions', {
+export const sessions = pgTable('sessions', {
   id: varchar('id').primaryKey(),
   userId: varchar('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
+    .references(() => users.id, { onDelete: 'cascade' }),
   token: varchar('token').notNull().unique(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
