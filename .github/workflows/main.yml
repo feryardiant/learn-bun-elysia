@@ -56,7 +56,7 @@ jobs:
           APP_VERSION: ${{ needs.prepare.outputs.image-tag }}
           AUTH_SECRET: secret
           NODE_ENV: test
-        run: bun run test
+        run: bun run test --coverage
 
   build-and-push:
     name: Docker Images for ${{ matrix.service }}
