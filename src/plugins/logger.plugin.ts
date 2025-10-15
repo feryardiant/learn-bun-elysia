@@ -21,17 +21,18 @@ export const logger = pino({
   transport: { targets },
 })
 
-export const loggerPlugin = () => new Elysia({ name: 'logger' })
-  .as('scoped')
-  .decorate('logger', logger)
-  .onBeforeHandle(async ({ body, headers, request }) => {
-    const { pathname, search } = new URL(request.url)
+export const loggerPlugin = () =>
+  new Elysia({ name: 'logger' })
+    .as('scoped')
+    .decorate('logger', logger)
+    .onBeforeHandle(async ({ body, headers, request }) => {
+      const { pathname, search } = new URL(request.url)
 
-    logger.debug(
-      {
-        headers: reduceHeaders(headers),
-        payload: body,
-      },
-      `Request received: ${request.method} ${pathname}${search}`,
-    )
-  })
+      logger.debug(
+        {
+          headers: reduceHeaders(headers),
+          payload: body,
+        },
+        `Request received: ${request.method} ${pathname}${search}`,
+      )
+    })

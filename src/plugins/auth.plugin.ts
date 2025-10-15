@@ -54,7 +54,7 @@ export const auth = betterAuth({
   plugins: [
     // https://www.better-auth.com/docs/plugins/anonymous
     anonymous({
-      emailDomainName: ENV.APP_DOMAIN
+      emailDomainName: ENV.APP_DOMAIN,
     }),
 
     // https://www.better-auth.com/docs/plugins/bearer
