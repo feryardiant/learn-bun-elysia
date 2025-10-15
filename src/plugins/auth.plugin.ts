@@ -32,6 +32,12 @@ export const auth = betterAuth({
         type: 'string',
         required: false,
       },
+      isAnonymous: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
 
@@ -43,11 +49,6 @@ export const auth = betterAuth({
   plugins: [
     // https://www.better-auth.com/docs/plugins/anonymous
     anonymous({
-      schema: {
-        user: {
-          fields: { isAnonymous: 'is_anonymous' },
-        },
-      },
     }),
 
     // https://www.better-auth.com/docs/plugins/bearer
