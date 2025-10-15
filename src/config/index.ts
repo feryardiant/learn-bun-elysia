@@ -28,6 +28,7 @@ const envSchema = t.Object({
   APP_NAME: t.String({ default: name }),
   APP_VERSION: t.String({ default: version }),
   APP_URL: t.String({ default: 'http://localhost:3000' }),
+  APP_DOMAIN: t.String({ default: 'localhost' }),
   BASE_PATH: t.String({ default: '' }),
   LOG_LEVEL: t.Union(
     logLevels.map((l) => t.Literal(l)),
