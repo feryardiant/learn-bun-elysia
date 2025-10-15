@@ -14,13 +14,18 @@ export const auth = betterAuth({
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
 
+  onAPIError: {
+    throw: true,
+  },
+
   database: drizzleAdapter(db, {
     provider: 'pg',
-    usePlural: true
+    usePlural: true,
   }),
 
   logger: {
-    level: 'warn',
+    level: 'error',
+    disabled: ENV.NODE_ENV === 'test',
     log(level, message, ...args) {
       logger[level]({ args }, message)
     },
@@ -48,8 +53,7 @@ export const auth = betterAuth({
 
   plugins: [
     // https://www.better-auth.com/docs/plugins/anonymous
-    anonymous({
-    }),
+    anonymous({}),
 
     // https://www.better-auth.com/docs/plugins/bearer
     bearer(),
@@ -59,31 +63,32 @@ export const auth = betterAuth({
   ],
 })
 
-export const authPlugin = new Elysia({ name: 'auth' })
-  .as('scoped')
-  .guard({
-    headers: t.Object({
-      authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
-    }),
-    response: {
-      400: ApiErrorSchema,
-      401: ApiErrorSchema,
-    },
-  })
-  .resolve(async ({ request }) => {
-    if (!request.headers.has('authorization')) {
-      throw new NotFoundError('Page not found')
-    }
-
-    const authenticated = await auth.api.getSession({
-      headers: request.headers,
+export const authPlugin = () =>
+  new Elysia({ name: 'auth' })
+    .as('scoped')
+    .guard({
+      headers: t.Object({
+        authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
+      }),
+      response: {
+        400: ApiErrorSchema,
+        401: ApiErrorSchema,
+      },
     })
+    .resolve(async ({ request }) => {
+      if (!request.headers.has('authorization')) {
+        throw new NotFoundError('Page not found')
+      }
 
-    if (!authenticated) {
-      throw new AuthenticationError('Invalid credentials')
-    }
+      const authenticated = await auth.api.getSession({
+        headers: request.headers,
+      })
 
-    return {
-      user: authenticated.user,
-    }
-  })
+      if (!authenticated) {
+        throw new AuthenticationError('Invalid credentials')
+      }
+
+      return {
+        user: authenticated.user,
+      }
+    })
