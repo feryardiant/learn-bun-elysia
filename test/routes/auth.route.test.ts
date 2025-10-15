@@ -5,6 +5,8 @@ import { accounts, sessions, users } from '~/database/schemas'
 import { authRoute } from '~/routes/auth.route'
 
 describe('Auth Routes', () => {
+  const APP_URL = 'http://localhost/auth'
+
   afterAll(async () => {
     await db.delete(accounts)
     await db.delete(sessions)
@@ -13,7 +15,7 @@ describe('Auth Routes', () => {
 
   it('should able to crate anonymous user', async () => {
     const response = await authRoute.handle(
-      new Request('http://localhost/auth/sign-in/anonymous', {
+      new Request(`${APP_URL}/sign-in/anonymous`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({}),
