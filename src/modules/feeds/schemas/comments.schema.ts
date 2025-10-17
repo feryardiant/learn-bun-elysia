@@ -1,5 +1,6 @@
 import { bigint, index, pgTable, text, varchar } from 'drizzle-orm/pg-core'
 import { posts } from './posts.schema'
+import { relations } from 'drizzle-orm'
 
 export const comments = pgTable(
   'comments',
@@ -17,3 +18,7 @@ export const comments = pgTable(
     index('comment_created_at_idx').on(table.createdAt),
   ],
 )
+
+export const commentPost = relations(posts, ({ one }) => ({
+  post: one(posts),
+}))

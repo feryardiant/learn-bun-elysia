@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm'
 import { boolean, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { users } from './users.schema'
 
@@ -22,3 +23,7 @@ export const sessions = pgTable('sessions', {
   ipAddress: varchar('ip_address'),
   userAgent: varchar('user_agent'),
 })
+
+export const sessionUser = relations(sessions, ({ one }) => ({
+  user: one(users),
+}))

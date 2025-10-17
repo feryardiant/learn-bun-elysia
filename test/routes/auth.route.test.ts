@@ -1,9 +1,8 @@
 import { afterAll, describe, expect, it } from 'bun:test'
 import { ENV } from '~/config'
 import { db } from '~/database'
-import { accounts, sessions, users } from '~/database/schemas'
+import { accounts, sessions, users, type User } from '~/modules/auth'
 import { sessionRepository, userRepository } from '~/modules/auth/repositories'
-import type { User } from '~/modules/auth/types'
 import { authRoute } from '~/routes/auth.route'
 
 describe('Auth Routes', () => {

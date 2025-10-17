@@ -1,6 +1,6 @@
 import { Type as t } from '@sinclair/typebox'
 import { createSelectSchema } from 'drizzle-typebox'
-import { comments, posts } from '~/database/schemas'
+import { comments, posts } from './schemas'
 
 export const PostSchema = createSelectSchema(posts, {
   createdAt: t.Number(),

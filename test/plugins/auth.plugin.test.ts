@@ -2,7 +2,7 @@ import type { UserWithAnonymous } from 'better-auth/plugins'
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import Elysia from 'elysia'
 import { db } from '~/database'
-import { accounts, sessions, users } from '~/database/schemas'
+import { accounts, sessions, users } from '~/modules/auth'
 import { auth, authPlugin } from '~/plugins/auth.plugin'
 
 describe('Auth Plugin', () => {

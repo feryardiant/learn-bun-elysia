@@ -20,6 +20,6 @@ export const accounts = pgTable('accounts', {
   updatedAt: timestamp('updated_at').notNull(),
 })
 
-export const accountUser = relations(users, ({ one }) => ({
+export const accountUser = relations(accounts, ({ one }) => ({
   user: one(users),
 }))
