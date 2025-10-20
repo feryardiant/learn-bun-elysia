@@ -17,3 +17,9 @@ export const db = drizzle({
 })
 
 export type AppDatabase = typeof db
+
+export async function migrator() {
+  await migrate(db, {
+    migrationsFolder: resolve(__dirname, 'migrations'),
+  })
+}

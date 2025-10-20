@@ -1,5 +1,4 @@
 import {
-  afterAll,
   afterEach,
   beforeEach,
   describe,
