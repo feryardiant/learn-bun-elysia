@@ -6,7 +6,8 @@ const ENV = Value.Parse(dbConfig, process.env)
 const isLocal = ['local', 'test'].includes(process.env.NODE_ENV || 'local')
 
 export default defineConfig({
-  schema: './src/database/schemas/index.ts',
+  schema: './src/database/schema.ts',
+  out: './src/database/migrations',
   dialect: 'postgresql',
   dbCredentials: {
     host: ENV.DB_HOST,

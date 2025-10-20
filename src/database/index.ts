@@ -1,6 +1,8 @@
 import { drizzle } from 'drizzle-orm/bun-sql'
+import { migrate } from 'drizzle-orm/bun-sql/migrator'
+import { resolve } from 'path'
 import { ENV, isLocal } from '~/config'
-import * as schema from './schemas'
+import * as schema from './schema'
 
 export const db = drizzle({
   connection: {
