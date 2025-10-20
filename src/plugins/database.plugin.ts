@@ -3,7 +3,9 @@ import { migrate } from 'drizzle-orm/bun-sql/migrator'
 import { Elysia } from 'elysia'
 import { resolve } from 'path'
 import { ENV, isLocal } from '~/config'
-import * as schema from '~/database/schema'
+
+import * as authSchema from '~/modules/auth/schemas'
+import * as feedSchema from '~/modules/feeds/schemas'
 
 export const db = drizzle({
   connection: {
@@ -14,7 +16,10 @@ export const db = drizzle({
     database: ENV.DB_NAME,
     ssl: isLocal ? false : { rejectUnauthorized: false },
   },
-  schema,
+  schema: {
+    ...authSchema,
+    ...feedSchema,
+  },
 })
 
 export type AppDatabase = typeof db
