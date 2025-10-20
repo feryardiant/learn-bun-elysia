@@ -29,9 +29,9 @@ auth:
 database:
   - changed-files:
       - any-glob-to-any-file:
-          - 'drizzle/*.sql'
           - 'src/config/db.config.ts'
-          - 'src/database/**.ts'
+          - 'src/plugins/database.plugin.ts'
+          - 'src/database/**'
 
 tests:
   - changed-files:

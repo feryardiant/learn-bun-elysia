@@ -1,5 +1,5 @@
 import { afterAll, beforeAll } from 'bun:test'
-import { migrator } from '~/database'
+import { migrator } from '~/plugins/database.plugin'
 
 beforeAll(async () => {
   await migrator()

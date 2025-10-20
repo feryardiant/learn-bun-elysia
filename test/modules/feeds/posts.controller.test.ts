@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { db } from '~/database'
 import { posts, postsController, type Post } from '~/modules/feeds'
+import { db } from '~/plugins/database.plugin'
 import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {

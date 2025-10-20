@@ -3,9 +3,9 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import Elysia, { NotFoundError, t } from 'elysia'
 import { ENV } from '~/config'
-import { db } from '~/database'
 import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
+import { db } from './database.plugin'
 import { logger } from './logger.plugin'
 
 export const auth = betterAuth({

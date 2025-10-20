@@ -10,7 +10,7 @@ import {
 import { sql } from 'drizzle-orm'
 import Elysia, { InternalServerError, t } from 'elysia'
 import type { LogFn } from 'pino'
-import { db } from '~/database'
+import { db } from '~/plugins/database.plugin'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
 import { logger } from '~/plugins/logger.plugin'
 import type { ValidationError } from '~/utils/response.util'

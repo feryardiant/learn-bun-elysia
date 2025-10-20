@@ -1,5 +1,5 @@
 import { count, eq } from 'drizzle-orm'
-import type { AppDatabase } from '~/database'
+import type { AppDatabase } from '~/plugins/database.plugin'
 import type { User } from '../types'
 import { users } from '../schemas'
 
