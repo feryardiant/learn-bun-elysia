@@ -19,6 +19,6 @@ export const comments = pgTable(
   ],
 )
 
-export const commentPost = relations(posts, ({ one }) => ({
+export const commentPost = relations(comments, ({ one }) => ({
   post: one(posts),
 }))
