@@ -7,7 +7,7 @@ beforeAll(async () => {
     await migrator()
   } catch (error) {
     const err = error as DrizzleError
-    const errCode = (err.cause as { code: string })?.code ?? 'UNKNOWN'
+    const errCode = (err.cause as { code: string } | undefined)?.code ?? 'UNKNOWN'
     console.error('Error during database migration:', errCode)
   }
 })
