@@ -1,9 +1,8 @@
 import { afterAll, beforeAll } from 'bun:test'
-import { migrate } from 'drizzle-orm/bun-sql/migrator'
-import { db } from '~/database'
+import { migrator } from '~/plugins/database.plugin'
 
 beforeAll(async () => {
-  await migrate(db, { migrationsFolder: './drizzle' })
+  await migrator()
 })
 
 afterAll(async () => {

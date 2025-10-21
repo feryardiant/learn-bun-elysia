@@ -1,6 +1,5 @@
-import { Type as t } from '@sinclair/typebox'
 import { createSelectSchema } from 'drizzle-typebox'
-import { accounts, sessions, users } from '~/database/schemas'
+import { accounts, sessions, users } from './schemas'
 
 export const AccountSchema = createSelectSchema(accounts)
 

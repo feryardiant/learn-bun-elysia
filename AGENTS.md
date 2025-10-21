@@ -19,14 +19,15 @@ This document outlines the conventions, technologies, and patterns used in this 
 The project follows a modular, feature-based architecture.
 
 ```
+/database           # Drizzle ORM setup and migrations.
+└── migrations/     # Drizzle migration files.
 /src
 ├── config/         # Environment variable schemas and parsing (auth, db).
-├── database/       # Drizzle ORM setup and schemas.
-│   └── schemas/    # Drizzle table definitions (e.g., posts.schema.ts).
 ├── modules/        # Business logic, grouped by feature (e.g., "feeds").
 │   └── [feature]/
+│       ├── schemas/        # Drizzle table definitions (e.g., posts.schema.ts).
+│       ├── repositories/   # Data access logic using Drizzle.
 │       ├── *.controller.ts # ElysiaJS controllers defining routes and handlers.
-│       ├── *.repository.ts # Data access logic using Drizzle.
 │       └── types.ts        # TypeScript types for the module.
 ├── plugins/        # Reusable Elysia plugins (auth, error handling, openapi).
 ├── routes/         # Top-level route composition.
@@ -55,7 +56,7 @@ All commands are run using `bun`.
   - Semicolons are omitted (`as-needed`).
   - Follows `recommended` BiomeJS rules.
 - **Imports**: Imports are organized automatically by Biome.
-- **Module Alias**: The project uses the `~/*` alias for `src/*`. Always use this for internal imports (e.g., `import { db } from '~/database'`).
+- **Module Alias**: The project uses the `~/*` alias for `src/*`. Always use this for internal imports (e.g., `import { logger } from '~/plugins/logger.plugin'`).
 
 ### Naming Conventions
 
@@ -99,7 +100,7 @@ All commands are run using `bun`.
 
 ### API Design
 
-- **Versioning**: API is versioned under `/v1`. See `src/routes/v1-api.route.ts`.
+- **Versioning**: API is versioned under `/v1`. See `src/routes/v1.route.ts`.
 - **Successful Responses**: Standardized using `asItemResponse` and `asItemsResponse` from `~/utils/response.util.ts`.
   - Single item: `{ "data": { ... } }`
   - Collection: `{ "data": [ ... ], "meta": { ... } }`
@@ -121,8 +122,9 @@ All commands are run using `bun`.
 
 ### Database (Drizzle ORM)
 
-- **Schema Definition**: Schemas are defined in `src/database/schemas/`. Each table gets its own file. An `index.ts` file in the same directory exports all schemas.
-- **Migrations**: Use `drizzle-kit` for generating and applying migrations. Never alter migration files manually after they are generated.
+- **Schema Definition**: Schemas are defined in `src/modules/[feature]/schemas/`. Each table gets its own file. An `index.ts` file in the same directory exports all schemas.
+- **Database Plugin**: The database instance and configuration are centrally managed in `src/plugins/database.plugin.ts`. Modules should import the `db` instance from this plugin rather than initializing Drizzle directly.
+- **Migrations**: Use `drizzle-kit` for generating and applying migrations. Migrations are stored in `database/migrations`. Never alter migration files manually after they are generated.
 - **Queries**: Repositories should encapsulate all database query logic. Controllers should call repository methods, not interact with `drizzle` directly.
 
 ## 5. Testing
@@ -136,12 +138,12 @@ All commands are run using `bun`.
   - For controller tests, `new Request()` is used to simulate HTTP requests passed to the Elysia instance's `.handle()` method.
   - Database state is managed using `beforeAll` and `afterAll` hooks to insert test data and clean up afterwards.
 
-## How to Contribute
+## 6. How to Contribute
 
 1.  **Create a new Module**:
-    - Add a new schema file in `src/database/schemas/`.
     - Create a new folder in `src/modules/` for your feature.
-    - Inside, create `*.repository.ts` for data logic and `*.controller.ts` for API routes.
+    - Inside, create a `schemas/` folder and add your schema definition files. Create an `index.ts` to export all schemas from this directory.
+    - Create `*.repository.ts` for data logic and `*.controller.ts` for API routes.
     - Add any specific `types.ts`.
 2.  **Add a new Route**:
     - Open the relevant `*.controller.ts`.

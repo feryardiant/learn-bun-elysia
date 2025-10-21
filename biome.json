@@ -11,6 +11,7 @@
       ".github/**/*.yml",
       "*.json",
       "*.yml",
+      "database/**/*.ts",
       "scripts/**/*.ts",
       "src/**/*.ts",
       "test/**/*.ts"

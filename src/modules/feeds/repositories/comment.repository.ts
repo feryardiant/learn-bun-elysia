@@ -1,4 +1,4 @@
-import type { AppDatabase } from '~/database'
+import type { AppDatabase } from '~/plugins/database.plugin'
 import type { Comment, Post } from '~/modules/feeds/types'
 import { PostRepository } from './post.repository'
 

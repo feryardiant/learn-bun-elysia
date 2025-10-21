@@ -1,7 +1,7 @@
-import type { AppDatabase } from '~/database'
-import type { User } from '../types'
 import { count, eq } from 'drizzle-orm'
-import { users } from '~/database/schemas'
+import type { AppDatabase } from '~/plugins/database.plugin'
+import type { User } from '../types'
+import { users } from '../schemas'
 
 export class UserRepository {
   constructor(private readonly db: AppDatabase) {}

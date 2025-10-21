@@ -1,15 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { postsController } from '~/modules/feeds/posts.controller'
-import { posts } from '~/database/schemas'
-import { db } from '~/database'
-import type { Post } from '~/modules/feeds/types'
+import { posts, postsController, type Post } from '~/modules/feeds'
+import { db } from '~/plugins/database.plugin'
 import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {
   beforeAll(async () => {
     await db.insert(posts).values([
-      { id: '10', content: 'Post 10', createdAt: Date.now() },
-      { id: '20', content: 'Post 20', createdAt: Date.now() },
+      { id: '10', content: 'Post 10' },
+      { id: '20', content: 'Post 20' },
     ])
   })
 

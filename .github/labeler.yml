@@ -1,7 +1,7 @@
 integration:
   - changed-files:
       - any-glob-to-any-file:
-          - '.github/workflows/*.yml'
+          - '.github/**.yml'
 
 docs:
   - changed-files:
@@ -23,15 +23,16 @@ api:
 auth:
   - changed-files:
       - any-glob-to-any-file:
+          - src/modules/auth/**
           - src/config/auth.config.ts
           - src/plugins/auth.plugin.ts
 
 database:
   - changed-files:
       - any-glob-to-any-file:
-          - 'drizzle/*.sql'
+          - 'database/**'
           - 'src/config/db.config.ts'
-          - 'src/database/**.ts'
+          - 'src/plugins/database.plugin.ts'
 
 tests:
   - changed-files:

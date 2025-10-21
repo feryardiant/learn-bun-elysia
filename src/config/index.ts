@@ -1,15 +1,9 @@
-import { Type as t } from '@sinclair/typebox'
+import { Type as t, type TLiteral } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
 import { name, version } from 'package.json'
 import { levels } from 'pino'
 import { authConfig } from './auth.config'
 import { dbConfig } from './db.config'
-
-const logLevels: string[] = []
-
-for (const level of Object.values(levels.labels)) {
-  logLevels.push(level)
-}
 
 const envSchema = t.Object({
   HOST: t.String({ default: 'localhost' }),
@@ -29,9 +23,13 @@ const envSchema = t.Object({
   APP_VERSION: t.String({ default: version }),
   APP_URL: t.String({ default: 'http://localhost:3000' }),
   APP_DOMAIN: t.String({ default: 'localhost' }),
+
   BASE_PATH: t.String({ default: '' }),
   LOG_LEVEL: t.Union(
-    logLevels.map((l) => t.Literal(l)),
+    Object.values(levels.labels).reduce((out, level) => {
+      out.push(t.Literal(level))
+      return out
+    }, [] as TLiteral<string>[]),
     { default: 'info' },
   ),
 
