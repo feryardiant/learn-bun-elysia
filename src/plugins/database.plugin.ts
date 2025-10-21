@@ -1,7 +1,6 @@
 import { drizzle } from 'drizzle-orm/bun-sql'
 import { migrate } from 'drizzle-orm/bun-sql/migrator'
 import { Elysia } from 'elysia'
-import { resolve } from 'path'
 import { ENV, isLocal } from '~/config'
 
 import * as authSchema from '~/modules/auth/schemas'
@@ -26,7 +25,7 @@ export type AppDatabase = typeof db
 
 export async function migrator() {
   await migrate(db, {
-    migrationsFolder: resolve(__dirname, '../database/migrations'),
+    migrationsFolder: './database/migrations',
   })
 }
 
