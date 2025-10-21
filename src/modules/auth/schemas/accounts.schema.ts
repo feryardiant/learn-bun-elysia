@@ -16,8 +16,8 @@ export const accounts = pgTable('accounts', {
   idToken: varchar('id_token'),
   scope: varchar('scope'),
   password: varchar('password'),
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
 export const accountUser = relations(accounts, ({ one }) => ({
