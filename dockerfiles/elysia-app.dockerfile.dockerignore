@@ -1,0 +1,33 @@
+# 1. Ignore Project-specific files we don't need
+tmp
+*.env*
+
+# 2. Ignore build and tests config files/directories we don't need
+.devcontainer
+biome.json
+compose.*.yml
+compose.yml
+dockerfiles
+node_modules
+test
+
+# 3. Ignore common files/directories we don't need
+.editorconfig
+.git
+.github
+.gitignore
+.gitattributes
+.idea
+.vscode
+.zed
+AGENTS.md
+**/*~
+**/*.old
+**/*.log
+**/*.map
+**/*.pid
+**/*.pem
+**/*.key
+**/.gitignore
+**/.DS_Store
+**/Thumbs.db
