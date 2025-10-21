@@ -7,42 +7,42 @@ erDiagram
     varchar name
     varchar handle
     varchar email
-    boolean emailVerified
-    boolean isAnonymous
+    boolean email_verified
+    boolean is_anonymous
     varchar image
-    timestamp createdAt
-    timestamp updatedAt
+    timestamp created_at
+    timestamp updated_at
   }
 
   accounts {
     varchar id PK
-    varchar accountId
-    varchar providerId
-    varchar userId FK
-    varchar accessToken
-    timestamp accessTokenExpiresAt
-    varchar refreshToken
-    timestamp refreshTokenExpiresAt
-    varchar idToken
+    varchar account_id
+    varchar provider_id
+    varchar user_id FK
+    varchar access_token
+    timestamp access_token_expires_at
+    varchar refresh_token
+    timestamp refresh_token_expires_at
+    varchar id_token
     varchar scope
     varchar password
-    timestamp createdAt
-    timestamp updatedAt
+    timestamp created_at
+    timestamp updated_at
   }
 
   sessions {
     varchar id PK
-    varchar userId FK
+    varchar user_id FK
     varchar token
-    timestamp createdAt
-    timestamp updatedAt
-    timestamp lastUsedAt
+    varchar ip_address
+    varchar user_agent
     boolean revoked
-    timestamp revokedAt
-    varchar revokedReason
-    timestamp expiresAt
-    varchar ipAddress
-    varchar userAgent
+    timestamp revoked_at
+    varchar revoked_reason
+    timestamp last_used_at
+    timestamp expires_at
+    timestamp created_at
+    timestamp updated_at
   }
 
   verifications {
@@ -50,23 +50,23 @@ erDiagram
     varchar identifier
     varchar value
     timestamp expiresAt
-    timestamp createdAt
-    timestamp updatedAt
+    timestamp created_at
+    timestamp updated_at
   }
 
   posts {
     varchar id PK
     text content
-    bigint createdAt
-    bigint updatedAt
+    bigint created_at
+    bigint updated_at
   }
 
   comments {
     varchar id PK
-    varchar postId FK
+    varchar post_id FK
     text content
-    bigint createdAt
-    bigint updatedAt
+    bigint created_at
+    bigint updated_at
   }
 
   users ||--o{ accounts : "has"

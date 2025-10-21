@@ -70,6 +70,14 @@ CREATE TABLE "verifications" (
 ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "comment_post_id_idx" ON "comments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "comment_created_at_idx" ON "comments" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "post_created_at_idx" ON "posts" USING btree ("created_at");
+CREATE INDEX "post_created_at_idx" ON "posts" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "account_access_token_idx" ON "accounts" USING btree ("access_token");--> statement-breakpoint
+CREATE INDEX "account_created_at_idx" ON "accounts" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "session_token_idx" ON "sessions" USING btree ("token");--> statement-breakpoint
+CREATE INDEX "session_created_at_idx" ON "sessions" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "user_handle_idx" ON "users" USING btree ("handle");--> statement-breakpoint
+CREATE INDEX "user_email_idx" ON "users" USING btree ("email");--> statement-breakpoint
+CREATE INDEX "user_created_at_idx" ON "users" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "verification_identifier_idx" ON "verifications" USING btree ("identifier");--> statement-breakpoint
+CREATE INDEX "verification_created_at_idx" ON "verifications" USING btree ("created_at");
