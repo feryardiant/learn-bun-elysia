@@ -22,7 +22,7 @@ export const authConfig = t.Object({
           acc.push(trimmedOrigin)
 
           return acc
-        } catch (error) {
+        } catch {
           return acc
         }
       }, [] as string[])
