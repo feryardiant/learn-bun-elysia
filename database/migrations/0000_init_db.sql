@@ -2,15 +2,15 @@ CREATE TABLE "comments" (
 	"id" varchar PRIMARY KEY NOT NULL,
 	"post_id" varchar NOT NULL,
 	"content" text NOT NULL,
-	"created_at" bigint NOT NULL,
-	"updated_at" bigint
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "posts" (
 	"id" varchar PRIMARY KEY NOT NULL,
 	"content" text NOT NULL,
-	"created_at" bigint NOT NULL,
-	"updated_at" bigint
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "accounts" (

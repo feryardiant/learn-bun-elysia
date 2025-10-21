@@ -6,8 +6,8 @@ import { db } from '~/plugins/database.plugin'
 describe('Post Repository', () => {
   beforeAll(async () => {
     await db.insert(posts).values([
-      { id: '10', content: 'Post 10', createdAt: Date.now() },
-      { id: '20', content: 'Post 20', createdAt: Date.now() },
+      { id: '10', content: 'Post 10' },
+      { id: '20', content: 'Post 20' },
     ])
   })
 
@@ -16,15 +16,15 @@ describe('Post Repository', () => {
   })
 
   it('should get all posts', async () => {
-    const posts = await postRepository.getAll()
-    expect(posts).toBeArray()
-    expect(posts.length).toBeGreaterThan(0)
+    const results = await postRepository.getAll()
+    expect(results).toBeArray()
+    expect(results.length).toBeGreaterThan(0)
   })
 
   it('should get a post by id', async () => {
-    const post = await postRepository.getById('10')
-    expect(post).toBeObject()
-    expect(post.id).toBe('10')
+    const result = await postRepository.getById('10')
+    expect(result).toBeObject()
+    expect(result.id).toBe('10')
   })
 
   it('should throw an error if post not found', async () => {

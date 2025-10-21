@@ -6,4 +6,6 @@ export const dbConfig = t.Object({
   DB_HOST: t.String({ default: '127.0.0.1' }),
   DB_PORT: t.Number({ default: 5432 }),
   DB_NAME: t.String(),
+
+  DB_SSL_CA_CERT: t.Optional(t.String()),
 })

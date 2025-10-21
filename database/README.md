@@ -49,7 +49,7 @@ erDiagram
     varchar id PK
     varchar identifier
     varchar value
-    timestamp expiresAt
+    timestamp expires_at
     timestamp created_at
     timestamp updated_at
   }

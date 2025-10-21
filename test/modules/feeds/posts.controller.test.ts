@@ -6,8 +6,8 @@ import type { ApiItemsMeta } from '~/utils/response.util'
 describe('Posts Controller', () => {
   beforeAll(async () => {
     await db.insert(posts).values([
-      { id: '10', content: 'Post 10', createdAt: Date.now() },
-      { id: '20', content: 'Post 20', createdAt: Date.now() },
+      { id: '10', content: 'Post 10' },
+      { id: '20', content: 'Post 20' },
     ])
   })
 

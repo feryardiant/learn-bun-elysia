@@ -6,14 +6,12 @@ import { db } from '~/plugins/database.plugin'
 describe('Comment Repository', () => {
   beforeAll(async () => {
     await db.insert(posts).values([
-      { id: '30', content: 'Post 30', createdAt: Date.now() },
-      { id: '40', content: 'Post 40', createdAt: Date.now() },
+      { id: '30', content: 'Post 30' },
+      { id: '40', content: 'Post 40' },
     ])
     await db
       .insert(comments)
-      .values([
-        { id: '3', content: 'Comment 3', postId: '30', createdAt: Date.now() },
-      ])
+      .values([{ id: '3', content: 'Comment 3', postId: '30' }])
   })
 
   afterAll(async () => {

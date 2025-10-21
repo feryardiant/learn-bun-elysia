@@ -13,7 +13,13 @@ export const db = drizzle({
     user: ENV.DB_USER,
     password: ENV.DB_PASS,
     database: ENV.DB_NAME,
-    ssl: isLocal ? false : { rejectUnauthorized: false },
+    ssl:
+      !isLocal && ENV.DB_SSL_CA_CERT
+        ? {
+            rejectUnauthorized: false,
+            ca: ENV.DB_SSL_CA_CERT,
+          }
+        : false,
   },
   schema: {
     ...authSchema,
