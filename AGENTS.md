@@ -123,6 +123,7 @@ All commands are run using `bun`.
 ### Database (Drizzle ORM)
 
 - **Schema Definition**: Schemas are defined in `src/modules/[feature]/schemas/`. Each table gets its own file. An `index.ts` file in the same directory exports all schemas.
+- **Database Plugin**: The database instance and configuration are centrally managed in `src/plugins/database.plugin.ts`. Modules should import the `db` instance from this plugin rather than initializing Drizzle directly.
 - **Migrations**: Use `drizzle-kit` for generating and applying migrations. Migrations are stored in `database/migrations`. Never alter migration files manually after they are generated.
 - **Queries**: Repositories should encapsulate all database query logic. Controllers should call repository methods, not interact with `drizzle` directly.
 
@@ -141,7 +142,7 @@ All commands are run using `bun`.
 
 1.  **Create a new Module**:
     - Create a new folder in `src/modules/` for your feature.
-    - Inside, create a `schemas/` folder and add your schema definition files.
+    - Inside, create a `schemas/` folder and add your schema definition files. Create an `index.ts` to export all schemas from this directory.
     - Create `*.repository.ts` for data logic and `*.controller.ts` for API routes.
     - Add any specific `types.ts`.
 2.  **Add a new Route**:

@@ -19,7 +19,10 @@ FROM oven/bun:1.2.12-alpine AS production
 
 WORKDIR /app
 
-COPY --from=builder /app .
+COPY --from=builder /app/package.json /app/bun.lock /app/bunfig.toml /app/drizzle.config.ts ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/database ./database
+COPY --from=builder /app/src ./src
 
 RUN bun install --frozen-lockfile --production
 

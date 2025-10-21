@@ -25,8 +25,8 @@ CREATE TABLE "accounts" (
 	"id_token" varchar,
 	"scope" varchar,
 	"password" varchar,
-	"created_at" timestamp NOT NULL,
-	"updated_at" timestamp
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "sessions" (
@@ -53,8 +53,8 @@ CREATE TABLE "users" (
 	"email_verified" boolean NOT NULL,
 	"is_anonymous" boolean,
 	"image" varchar,
-	"created_at" timestamp NOT NULL,
-	"updated_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -63,8 +63,8 @@ CREATE TABLE "verifications" (
 	"identifier" varchar NOT NULL,
 	"value" varchar NOT NULL,
 	"expires_at" timestamp NOT NULL,
-	"created_at" timestamp,
-	"updated_at" timestamp
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

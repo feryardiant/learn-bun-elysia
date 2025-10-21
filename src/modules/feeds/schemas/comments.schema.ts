@@ -20,5 +20,8 @@ export const comments = pgTable(
 )
 
 export const commentPost = relations(comments, ({ one }) => ({
-  post: one(posts),
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
 }))
