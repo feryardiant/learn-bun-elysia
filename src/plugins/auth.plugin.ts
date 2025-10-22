@@ -14,6 +14,10 @@ export const auth = betterAuth({
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
 
+  trustedOrigins(request) {
+    return ENV.TRUSTED_ORIGINS
+  },
+
   onAPIError: {
     throw: true,
   },
