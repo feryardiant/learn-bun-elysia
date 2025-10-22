@@ -12,7 +12,7 @@
       "~/*": ["./src/*"],
       "package.json": ["./package.json"]
     },
-    "types": ["@types/bun"],
+    "types": ["@types/bun", "@types/node"],
 
     "jsx": "react-jsx",
 
