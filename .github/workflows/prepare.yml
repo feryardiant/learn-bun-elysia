@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       repo-name: ${{ steps.repo.outputs.repo-name }}
-      app-version: ${{ steps.target.outputs.app-version }}
+      app-version: ${{ steps.repo.outputs.app-version }}
       branch-name: ${{ steps.repo.outputs.branch-name }}
       image-tag: ${{ steps.target.outputs.image-tag }}
       deploy-env: ${{ steps.target.outputs.deploy-env }}
