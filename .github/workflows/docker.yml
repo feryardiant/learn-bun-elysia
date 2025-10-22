@@ -50,7 +50,6 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ inputs.image-tag }}
-            type=raw,value=${{ inputs.app-version }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
