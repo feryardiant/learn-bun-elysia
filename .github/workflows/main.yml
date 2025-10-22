@@ -93,6 +93,6 @@ jobs:
         with:
           owner-type: user
           token: ${{ secrets.PAT_PRUNE }}
-          repository_owner: ${{ github.repository_owner }}
+          repository-owner: ${{ github.repository_owner }}
           repository-name: ${{ github.repository }}
           delete-untagged: true
