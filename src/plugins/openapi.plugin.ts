@@ -4,7 +4,7 @@ import { ENV } from '~/config'
 import { auth } from './auth.plugin'
 import type { OpenAPIV3 } from 'openapi-types'
 
-export const SWAGGER_PATH = `${ENV.BASE_PATH || ''}/docs`
+export const SWAGGER_PATH = `${ENV.BASE_PATH}/docs`
 
 const { components, paths } = await auth.api.generateOpenAPISchema()
 
@@ -36,5 +36,10 @@ export const openapiPlugin = openapi({
     spec: {
       url: `${SWAGGER_PATH}/json`,
     },
+  },
+
+  exclude: {
+    staticFile: true,
+    paths: ['/*'],
   },
 })
