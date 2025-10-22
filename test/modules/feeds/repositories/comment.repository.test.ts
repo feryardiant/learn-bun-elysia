@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { posts, comments } from '~/modules/feeds'
 import { commentRepository } from '~/modules/feeds/repositories'
-import { db } from '~/plugins/database.plugin'
+import { db } from '~/plugins/db.plugin'
 
 describe('Comment Repository', () => {
   beforeAll(async () => {

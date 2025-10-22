@@ -1,4 +1,4 @@
-import { db } from '~/plugins/database.plugin'
+import { db } from '~/plugins/db.plugin'
 import { CommentRepository } from './comment.repository'
 import { PostRepository } from './post.repository'
 
