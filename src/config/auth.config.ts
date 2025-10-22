@@ -3,7 +3,8 @@ import { Type as t } from '@sinclair/typebox'
 export const authConfig = t.Object({
   AUTH_SECRET: t.String({ default: 'secret' }),
 
-  TRUSTED_ORIGINS: t.Transform(t.String({ default: '*' }))
+  TRUSTED_ORIGINS: t
+    .Transform(t.String({ default: '*' }))
     .Decode((value) => {
       let origins: string[] = []
 
@@ -28,7 +29,7 @@ export const authConfig = t.Object({
 
       return origins
     })
-    .Encode((value) => value.join(','))
+    .Encode((value) => value.join(',')),
 })
 
 function verifyOrigin(url: string) {
