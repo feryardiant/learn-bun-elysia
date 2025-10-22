@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       repo-name: ${{ steps.repo.outputs.repo-name }}
+      app-version: ${{ steps.repo.outputs.app-version }}
       branch-name: ${{ steps.repo.outputs.branch-name }}
       image-tag: ${{ steps.target.outputs.image-tag }}
       deploy-env: ${{ steps.target.outputs.deploy-env }}
@@ -53,13 +54,17 @@ jobs:
           # Extract repository branch name
           echo "branch-name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
 
+          # Extract version number from `package.json` file
+          echo "app-version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
+
       - name: Target
         id: target
         env:
           BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+          APP_VERSION: ${{ steps.repo.outputs.app-version }}
         run: |
           # Generate image tag with timestamp and commit
-          echo "image-tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "image-tag=${APP_VERSION}-${BRANCH_NAME}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
           DEPLOYABLE=true
 

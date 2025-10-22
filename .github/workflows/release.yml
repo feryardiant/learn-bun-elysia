@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  prepare:
+    name: Prepare
+    uses: ./.github/workflows/prepare.yml
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+  build-and-push:
+    name: Docker Images for ${{ matrix.service }}
+    needs: [prepare]
+    uses: ./.github/workflows/docker.yml
+    with:
+      image-tag: ${{ needs.prepare.outputs.app-version }}
+      repo-name: ${{ needs.prepare.outputs.repo-name }}
+      service-name: ${{ matrix.service }}
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [elysia-app]
+
+  publish:
+    name: Publish
+    uses: projek-xyz/actions/.github/workflows/release.yml@main

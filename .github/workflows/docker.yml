@@ -11,6 +11,10 @@ on:
         description: Docker image tag
         required: true
         type: string
+      app-version:
+        description: App Version
+        required: false
+        type: string
       repo-name:
         description: Repository name
         required: true
@@ -42,9 +46,14 @@ jobs:
           images: |
             ghcr.io/${{ inputs.repo-name }}
           tags: |
-            type=raw,value=${{ inputs.image-tag }}
             type=ref,event=branch
+            type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ inputs.image-tag }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=,format=long
 
       - name: Build and push Docker image
         id: push
