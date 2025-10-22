@@ -6,36 +6,38 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build ./src/index.ts --minify-whitespace --minify-syntax --target bun --outdir ./dist",
+    "build": "bun build ./src/index.ts --minify-whitespace --minify-syntax --sourcemap --target bun --outdir ./dist",
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --port 4000",
     "dev": "bun run --watch src/index.ts",
+    "dev:debug": "bun run --inspect=ws://localhost:6499 src/index.ts",
     "format": "biome format --write",
     "lint": "biome check",
     "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
     "start": "bun ./dist/index.js",
-    "test": "bun test"
+    "test:debug": "bun --inspect=ws://localhost:6499 test"
   },
   "dependencies": {
     "@elysiajs/openapi": "^1.4.11",
     "@elysiajs/static": "^1.4.4",
-    "better-auth": "^1.3.27",
+    "better-auth": "^1.3.29",
     "drizzle-orm": "^0.44.6",
     "drizzle-typebox": "^0.3.3",
-    "elysia": "^1.4.9",
-    "pino": "^10.0.0",
-    "pino-pretty": "^13.1.1"
+    "elysia": "^1.4.12",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
-    "bun-types": "1.2.20",
+    "@types/bun": "1.2.20",
+    "@types/node": "22.18.12",
     "drizzle-kit": "^0.31.5",
-    "lint-staged": "^16.2.5",
+    "lint-staged": "^16.2.6",
     "openapi-types": "^12.1.3",
     "pg": "^8.16.3",
     "simple-git-hooks": "^2.13.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@sinclair/typebox": "^0.34.41"

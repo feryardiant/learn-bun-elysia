@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-FROM oven/bun:1.2.12-alpine AS builder
+FROM oven/bun:1.2.20-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN bun run build
 
 # -----------------------------------
 # Stage 2: Production
-FROM oven/bun:1.2.12-alpine AS production
+FROM oven/bun:1.2.20-alpine AS production
 
 WORKDIR /app
 

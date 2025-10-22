@@ -8,10 +8,11 @@ import {
   type Mock,
 } from 'bun:test'
 import Elysia from 'elysia'
+import type { LogFn } from 'pino'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
-  let logDebug: Mock<(typeof logger)['debug']>
+  let logDebug: Mock<LogFn>
 
   const loggerApp = new Elysia()
     .use(loggerPlugin)
