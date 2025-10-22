@@ -64,7 +64,7 @@ jobs:
           APP_VERSION: ${{ steps.repo.outputs.app-version }}
         run: |
           # Generate image tag with timestamp and commit
-          echo "image-tag=${APP_VERSION}-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          echo "image-tag=${APP_VERSION}-${BRANCH_NAME}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
           DEPLOYABLE=true
 
