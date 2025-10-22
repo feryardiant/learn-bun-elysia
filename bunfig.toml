@@ -7,6 +7,11 @@ root = "./test"
 preload = ["./test/setup.ts"]
 coverageReporter  = ["text", "lcov"]
 coverageDir = "tmp/coverage"
+# Multiple patterns
+coveragePathIgnorePatterns = [
+  "test/**/*.ts",
+  "*.config.js"
+]
 
 [run]
 # Runtime configuration

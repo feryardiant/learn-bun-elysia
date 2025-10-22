@@ -6,16 +6,17 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build ./src/index.ts --minify-whitespace --minify-syntax --target bun --outdir ./dist",
+    "build": "bun build ./src/index.ts --minify-whitespace --minify-syntax --sourcemap --target bun --outdir ./dist",
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --port 4000",
     "dev": "bun run --watch src/index.ts",
+    "dev:debug": "bun run --inspect=ws://localhost:6499 src/index.ts",
     "format": "biome format --write",
     "lint": "biome check",
     "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
     "start": "bun ./dist/index.js",
-    "test": "bun test"
+    "test:debug": "bun --inspect=ws://localhost:6499 test"
   },
   "dependencies": {
     "@elysiajs/openapi": "^1.4.11",
