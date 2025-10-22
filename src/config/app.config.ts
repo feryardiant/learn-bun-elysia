@@ -1,5 +1,4 @@
 import { Type as t, type TLiteral } from '@sinclair/typebox'
-import { Value } from '@sinclair/typebox/value'
 import { name, version } from 'package.json'
 import { levels } from 'pino'
 
@@ -11,9 +10,14 @@ export const appConfig = t.Object({
 
   BASE_PATH: t.String({ default: '' }),
   LOG_LEVEL: t.Union(
-    Object.values(levels.labels).map((level) => {
-      return t.Literal(level)
-    }),
+    Object.values(levels.labels).map((level) => t.Literal(level)) as [
+      TLiteral<'fatal'>,
+      TLiteral<'error'>,
+      TLiteral<'warn'>,
+      TLiteral<'info'>,
+      TLiteral<'debug'>,
+      TLiteral<'trace'>,
+    ],
     { default: 'info' },
   ),
 })
