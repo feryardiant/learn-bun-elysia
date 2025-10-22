@@ -21,6 +21,8 @@ export const logger = pino({
   transport: { targets },
 })
 
+const ignorePathnames = ['docs', 'favicon.ico', 'health']
+
 export const loggerPlugin = () =>
   new Elysia({ name: 'logger' })
     .as('scoped')
@@ -28,11 +30,13 @@ export const loggerPlugin = () =>
     .onBeforeHandle(async ({ body, headers, request }) => {
       const { pathname, search } = new URL(request.url)
 
-      logger.debug(
-        {
-          headers: reduceHeaders(headers),
-          payload: body,
-        },
-        `Request received: ${request.method} ${pathname}${search}`,
-      )
+      if (!ignorePathnames.includes(pathname)) {
+        logger.debug(
+          {
+            headers: reduceHeaders(headers),
+            payload: body,
+          },
+          `Request received: ${request.method} ${pathname}${search}`,
+        )
+      }
     })
