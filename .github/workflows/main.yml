@@ -96,3 +96,4 @@ jobs:
           repository-owner: ${{ github.repository_owner }}
           repository-name: ${{ github.repository }}
           delete-untagged: true
+          keep-at-most: 20
