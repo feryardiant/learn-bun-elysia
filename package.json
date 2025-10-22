@@ -13,7 +13,7 @@
     "dev": "bun run --watch src/index.ts",
     "format": "biome format --write",
     "lint": "biome check",
-    "postinstall": "simple-git-hooks",
+    "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
     "start": "bun ./dist/index.js",
     "test": "bun test"
   },
