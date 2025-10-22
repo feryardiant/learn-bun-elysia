@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'bun:test'
 import { ENV } from '~/config'
-import { db } from '~/plugins/database.plugin'
+import { db } from '~/plugins/db.plugin'
 import { accounts, sessions, users, type User } from '~/modules/auth'
 import { sessionRepository, userRepository } from '~/modules/auth/repositories'
 import { authRoute } from '~/routes/auth.route'

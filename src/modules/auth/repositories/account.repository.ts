@@ -1,4 +1,4 @@
-import type { AppDatabase } from '~/plugins/database.plugin'
+import type { AppDatabase } from '~/plugins/db.plugin'
 
 export class AccountRepository {
   constructor(private readonly db: AppDatabase) {}

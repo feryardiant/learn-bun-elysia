@@ -1,4 +1,4 @@
-import { db } from '~/plugins/database.plugin'
+import { db } from '~/plugins/db.plugin'
 import { AccountRepository } from './account.repository'
 import { SessionRepository } from './session.repository'
 import { UserRepository } from './user.repository'
