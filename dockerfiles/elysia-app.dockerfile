@@ -19,6 +19,10 @@ FROM oven/bun:1.2.12-alpine AS production
 
 WORKDIR /app
 
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV CI=true
+
 COPY --from=builder /app/package.json /app/bun.lock /app/bunfig.toml /app/drizzle.config.ts ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/database ./database
@@ -30,9 +34,6 @@ RUN bun install --frozen-lockfile --production
 # https://github.com/drizzle-team/drizzle-orm/issues/4122
 # https://github.com/drizzle-team/drizzle-orm/pull/4109
 RUN bun add pg
-
-ENV NODE_ENV=production
-ENV PORT=3000
 
 ENV APP_NAME=
 ENV APP_VERSION=
