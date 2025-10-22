@@ -21,7 +21,7 @@ export const logger = pino({
   transport: { targets },
 })
 
-const ignorePathnames = ['docs', 'favicon.ico', 'health']
+const ignorePathnames = ['/', '/docs', '/docs/json', '/favicon.ico', '/health']
 
 export const loggerPlugin = () =>
   new Elysia({ name: 'logger' })
