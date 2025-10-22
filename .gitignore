@@ -30,6 +30,7 @@ coverage
 .idea
 .tool-versions
 .vscode
+.zed
 GEMINI.md
 
 # Local Docker Compose Files
