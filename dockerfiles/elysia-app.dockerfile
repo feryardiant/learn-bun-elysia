@@ -53,4 +53,4 @@ ENV DB_HOST=
 
 EXPOSE ${PORT}
 
-CMD ["bun", "dist/index.js"]
+CMD ["bun", "dist/server.js"]

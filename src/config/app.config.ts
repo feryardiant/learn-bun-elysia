@@ -5,8 +5,8 @@ import { levels } from 'pino'
 export const appConfig = t.Object({
   APP_NAME: t.String({ default: name }),
   APP_VERSION: t.String({ default: version }),
-  APP_URL: t.String({ format: 'uri', default: 'http://localhost:3000' }),
-  APP_DOMAIN: t.String({ format: 'hostname', default: 'localhost' }),
+  APP_URL: t.String({ default: 'http://localhost:3000' }),
+  APP_DOMAIN: t.String({ default: 'localhost' }),
 
   BASE_PATH: t.String({ default: '' }),
   LOG_LEVEL: t.Union(
