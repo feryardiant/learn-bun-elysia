@@ -10,6 +10,8 @@ services:
       - path: .env.staging
         required: false
     environment:
+      PORT: 3000
+      HOST: 0.0.0.0
       NODE_ENV: ${NODE_ENV:-staging}
       APP_NAME: ${APP_NAME:-}
       APP_VERSION: ${APP_VERSION:-}
