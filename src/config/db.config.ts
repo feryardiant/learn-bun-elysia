@@ -1,4 +1,4 @@
-import { Type as t } from '@sinclair/typebox'
+import { t } from 'elysia'
 
 export const dbConfig = t.Object({
   DB_USER: t.String({ default: 'postgres' }),
