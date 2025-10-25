@@ -1,7 +1,9 @@
+import type { DrizzleError } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/bun-sql'
-import { migrate } from 'drizzle-orm/bun-sql/migrator'
+import { migrate as migrator } from 'drizzle-orm/bun-sql/migrator'
 import { Elysia } from 'elysia'
 import { ENV, isLocal } from '~/config'
+import { logger } from './logger.plugin'
 
 import * as authSchema from '~/modules/auth/schemas'
 import * as feedSchema from '~/modules/feeds/schemas'
@@ -29,10 +31,19 @@ export const db = drizzle({
 
 export type AppDatabase = typeof db
 
-export async function migrator() {
-  await migrate(db, {
-    migrationsFolder: './database/migrations',
-  })
+export async function migrate() {
+  try {
+    await migrator(db, {
+      migrationsFolder: './database/migrations',
+    })
+
+    logger.info('Database migration completed')
+    return true
+  } catch (err) {
+    const error = err as DrizzleError
+    logger.error(error, 'Failed to migrate database')
+    return false
+  }
 }
 
 export const dbPlugin = new Elysia({ name: 'database' }).decorate({ db })

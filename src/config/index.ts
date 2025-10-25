@@ -1,4 +1,4 @@
-import { Type as t } from '@sinclair/typebox'
+import { t } from 'elysia'
 import { Value } from '@sinclair/typebox/value'
 import { authConfig } from './auth.config'
 import { dbConfig } from './db.config'
