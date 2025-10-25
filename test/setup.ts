@@ -1,15 +1,11 @@
 import { afterAll, beforeAll } from 'bun:test'
-import type { DrizzleError } from 'drizzle-orm'
-import { migrator } from '~/plugins/db.plugin'
+import { migrate } from '~/plugins/db.plugin'
 
 beforeAll(async () => {
-  try {
-    await migrator()
-  } catch (error) {
-    const err = error as DrizzleError
-    const errCode =
-      (err.cause as { code: string } | undefined)?.code ?? 'UNKNOWN'
-    console.error('Error during database migration:', errCode)
+  const migrated = await migrate()
+
+  if (!migrated) {
+    process.exit(1)
   }
 })
 
