@@ -3,10 +3,20 @@ import { description, version } from 'package.json'
 import { ENV } from './config'
 import { SWAGGER_PATH } from './plugins/openapi.plugin'
 import { app } from './app'
+import { migrate } from './plugins/db.plugin'
 
 const program = new Command(ENV.APP_NAME)
 
 program.version(ENV.APP_VERSION || version).description(description)
+
+program
+  .command('migrate')
+  .description('Run database migration')
+  .action(async () => {
+    const migrated = await migrate()
+
+    process.exit(migrated ? 0 : 1)
+  })
 
 program.action(() => {
   app.listen({ port: ENV.PORT, hostname: ENV.HOST }, ({ url }) => {
@@ -21,4 +31,4 @@ program.action(() => {
   })
 })
 
-program.parseAsync(process.argv)
+await program.parseAsync(process.argv)

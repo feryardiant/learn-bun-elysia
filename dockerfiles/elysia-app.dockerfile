@@ -32,11 +32,6 @@ COPY --from=builder /app/src ./src
 
 RUN bun install --frozen-lockfile --production
 
-# We still need to have postgres adapter for drizzle-kit to work
-# https://github.com/drizzle-team/drizzle-orm/issues/4122
-# https://github.com/drizzle-team/drizzle-orm/pull/4109
-RUN bun add pg
-
 ENV APP_NAME=
 ENV APP_VERSION=
 ENV APP_URL=http://localhost:3000
