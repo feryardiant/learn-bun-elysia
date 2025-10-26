@@ -43,7 +43,7 @@ COPY --from=build /app/server ./server
 COPY --from=build /app/public ./public
 
 # Runtime dependencies
-COPY --from=build /usr/lib/libstdc++.so.6.0.32 /usr/lib/libstdc++.so.6
+COPY --from=build /usr/lib/libstdc++.so.6.* /usr/lib/libstdc++.so.6
 COPY --from=build /usr/lib/libgcc_s.so.1 /usr/lib/libgcc_s.so.1
 
 ENV APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} LOG_LEVEL=${LOG_LEVEL}
