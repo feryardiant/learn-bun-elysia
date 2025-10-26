@@ -1,50 +1,38 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-FROM oven/bun:1.2.20-alpine AS builder
+ARG BUN_VERSION="1.2.20"
+ARG BASE_OS="alpine"
+
+FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 
 WORKDIR /app
 
-ENV CI=true
-
 COPY package.json bun.lock bunfig.toml ./
-RUN bun install --frozen-lockfile
+RUN CI=true bun install --frozen-lockfile
 
 COPY . .
 RUN bun run build
 
 # -----------------------------------
-# Stage 2: Production
-FROM oven/bun:1.2.20-alpine AS production
+# Stage 2: Runtime
+FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS runtime
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOST=0.0.0.0
-ENV CI=true
+ARG APP_NAME=""
+ARG APP_VERSION=""
 
-COPY --from=builder /app/package.json /app/bun.lock /app/bunfig.toml /app/drizzle.config.ts ./
-COPY --from=builder /app/database ./database
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/src ./src
+ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 
-RUN bun install --frozen-lockfile --production
+COPY --from=build /app/package.json /app/bun.lock /app/bunfig.toml ./
+COPY --from=build /app/database ./database
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public
 
-ENV APP_NAME=
-ENV APP_VERSION=
-ENV APP_URL=http://localhost:3000
-ENV APP_DOMAIN=localhost
-ENV BASE_PATH=
-ENV LOG_LEVEL=info
-ENV AUTH_SECRET=
+RUN CI=true bun install --frozen-lockfile --production
 
-ENV DB_USER=
-ENV DB_PASS=
-ENV DB_NAME=
-ENV DB_PORT=
-ENV DB_HOST=
+ENV APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} LOG_LEVEL=info
 
 EXPOSE ${PORT}
 
