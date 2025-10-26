@@ -1,6 +1,6 @@
 {
   "name": "learn-elysia",
-  "description": "Learing Elysia.js and Bun.js",
+  "description": "Learning Elysia.js and Bun.js",
   "version": "0.0.0",
   "module": "dist/server.js",
   "type": "module",
