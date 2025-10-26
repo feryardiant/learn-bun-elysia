@@ -59,6 +59,11 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
+          build-args: |
+            BUN_VERSION=${{ vars.BUN_VERSION || '1.2.22' }}
+            BASE_OS=${{ vars.BASE_OS || 'alpine' }}
+            APP_NAME=${{ inputs.service-name }}
+            APP_VERSION=${{ inputs.image-tag }}
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -73,4 +78,3 @@ jobs:
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
