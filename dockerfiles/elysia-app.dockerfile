@@ -9,7 +9,7 @@ FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 WORKDIR /app
 
 COPY package.json bun.lock bunfig.toml ./
-RUN CI=true bun install --frozen-lockfile
+RUN bun ci --no-cache --ignore-scripts
 
 COPY . .
 RUN bun run build
@@ -30,7 +30,7 @@ COPY --from=build /app/database ./database
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 
-RUN CI=true bun install --frozen-lockfile --production
+RUN bun ci --no-cache --ignore-scripts --production
 
 ENV APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} LOG_LEVEL=info
 
