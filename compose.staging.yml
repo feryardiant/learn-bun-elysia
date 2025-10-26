@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/feryardiant/learn-bun-elysia
+    image: ghcr.io/feryardiant/learn-bun-elysia:${STAGING_BRANCH:-latest}
     container_name: elysia-app
     ports:
       - ${FORWARD_PORT:-3000}:3000
