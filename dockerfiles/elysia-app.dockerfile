@@ -8,11 +8,12 @@ FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 
 WORKDIR /app
 
-COPY package.json bun.lock bunfig.toml ./
-RUN bun ci --no-cache --ignore-scripts
+ENV NODE_ENV=production
 
 COPY . .
-RUN bun run build
+
+RUN bun ci --no-cache --ignore-scripts
+RUN bun run build --production
 
 # -----------------------------------
 # Stage 2: Runtime
@@ -27,7 +28,9 @@ ARG LOG_LEVEL="info"
 ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 
 COPY --from=build /app/package.json /app/bun.lock /app/bunfig.toml ./
-COPY --from=build /app/database /app/dist /app/public ./
+COPY --from=build /app/database ./database
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public
 
 RUN bun ci --no-cache --ignore-scripts --production
 
