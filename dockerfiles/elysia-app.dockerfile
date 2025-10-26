@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-ARG BUN_VERSION="1.2.20"
+ARG BUN_VERSION="1.2.22"
 ARG BASE_OS="alpine"
 
 FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
@@ -22,17 +22,16 @@ WORKDIR /app
 
 ARG APP_NAME=""
 ARG APP_VERSION=""
+ARG LOG_LEVEL="info"
 
 ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
 
 COPY --from=build /app/package.json /app/bun.lock /app/bunfig.toml ./
-COPY --from=build /app/database ./database
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/public ./public
+COPY --from=build /app/database /app/dist /app/public ./
 
 RUN bun ci --no-cache --ignore-scripts --production
 
-ENV APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} LOG_LEVEL=info
+ENV APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} LOG_LEVEL=${LOG_LEVEL}
 
 EXPOSE ${PORT}
 
