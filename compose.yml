@@ -5,8 +5,11 @@ services:
       dockerfile: ./dockerfiles/elysia-app.dockerfile
       pull: false
       args:
+        APP_NAME: ${APP_NAME:-learn-elysia}
+        APP_VERSION: ${APP_VERSION:-0.0.0-local}
         BUN_VERSION: ${BUN_VERSION:-1.2.22}
         BASE_OS: ${BASE_OS:-alpine}
+        BASE_VERSION: ${BASE_VERSION:-3.22}
     image: ghcr.io/feryardiant/learn-bun-elysia:local
     container_name: elysia-app
     ports:
@@ -18,8 +21,6 @@ services:
       PORT: 3000
       HOST: 0.0.0.0
       NODE_ENV: ${NODE_ENV:-local}
-      APP_NAME: ${APP_NAME:-}
-      APP_VERSION: ${APP_VERSION:-}
       APP_URL: ${APP_URL:-http://localhost:${FORWARD_PORT:-3000}}
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
       BASE_PATH: ${BASE_PATH:-}

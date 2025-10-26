@@ -1,8 +1,8 @@
 {
-  "name": "drizzle-stable",
-  "description": "Something",
+  "name": "learn-elysia",
+  "description": "Learning Elysia.js and Bun.js",
   "version": "0.0.0",
-  "module": "src/index.ts",
+  "module": "dist/server.js",
   "type": "module",
   "private": true,
   "scripts": {
@@ -10,8 +10,8 @@
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --port 4000",
-    "dev": "bun run --watch src/index.ts",
-    "dev:debug": "bun run --inspect=ws://localhost:6499 src/index.ts",
+    "dev": "bun run --watch src/server.ts",
+    "dev:debug": "bun run --inspect=ws://localhost:6499 src/server.ts",
     "format": "biome format --write",
     "lint": "biome check",
     "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
