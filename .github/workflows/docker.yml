@@ -60,8 +60,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           build-args: |
-            BUN_VERSION=${{ inputs.bun-version }}
-            BASE_OS=${{ inputs.base-os }}
+            BUN_VERSION=${{ vars.BUN_VERSION || '1.2.22' }}
+            BASE_OS=${{ vars.BASE_OS || 'alpine' }}
             APP_NAME=${{ inputs.service-name }}
             APP_VERSION=${{ inputs.image-tag }}
           context: .
