@@ -73,7 +73,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
 
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v3
         if: ${{ github.event_name == 'push' }}
         with:
           subject-name: ghcr.io/${{ github.repository }}
