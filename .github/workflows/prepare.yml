@@ -4,16 +4,16 @@ run-name: 'prepare: environment for `${{ github.ref_name }}`'
 on:
   workflow_call:
     outputs:
+      deployable:
+        value: ${{ jobs.environments.outputs.deployable }}
+      deploy-env:
+        value: ${{ jobs.environments.outputs.deploy-env }}
+      image-tag:
+        value: ${{ jobs.environments.outputs.image-tag }}
       repo-name:
         value: ${{ jobs.environments.outputs.repo-name }}
       repo-branch:
         value: ${{ jobs.environments.outputs.branch-name }}
-      image-tag:
-        value: ${{ jobs.environments.outputs.image-tag }}
-      deploy-env:
-        value: ${{ jobs.environments.outputs.deploy-env }}
-      deployable:
-        value: ${{ jobs.environments.outputs.deployable }}
 
 jobs:
   labels:
@@ -34,12 +34,12 @@ jobs:
     name: Environments
     runs-on: ubuntu-latest
     outputs:
-      repo-name: ${{ steps.repo.outputs.repo-name }}
       app-version: ${{ steps.repo.outputs.app-version }}
       branch-name: ${{ steps.repo.outputs.branch-name }}
-      image-tag: ${{ steps.target.outputs.image-tag }}
-      deploy-env: ${{ steps.target.outputs.deploy-env }}
-      deployable: ${{ steps.target.outputs.deployable }}
+      deployable: ${{ steps.deploy.outputs.deployable }}
+      deploy-env: ${{ steps.deploy.outputs.deploy-env }}
+      image-tag: ${{ steps.deploy.outputs.image-tag }}
+      repo-name: ${{ steps.repo.outputs.repo-name }}
 
     steps:
       - name: Checkout code
@@ -57,25 +57,24 @@ jobs:
           # Extract version number from `package.json` file
           echo "app-version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
 
-      - name: Target
-        id: target
+      - name: Deployment
+        id: deploy
         env:
-          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
           APP_VERSION: ${{ steps.repo.outputs.app-version }}
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+          DEPLOYABLE: 1
         run: |
           # Generate image tag with timestamp and commit
           echo "image-tag=${APP_VERSION}-${BRANCH_NAME}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
-          DEPLOYABLE=true
-
           # Set deployment environment
-          if [[ "$BRANCH_NAME" == "main" ]]; then
-            echo "deploy-env=staging" >> $GITHUB_OUTPUT
-          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "deploy-env=${{ inputs.deploy-env }}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "deploy-env=staging" >> $GITHUB_OUTPUT
           else
             echo "deploy-env=development" >> $GITHUB_OUTPUT
-            DEPLOYABLE=false
+            DEPLOYABLE=0
           fi
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
