@@ -123,8 +123,6 @@ jobs:
               if (workflow_runs.length > 0) {
                 prev_sha = workflow_runs[0].head_commit.id;
                 prev_msg = workflow_runs[0].head_commit.message;
-
-                console.log(`Using previous run on ${branch}: ${prev_tag}`);
               } else {
                 branch = 'main'
                 const { data: { workflow_runs: workflow_main } } = await github.rest.actions.listWorkflowRuns({
@@ -146,7 +144,6 @@ jobs:
                 prev_msg = workflow_main[0].head_commit.message;
 
                 console.log('No workflow runs found');
-                console.log(`Using latest run on main: ${prev_tag}`);
               }
 
               const prev_tag = `${version}-${branch}.${prev_sha.substring(0, 8)}`;
@@ -155,6 +152,7 @@ jobs:
               core.setOutput('prev-msg', prev_msg);
               core.setOutput('prev-tag', prev_tag);
 
+              console.log(`Using previous run on ${branch}: ${prev_tag}`);
               console.log(workflow_runs);
             } catch (error) {
               core.setFailed(`Failed to get previous run: ${error.message}`);
