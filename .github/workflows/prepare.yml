@@ -12,6 +12,10 @@ on:
         value: ${{ jobs.environments.outputs.deploy-env }}
       image-tag:
         value: ${{ jobs.environments.outputs.image-tag }}
+      prev-sha:
+        value: ${{ jobs.environments.outputs.prev-sha }}
+      prev-msg:
+        value: ${{ jobs.environments.outputs.prev-msg }}
       prev-tag:
         value: ${{ jobs.environments.outputs.prev-tag }}
       repo-name:
@@ -97,15 +101,13 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const version = process.env.APP_VERSION;
-            const branch = process.env.BRANCH_NAME;
+            let branch = process.env.BRANCH_NAME;
 
             try {
               const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({ owner, repo });
               const workflow = workflows.find(w => w.name === process.env.GITHUB_WORKFLOW);
 
-              if (!workflow) {
-                return;
-              }
+              if (!workflow) return;
 
               const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
                 branch,
@@ -116,9 +118,17 @@ jobs:
                 repo,
               });
 
-              if (workflow_runs.length === 0) {
+              let prev_sha, prev_msg;
+
+              if (workflow_runs.length > 0) {
+                prev_sha = workflow_runs[0].head_commit.id;
+                prev_msg = workflow_runs[0].head_commit.message;
+
+                console.log(`Using previous run on ${branch}: ${prev_tag}`);
+              } else {
+                branch = 'main'
                 const { data: { workflow_runs: workflow_main } } = await github.rest.actions.listWorkflowRuns({
-                  branch: 'main',
+                  branch,
                   workflow_id: workflow.id,
                   status: 'completed',
                   conclusion: 'success',
@@ -132,27 +142,20 @@ jobs:
                   return;
                 }
 
-                const main_short_sha = workflow_main[0].head_commit.id.substring(0, 8);
-
-                // Note: Assuming version is compatible.
-                prev_tag = `${version}-main.${main_short_sha}`;
+                prev_sha = workflow_main[0].head_commit.id;
+                prev_msg = workflow_main[0].head_commit.message;
 
                 console.log('No workflow runs found');
                 console.log(`Using latest run on main: ${prev_tag}`);
-                return;
               }
 
-              const prev_sha = workflow_runs[0].head_commit.id;
-              const prev_msg = workflow_runs[0].head_commit.message;
-              const short_sha = prev_sha.substring(0, 8);
-
-              prev_tag = `${version}-${branch}.${short_sha}`;
+              const prev_tag = `${version}-${branch}.${prev_sha.substring(0, 8)}`;
 
               core.setOutput('prev-sha', prev_sha);
               core.setOutput('prev-msg', prev_msg);
+              core.setOutput('prev-tag', prev_tag);
 
               console.log(workflow_runs);
-              console.log(`Using previous run on ${branch}: ${prev_tag}`);
             } catch (error) {
               core.setFailed(`Failed to get previous run: ${error.message}`);
             }
@@ -160,33 +163,34 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: actions/github-script@v7
+        if: steps.previous-run.outputs.prev-sha != ''
         env:
-          PREVIOUS_SHA: ${{ steps.previous-run.outputs.commit-hash }}
+          PREVIOUS_SHA: ${{ steps.previous-run.outputs.prev-sha }}
           CURRENT_SHA: ${{ github.sha }}
         with:
           script: |
-            const previousSha = process.env.PREVIOUS_SHA;
-            const currentSha = process.env.CURRENT_SHA;
+            const prev_sha = process.env.PREVIOUS_SHA;
+            const curr_sha = process.env.CURRENT_SHA;
 
-            if (!previousSha) {
-              console.log('No previous run found. Skipping diff.'');
+            if (!prev_sha) {
+              console.log('No previous run found. Skipping diff.');
               return;
             }
 
             try {
-              await exec.exec('git', ['fetch', 'origin', previousSha, '--depth=1']);
+              await exec.exec('git', ['fetch', 'origin', prev_sha, '--depth=1']);
 
-              let diffOutput = '';
-              await exec.exec('git', ['diff', '--name-only', previousSha, currentSha], {
+              let diffs = '';
+              await exec.exec('git', ['diff', '--name-only', prev_sha, curr_sha], {
                 listeners: {
                   stdout: (data) => {
-                    diffOutput += data.toString();
+                    diffs += data.toString();
                   }
                 }
               });
 
-              console.log('Changed files:'', diffOutput);
-              core.setOutput('files', diffOutput.trim());
+              console.log('Changed files:', diffs);
+              core.setOutput('files', diffs.trim());
             } catch (error) {
               core.setFailed(`Failed to get changed files: ${error.message}`);
             }
@@ -198,8 +202,15 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
         with:
           script: |
-            const changedFiles = process.env.CHANGED_FILES || '';
-            const files = changedFiles.split('\n').map(f => f.trim()).filter(f => f.length > 0);
+            const changed_files = process.env.CHANGED_FILES || '';
+            const files = changed_files.split('\n').map(f => f.trim()).filter(f => f.length > 0);
+
+            if (files.length === 0) {
+              console.log('No files changed');
+              core.setOutput('buildable',  0);
+              return;
+            }
+
             const patterns = [
               /^database\//,
               /^dockerfiles\//,
