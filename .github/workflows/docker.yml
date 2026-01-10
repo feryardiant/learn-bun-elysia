@@ -28,7 +28,7 @@ jobs:
   build-and-push:
     name: Build and Push
     runs-on: ubuntu-latest
-    if: ${{ inputs.buildable == 1 }}
+    if: ${{ inputs.buildable }}
 
     steps:
       - name: Checkout code
