@@ -7,6 +7,10 @@ on:
         description: App Version
         required: false
         type: string
+      buildable:
+        description: Whether we need to build new image
+        required: false
+        type: number
       image-name:
         description: Docker image name
         required: true
@@ -24,6 +28,7 @@ jobs:
   build-and-push:
     name: Build and Push
     runs-on: ubuntu-latest
+    if: ${{ inputs.buildable == 1 }}
 
     steps:
       - name: Checkout code

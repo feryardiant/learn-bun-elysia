@@ -66,6 +66,7 @@ jobs:
     if: needs.tests.result == 'success'
     uses: ./.github/workflows/docker.yml
     with:
+      buildable: ${{ needs.prepare.outputs.buildable }}
       image-name: ${{ matrix.image-name }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
