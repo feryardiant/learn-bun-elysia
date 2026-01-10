@@ -111,3 +111,29 @@ jobs:
             } catch (error) {
               core.warning(`Failed to get previous run: ${error.message}`);
             }
+
+      - name: Get changed files
+        id: changed-files
+        env:
+          PREVIOUS_SHA: ${{ steps.previous-run.outputs.commit-hash }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$PREVIOUS_SHA" ]; then
+            echo "No previous run found. Skipping diff."
+            exit 0
+          fi
+
+          # Fetch previous commit
+          git fetch origin $PREVIOUS_SHA --depth=1
+
+          # Get changed files
+          CHANGES=$(git diff --name-only $PREVIOUS_SHA $CURRENT_SHA)
+
+          echo "Changed files:"
+          echo "$CHANGES"
+
+          {
+            echo "files<<EOF"
+            echo "$CHANGES"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
