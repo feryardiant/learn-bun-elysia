@@ -78,3 +78,42 @@ jobs:
           fi
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
+
+      - name: Get previous run
+        id: previous-run
+        uses: actions/github-script@v7
+        env:
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = process.env.BRANCH_NAME;
+            const workflowName = process.env.GITHUB_WORKFLOW;
+
+            try {
+              const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({
+                owner,
+                repo,
+              });
+
+              const workflow = workflows.find(w => w.name === workflowName);
+
+              if (workflow) {
+                const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
+                  branch,
+                  owner,
+                  repo,
+                  workflow_id: workflow.id,
+                  status: 'completed',
+                  per_page: 1,
+                });
+
+                if (workflow_runs.length > 0) {
+                  console.log(workflow_runs)
+                  core.setOutput('commit-hash', workflow_runs[0].head_sha);
+                }
+              }
+            } catch (error) {
+              core.warning(`Failed to get previous run: ${error.message}`);
+            }
