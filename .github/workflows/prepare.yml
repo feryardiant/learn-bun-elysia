@@ -114,26 +114,34 @@ jobs:
 
       - name: Get changed files
         id: changed-files
+        uses: actions/github-script@v7
         env:
           PREVIOUS_SHA: ${{ steps.previous-run.outputs.commit-hash }}
           CURRENT_SHA: ${{ github.sha }}
-        run: |
-          if [ -z "$PREVIOUS_SHA" ]; then
-            echo "No previous run found. Skipping diff."
-            exit 0
-          fi
+        with:
+          script: |
+            const previousSha = process.env.PREVIOUS_SHA;
+            const currentSha = process.env.CURRENT_SHA;
 
-          # Fetch previous commit
-          git fetch origin $PREVIOUS_SHA --depth=1
+            if (!previousSha) {
+              console.log("No previous run found. Skipping diff.");
+              return;
+            }
 
-          # Get changed files
-          CHANGES=$(git diff --name-only $PREVIOUS_SHA $CURRENT_SHA)
+            try {
+              await exec.exec('git', ['fetch', 'origin', previousSha, '--depth=1']);
 
-          echo "Changed files:"
-          echo "$CHANGES"
+              let diffOutput = '';
+              await exec.exec('git', ['diff', '--name-only', previousSha, currentSha], {
+                listeners: {
+                  stdout: (data) => {
+                    diffOutput += data.toString();
+                  }
+                }
+              });
 
-          {
-            echo "files<<EOF"
-            echo "$CHANGES"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+              console.log("Changed files:", diffOutput);
+              core.setOutput('files', diffOutput.trim());
+            } catch (error) {
+              core.setFailed(`Failed to get changed files: ${error.message}`);
+            }
