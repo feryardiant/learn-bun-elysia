@@ -10,7 +10,7 @@ on:
       buildable:
         description: Whether we need to build new image
         required: false
-        type: number
+        type: boolean
       image-name:
         description: Docker image name
         required: true
