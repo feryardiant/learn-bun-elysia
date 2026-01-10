@@ -109,7 +109,7 @@ jobs:
                 }
               }
             } catch (error) {
-              core.warning(`Failed to get previous run: ${error.message}`);
+              core.setFailed(`Failed to get previous run: ${error.message}`);
             }
 
       - name: Get changed files
@@ -124,7 +124,7 @@ jobs:
             const currentSha = process.env.CURRENT_SHA;
 
             if (!previousSha) {
-              console.log("No previous run found. Skipping diff.");
+              console.log('No previous run found. Skipping diff.'');
               return;
             }
 
@@ -140,7 +140,7 @@ jobs:
                 }
               });
 
-              console.log("Changed files:", diffOutput);
+              console.log('Changed files:'', diffOutput);
               core.setOutput('files', diffOutput.trim());
             } catch (error) {
               core.setFailed(`Failed to get changed files: ${error.message}`);
