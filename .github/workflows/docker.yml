@@ -127,34 +127,37 @@ jobs:
           - 3000:3000
 
     steps:
-      - name: Check Log
-        run: |
-          docker ps --filter id=${{ job.services.app.id }} --format "{{.ID}} {{.Status}}"
-          docker logs ${{ job.services.app.id }}
-          docker exec ${{ job.services.app.id }} ps aux
-          docker exec ${{ job.services.app.id }} ss -tulpn || echo "ss not found"
-
       - name: Health check
         env:
-          APP_PORT: ${{ job.services.app.ports['3000'] }}
+          APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
         run: |
-          echo `curl -v http://localhost:3000/health`
-          # HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
-          # if [ "$HTTP_CODE" -eq 200 ]; then
-          #   echo "Health check passed"
-          #   exit 0
-          # else
-          #   echo "Health check failed with status $HTTP_CODE"
-          #   exit 1
-          # fi
+          docker exec ${{ job.services.app.id }} ps aux
+          docker logs ${{ job.services.app.id }}
+          docker ps --filter id=${{ job.services.app.id }} --format "{{.ID}} {{.Status}}"
 
-      - name: Compare images
-        if: false
-        env:
-          PREVIOUS_IMAGE: ${{ inputs.repo-name }}:${{ inputs.prev-image-tag }}
-          CURRENT_IMAGE: ${{ inputs.repo-name }}:${{ inputs.image-tag }}
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/health)
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "Health check passed"
+            exit 0
+          else
+            echo "Health check failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ vars.BUN_VERSION || '1.2.22' }}
+
+      - name: Generate API schema
         run: |
-          docker image inspect "ghcr.io/$CURRENT_IMAGE" > current.json
-          docker image inspect "ghcr.io/$PREVIOUS_IMAGE" > previous.json
-          docker image diff "ghcr.io/$CURRENT_IMAGE" "ghcr.io/$PREVIOUS_IMAGE" > diff.txt
-          echo "::set-output name=diff::$(cat diff.txt)"
+          bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
+
+      - name: Upload schema artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: api-schema_${{ inputs.image-tag }}
+          path: ${{ inputs.image-name }}.schema.d.ts
+          retention-days: 30
+          overwrite: true
