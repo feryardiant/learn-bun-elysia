@@ -91,7 +91,7 @@ jobs:
 
   build-check:
     name: Check build
-    needs: [build-and-push]
+    # needs: [build-and-push]
     runs-on: ubuntu-latest
 
     env:
