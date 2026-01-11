@@ -91,6 +91,9 @@ jobs:
     needs: [build-push]
     runs-on: ubuntu-latest
 
+    permissions:
+      packages: read
+
     env:
       DB_NAME: ${{ github.repository_owner }}
       DB_USER: ${{ github.repository_owner }}
@@ -112,6 +115,9 @@ jobs:
           --health-retries=3
       app:
         image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
         env:
           NODE_ENV: staging
           APP_SECRET: not-secure-secret
@@ -128,19 +134,34 @@ jobs:
         env:
           APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
         run: |
-          docker exec ${{ job.services.app.id }} ps aux
-          docker logs ${{ job.services.app.id }}
-          docker ps --filter id=${{ job.services.app.id }} --format "{{.ID}} {{.Status}}"
+          set -euo pipefail
+
+          echo "Waiting for application to start..."
+          TIMEOUT=5
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            if docker logs ${{ job.services.app.id }} 2>&1 | grep -q "$APP_URL"; then
+              break
+            fi
+
+            sleep 1
+            ELAPSED=$((ELAPSED+1))
+          done
+
+          if [ $ELAPSED -eq $TIMEOUT ]; then
+            echo "Timeout waiting for application to start"
+            docker logs ${{ job.services.app.id }}
+            exit 1
+          fi
 
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/health)
 
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "Health check failed with status $HTTP_CODE"
+          if [ "${HTTP_CODE:-0}" -ne 200 ]; then
+            echo "Health check failed with status ${HTTP_CODE:-unset}"
             exit 1
           fi
 
           echo "APP_URL=$APP_URL" >> $GITHUB_ENV
-
           echo "Health check passed"
 
       - name: Set up bun
