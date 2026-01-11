@@ -139,22 +139,22 @@ jobs:
               const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({ owner, repo });
               const workflow = workflows.find(w => w.name === process.env.GITHUB_WORKFLOW);
 
-              console.log(workflows)
-
               if (!workflow) return;
 
               const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
                 branch,
                 workflow_id: workflow.id,
                 status: 'completed',
-                conclusion: 'success',
-                per_page: 1,
+                // conclusion: 'success',
+                // per_page: 1,
                 owner,
                 repo,
               });
 
               let prev_sha, prev_msg;
               let image_slug = 'main';
+
+              console.log(workflow_runs);
 
               if (workflow_runs.length > 0) {
                 prev_sha = workflow_runs[0].head_commit.id;
