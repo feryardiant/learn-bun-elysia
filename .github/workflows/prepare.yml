@@ -208,7 +208,7 @@ jobs:
             const curr_sha = process.env.CURRENT_SHA.substring(0, 8);
 
             try {
-              await exec.exec('git', ['fetch', 'origin', prev_sha, '--depth=1', '--quiet']);
+              await exec.exec('git', ['fetch', 'origin', process.env.PREVIOUS_SHA, '--quiet']);
 
               let diffs = '';
               await exec.exec('git', ['diff', '--name-only', prev_sha, curr_sha], {
