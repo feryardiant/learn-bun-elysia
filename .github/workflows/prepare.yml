@@ -100,7 +100,7 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const package_name = process.env.IMAGE_NAME;
+            const [, package_name] = process.env.IMAGE_NAME.split('/');
 
             try {
               /**
