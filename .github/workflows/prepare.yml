@@ -91,6 +91,28 @@ jobs:
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
 
+      - name: Get package info
+        id: previous-pkgs
+        uses: actions/github-script@v7
+        env:
+          IMAGE_NAME: ${{ steps.repo.outputs.repo-name }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const package_name = process.env.IMAGE_NAME;
+
+            try {
+              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                package_type: 'docker',
+                package_name,
+                org: owner,
+              })
+
+              console.log(data)
+            } catch (error) {
+              core.setFailed(`Failed to get previous run: ${error.message}`);
+            }
+
       - name: Get sha from previous run
         id: previous-run
         uses: actions/github-script@v7
