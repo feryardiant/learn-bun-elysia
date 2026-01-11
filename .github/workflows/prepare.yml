@@ -103,7 +103,7 @@ jobs:
         uses: actions/github-script@v7
         continue-on-error: true
         env:
-          IMAGE_PREFIX: ${{ steps.repo.outputs.image-prefix }}
+          IMAGE_PREFIX: ${{ steps.deploy.outputs.image-prefix }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -124,9 +124,12 @@ jobs:
                 ...metadata.container
               })).filter(({ tags }) => tags.length > 0 && tags.some(tag => tag.startsWith(prefix)));
 
-              const [commit_sha, prev_tag] = packages[0].tags
+              if (packages.length === 0) {
+                core.info('No previous image found');
+                return;
+              }
 
-              core.setOutput('prev-image-tag', prev_tag);
+              core.setOutput('prev-image-tag', packages[0].tags.at(-1));
             } catch (error) {
               core.setFailed(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
             }
