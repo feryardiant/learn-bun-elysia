@@ -110,12 +110,12 @@ jobs:
                 package_type: 'docker',
                 package_name,
                 username: owner,
-              })
+              });
 
-              console.log(data)
+              console.log(data);
             } catch (error) {
               console.log(`Failed to get package ${package_name} in ${owner}: ${error.message}`);
-              console.error(error)
+              console.error(error);
             }
 
       - name: Get sha from previous run
@@ -140,6 +140,7 @@ jobs:
                 branch,
                 workflow_id: workflow.id,
                 status: 'completed',
+                conclusion: 'success',
                 per_page: 1,
                 owner,
                 repo,
@@ -151,7 +152,7 @@ jobs:
               if (workflow_runs.length > 0) {
                 prev_sha = workflow_runs[0].head_commit.id;
                 prev_msg = workflow_runs[0].head_commit.message;
-                image_slug = branch.replace('/', '-')
+                image_slug = branch.replace('/', '-');
               } else {
                 const { data: { workflow_runs: workflow_main } } = await github.rest.actions.listWorkflowRuns({
                   branch: image_slug,
