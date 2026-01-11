@@ -114,7 +114,7 @@ jobs:
 
               console.log(data.map(({ metadata, ...pkg }) => ({
                 ...pkg,
-                metadata: metadata.container
+                ...metadata.container
               })));
             } catch (error) {
               console.log(`Failed to get package ${package_name} in ${owner}: ${error.message}`);
