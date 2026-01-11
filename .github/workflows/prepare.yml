@@ -132,11 +132,29 @@ jobs:
                   });
                 }
 
-                has_next = data.length === per_page
-                page++
+                has_next = data.length === per_page;
+                page++;
               } while (has_next);
 
-              console.log(packages);
+              const reduced = packages.reduce((out, pkg) => {
+                let tag = 'untagged'
+
+                if (pkg.tags.length > 0) {
+                  const image_tag = pkg.tags.find(tag =>  /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
+                  tag = image_tag.substring(0, image_tag.lastIndexOf('.'))
+                }
+
+                out[tag] = out[tag] || [];
+                out[tag].push(pkg);
+
+                return out;
+              }, {})
+
+              for (const [tag, pkgs] of Object.entries(reduced)) {
+                console.log('Tag:', tag, ':', pkgs.length);
+              }
+
+              // console.log(reduced);
             } catch (error) {
               console.error(error);
             }
