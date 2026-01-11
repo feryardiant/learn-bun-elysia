@@ -50,7 +50,7 @@ jobs:
       image-tag: ${{ steps.deploy.outputs.image-tag }}
       prev-sha: ${{ steps.previous-run.outputs.prev-sha }}
       prev-msg: ${{ steps.previous-run.outputs.prev-msg }}
-      prev-tag: ${{ steps.previous-run.outputs.prev-tag }}
+      prev-tag: ${{ steps.previous-pkg.outputs.prev-tag }}
       repo-name: ${{ steps.repo.outputs.repo-name }}
 
     steps:
@@ -91,16 +91,21 @@ jobs:
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
 
-      - name: Get package info
-        id: previous-pkgs
+      - name: Get previous package
+        id: previous-pkg
         uses: actions/github-script@v7
         continue-on-error: true
         env:
           IMAGE_NAME: ${{ steps.repo.outputs.repo-name }}
+          APP_VERSION: ${{ steps.repo.outputs.app-version }}
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
         with:
           script: |
             const { owner, repo } = context.repo;
             const [, package_name] = process.env.IMAGE_NAME.split('/');
+            const branch = process.env.BRANCH_NAME;
+            const version = process.env.APP_VERSION;
+            const prefix = `${version}-${branch.replace('/', '-')}`;
 
             try {
               /**
@@ -115,11 +120,14 @@ jobs:
               const packages = data.map(({ metadata, ...pkg }) => ({
                 ...pkg,
                 ...metadata.container
-              })).filter(pkg => pkg.tags.length > 0)
+              })).filter(({ tags }) => tags.length > 0 && tags.some(tag => tag.startsWith(prefix)));
 
-              console.log(packages);
+              const [commit_sha, prev_tag] = packages[0].tags
+
+              core.setOutput('prev-tag', prev_tag);
+              console.log(packages, owner, repo);
             } catch (error) {
-              console.log(`Failed to get package ${package_name} in ${owner}: ${error.message}`);
+              console.log(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
               console.error(error);
             }
 
