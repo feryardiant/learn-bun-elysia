@@ -104,27 +104,35 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            let pkg_count = 50
+            const per_page = 50
             let page = 1
 
             try {
-              /**
-               * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
-               */
-              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
-                package_type: 'container',
-                package_name: repo,
-                per_page: pkg_count,
-                page,
-              });
+              const packages = []
 
-              const packages = data.map(({ metadata, ...pkg }) => ({
-                id: pkg.id,
-                url: pkg.url,
-                digest: pkg.name,
-                ...metadata.container,
-                created_at: pkg.created_at,
-              }));
+              do {
+                /**
+                * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
+                */
+                const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
+                  package_type: 'container',
+                  package_name: repo,
+                  per_page,
+                  page,
+                });
+
+                for (const { metadata, ...pkg } of data) {
+                  packages.push({
+                    id: pkg.id,
+                    url: pkg.url,
+                    digest: pkg.name,
+                    ...metadata.container,
+                    created_at: pkg.created_at,
+                  });
+                }
+
+                page++
+              } while (data.length === per_page);
 
               console.log(packages);
             } catch (error) {
