@@ -15,6 +15,10 @@ on:
         description: Docker image name
         required: true
         type: string
+      image-prefix:
+        description: Docker image prefix
+        required: true
+        type: string
       image-tag:
         description: Docker image tag
         required: true
@@ -42,7 +46,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
       - name: Docker meta
         id: meta
@@ -55,6 +59,7 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ inputs.image-tag }}
+            type=raw,value=${{ inputs.image-prefix }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
