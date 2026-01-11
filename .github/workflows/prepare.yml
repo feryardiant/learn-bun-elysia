@@ -107,7 +107,7 @@ jobs:
                * @see https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-package-owned-by-org
                */
               const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
-                package_type: 'docker',
+                package_type: 'container',
                 package_name,
                 username: owner,
               });
