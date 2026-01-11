@@ -112,10 +112,12 @@ jobs:
                 username: owner,
               });
 
-              console.log(data.map(({ metadata, ...pkg }) => ({
+              const packages = data.map(({ metadata, ...pkg }) => ({
                 ...pkg,
                 ...metadata.container
-              })));
+              })).filter(pkg => pkg.tags.length > 0)
+
+              console.log(packages);
             } catch (error) {
               console.log(`Failed to get package ${package_name} in ${owner}: ${error.message}`);
               console.error(error);
