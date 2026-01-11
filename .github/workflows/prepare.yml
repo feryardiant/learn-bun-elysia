@@ -141,7 +141,7 @@ jobs:
 
               if (!workflow) return;
 
-              const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
+              const { data: { workflow_runs: prev_runs } } = await github.rest.actions.listWorkflowRuns({
                 branch,
                 workflow_id: workflow.id,
                 status: 'completed',
@@ -154,14 +154,29 @@ jobs:
               let prev_sha, prev_msg;
               let image_slug = 'main';
 
-              console.log(workflow_runs);
+              const success_runs = prev_runs.filter(run => run.conclusion === 'success').map(run => {
+                return {
+                  id: run.id,
+                  event: run.event,
+                  url: run.url,
+                  run_number: run.run_number,
+                  head_branch: run.head_branch,
+                  head_sha: run.head_commit.id,
+                  head_message: run.head_commit.message,
+                  repo_name: run.repository.name,
+                  owner_login: run.repository.owner.login,
+                  owner_type: run.repository.owner.type,
+                }
+              });
 
-              if (workflow_runs.length > 0) {
-                prev_sha = workflow_runs[0].head_commit.id;
-                prev_msg = workflow_runs[0].head_commit.message;
+              console.log(success_runs);
+
+              if (prev_runs.length > 0) {
+                prev_sha = prev_runs[0].head_commit.id;
+                prev_msg = prev_runs[0].head_commit.message;
                 image_slug = branch.replace('/', '-');
               } else {
-                const { data: { workflow_runs: workflow_main } } = await github.rest.actions.listWorkflowRuns({
+                const { data: { workflow_runs: main_runs } } = await github.rest.actions.listWorkflowRuns({
                   branch: image_slug,
                   workflow_id: workflow.id,
                   status: 'completed',
@@ -171,13 +186,13 @@ jobs:
                   repo,
                 });
 
-                if (workflow_main.length > 0) {
+                if (main_runs.length > 0) {
                   core.info('No successful run found on main.');
                   return;
                 }
 
-                prev_sha = workflow_main[0].head_commit.id;
-                prev_msg = workflow_main[0].head_commit.message;
+                prev_sha = main_runs[0].head_commit.id;
+                prev_msg = main_runs[0].head_commit.message;
 
                 core.info('No workflow runs found');
               }
