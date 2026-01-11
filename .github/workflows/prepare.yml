@@ -123,7 +123,7 @@ jobs:
               console.error(error);
             }
 
-      - name: Get sha from previous run
+      - name: Get commit sha from previous successful run
         id: previous-run
         uses: actions/github-script@v7
         env:
@@ -145,39 +145,25 @@ jobs:
                 branch,
                 workflow_id: workflow.id,
                 status: 'completed',
-                // conclusion: 'success',
-                // per_page: 1,
                 owner,
                 repo,
               });
 
               let prev_sha, prev_msg;
-              let image_slug = 'main';
 
-              const success_runs = prev_runs.filter(run => run.conclusion === 'success').map(run => {
-                return {
-                  id: run.id,
-                  event: run.event,
-                  url: run.url,
-                  run_number: run.run_number,
-                  head_branch: run.head_branch,
-                  head_sha: run.head_commit.id,
-                  head_message: run.head_commit.message,
-                  repo_name: run.repository.name,
-                  owner_login: run.repository.owner.login,
-                  owner_type: run.repository.owner.type,
-                }
-              });
+              const success_runs = prev_runs.filter(run => run.conclusion === 'success');
 
-              console.log(success_runs);
+              if (success_runs.length > 0) {
+                prev_sha = success_runs[0].head_commit.id;
+                prev_msg = success_runs[0].head_commit.message;
 
-              if (prev_runs.length > 0) {
-                prev_sha = prev_runs[0].head_commit.id;
-                prev_msg = prev_runs[0].head_commit.message;
-                image_slug = branch.replace('/', '-');
+                core.info(`Found ${success_runs.length} previously successful runs`);
+                core.debug(`Previous success run on '${branch}' branch commit sha: ${prev_sha}`);
               } else {
+                core.info(`No previous workflow runs found on branch '${branch}'`);
+
                 const { data: { workflow_runs: main_runs } } = await github.rest.actions.listWorkflowRuns({
-                  branch: image_slug,
+                  branch: 'main',
                   workflow_id: workflow.id,
                   status: 'completed',
                   conclusion: 'success',
@@ -186,24 +172,19 @@ jobs:
                   repo,
                 });
 
-                if (main_runs.length > 0) {
-                  core.info('No successful run found on main.');
+                if (main_runs.length === 0) {
+                  core.info('No successful run found on branch \'main\'');
                   return;
                 }
 
                 prev_sha = main_runs[0].head_commit.id;
                 prev_msg = main_runs[0].head_commit.message;
 
-                core.info('No workflow runs found');
+                core.debug(`Latest run on 'main' branch commit sha: ${prev_sha}`);
               }
-
-              const prev_tag = `${version}-${image_slug}.${prev_sha.substring(0, 8)}`;
 
               core.setOutput('prev-sha', prev_sha);
               core.setOutput('prev-msg', prev_msg);
-              core.setOutput('prev-tag', prev_tag);
-
-              console.log(`Using previous run on ${branch}: ${prev_tag}`);
             } catch (error) {
               core.setFailed(`Failed to get previous run: ${error.message}`);
             }
