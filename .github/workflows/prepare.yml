@@ -14,12 +14,12 @@ on:
         value: ${{ jobs.environments.outputs.image-prefix }}
       image-tag:
         value: ${{ jobs.environments.outputs.image-tag }}
-      prev-sha:
-        value: ${{ jobs.environments.outputs.prev-sha }}
-      prev-msg:
-        value: ${{ jobs.environments.outputs.prev-msg }}
-      prev-tag:
-        value: ${{ jobs.environments.outputs.prev-tag }}
+      prev-commit-sha:
+        value: ${{ jobs.environments.outputs.prev-commit-sha }}
+      prev-commit-msg:
+        value: ${{ jobs.environments.outputs.prev-commit-msg }}
+      prev-image-tag:
+        value: ${{ jobs.environments.outputs.prev-image-tag }}
       repo-name:
         value: ${{ jobs.environments.outputs.repo-name }}
       repo-branch:
@@ -51,9 +51,9 @@ jobs:
       deploy-env: ${{ steps.deploy.outputs.deploy-env }}
       image-prefix: ${{ steps.deploy.outputs.image-prefix }}
       image-tag: ${{ steps.deploy.outputs.image-tag }}
-      prev-sha: ${{ steps.previous-run.outputs.prev-sha }}
-      prev-msg: ${{ steps.previous-run.outputs.prev-msg }}
-      prev-tag: ${{ steps.previous-pkg.outputs.prev-tag }}
+      prev-commit-sha: ${{ steps.previous-run.outputs.prev-commit-sha }}
+      prev-commit-msg: ${{ steps.previous-run.outputs.prev-commit-msg }}
+      prev-image-tag: ${{ steps.previous-pkg.outputs.prev-image-tag }}
       repo-name: ${{ steps.repo.outputs.repo-name }}
 
     steps:
@@ -126,11 +126,9 @@ jobs:
 
               const [commit_sha, prev_tag] = packages[0].tags
 
-              core.setOutput('prev-tag', prev_tag);
-              console.log(packages, owner, repo);
+              core.setOutput('prev-image-tag', prev_tag);
             } catch (error) {
-              console.log(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
-              console.error(error);
+              core.setFailed(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
             }
 
       - name: Get commit sha from previous successful run
@@ -191,8 +189,8 @@ jobs:
                 core.debug(`Latest run on 'main' branch commit sha: ${prev_sha}`);
               }
 
-              core.setOutput('prev-sha', prev_sha);
-              core.setOutput('prev-msg', prev_msg);
+              core.setOutput('prev-commit-sha', prev_sha);
+              core.setOutput('prev-commit-msg', prev_msg);
             } catch (error) {
               core.setFailed(`Failed to get previous run: ${error.message}`);
             }
@@ -200,9 +198,9 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: actions/github-script@v7
-        if: steps.previous-run.outputs.prev-sha != ''
+        if: steps.previous-run.outputs.prev-commit-sha != ''
         env:
-          PREVIOUS_SHA: ${{ steps.previous-run.outputs.prev-sha }}
+          PREVIOUS_SHA: ${{ steps.previous-run.outputs.prev-commit-sha }}
           CURRENT_SHA: ${{ github.sha }}
         with:
           script: |
