@@ -66,9 +66,11 @@ jobs:
     if: needs.tests.result == 'success'
     uses: ./.github/workflows/docker.yml
     with:
+      buildable: ${{ needs.prepare.outputs.buildable == '1' }}
+      image-name: ${{ matrix.image-name }}
+      image-prefix: ${{ needs.prepare.outputs.image-prefix }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
-      service-name: ${{ matrix.service }}
 
     permissions:
       contents: read
@@ -79,7 +81,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [elysia-app]
+        image-name: [elysia-app]
 
   prune-images:
     name: Prune old images

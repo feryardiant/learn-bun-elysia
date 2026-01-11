@@ -4,16 +4,26 @@ run-name: 'prepare: environment for `${{ github.ref_name }}`'
 on:
   workflow_call:
     outputs:
+      buildable:
+        value: ${{ jobs.environments.outputs.buildable }}
+      deployable:
+        value: ${{ jobs.environments.outputs.deployable }}
+      deploy-env:
+        value: ${{ jobs.environments.outputs.deploy-env }}
+      image-prefix:
+        value: ${{ jobs.environments.outputs.image-prefix }}
+      image-tag:
+        value: ${{ jobs.environments.outputs.image-tag }}
+      prev-commit-sha:
+        value: ${{ jobs.environments.outputs.prev-commit-sha }}
+      prev-commit-msg:
+        value: ${{ jobs.environments.outputs.prev-commit-msg }}
+      prev-image-tag:
+        value: ${{ jobs.environments.outputs.prev-image-tag }}
       repo-name:
         value: ${{ jobs.environments.outputs.repo-name }}
       repo-branch:
         value: ${{ jobs.environments.outputs.branch-name }}
-      image-tag:
-        value: ${{ jobs.environments.outputs.image-tag }}
-      deploy-env:
-        value: ${{ jobs.environments.outputs.deploy-env }}
-      deployable:
-        value: ${{ jobs.environments.outputs.deployable }}
 
 jobs:
   labels:
@@ -34,12 +44,17 @@ jobs:
     name: Environments
     runs-on: ubuntu-latest
     outputs:
-      repo-name: ${{ steps.repo.outputs.repo-name }}
       app-version: ${{ steps.repo.outputs.app-version }}
       branch-name: ${{ steps.repo.outputs.branch-name }}
-      image-tag: ${{ steps.target.outputs.image-tag }}
-      deploy-env: ${{ steps.target.outputs.deploy-env }}
-      deployable: ${{ steps.target.outputs.deployable }}
+      buildable: ${{ steps.check-build.outputs.buildable }}
+      deployable: ${{ steps.deploy.outputs.deployable }}
+      deploy-env: ${{ steps.deploy.outputs.deploy-env }}
+      image-prefix: ${{ steps.deploy.outputs.image-prefix }}
+      image-tag: ${{ steps.deploy.outputs.image-tag }}
+      prev-commit-sha: ${{ steps.previous-run.outputs.prev-commit-sha }}
+      prev-commit-msg: ${{ steps.previous-run.outputs.prev-commit-msg }}
+      prev-image-tag: ${{ steps.previous-pkg.outputs.prev-image-tag }}
+      repo-name: ${{ steps.repo.outputs.repo-name }}
 
     steps:
       - name: Checkout code
@@ -52,30 +67,189 @@ jobs:
           echo "repo-name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
           # Extract repository branch name
-          echo "branch-name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+          BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "image-slug=$(echo "$BRANCH_NAME" | tr '/' '-')" >> $GITHUB_OUTPUT
 
           # Extract version number from `package.json` file
           echo "app-version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
 
-      - name: Target
-        id: target
+      - name: Deployment
+        id: deploy
         env:
-          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
           APP_VERSION: ${{ steps.repo.outputs.app-version }}
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+          DEPLOYABLE: 1
+          IMAGE_SLUG: ${{ steps.repo.outputs.image-slug }}
         run: |
           # Generate image tag with timestamp and commit
-          echo "image-tag=${APP_VERSION}-${BRANCH_NAME}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-
-          DEPLOYABLE=true
+          echo "image-tag=${APP_VERSION}-${IMAGE_SLUG}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          echo "image-prefix=${APP_VERSION}-${IMAGE_SLUG}" >> $GITHUB_OUTPUT
 
           # Set deployment environment
-          if [[ "$BRANCH_NAME" == "main" ]]; then
-            echo "deploy-env=staging" >> $GITHUB_OUTPUT
-          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "deploy-env=${{ inputs.deploy-env }}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH_NAME" == "main" ]]; then
+            echo "deploy-env=staging" >> $GITHUB_OUTPUT
           else
             echo "deploy-env=development" >> $GITHUB_OUTPUT
-            DEPLOYABLE=false
+            DEPLOYABLE=0
           fi
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
+
+      - name: Get previous package
+        id: previous-pkg
+        uses: actions/github-script@v7
+        continue-on-error: true
+        env:
+          IMAGE_PREFIX: ${{ steps.deploy.outputs.image-prefix }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prefix = process.env.IMAGE_PREFIX;
+
+            try {
+              /**
+               * @see https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-package-owned-by-org
+               */
+              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
+                package_type: 'container',
+                package_name: repo,
+                username: owner,
+              });
+
+              const packages = data.map(({ metadata, ...pkg }) => ({
+                ...pkg,
+                ...metadata.container
+              })).filter(({ tags }) => tags.length > 0 && tags.some(tag => tag.startsWith(prefix)));
+
+              if (packages.length === 0) {
+                core.info('No previous image found');
+                return;
+              }
+
+              core.setOutput('prev-image-tag', packages[0].tags.at(-1));
+            } catch (error) {
+              core.setFailed(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
+            }
+
+      - name: Get commit sha from previous successful run
+        id: previous-run
+        uses: actions/github-script@v7
+        env:
+          BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = process.env.BRANCH_NAME;
+
+            try {
+              const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({ owner, repo });
+              const workflow = workflows.find(w => w.name === process.env.GITHUB_WORKFLOW);
+
+              if (!workflow) return;
+
+              const { data: { workflow_runs: prev_runs } } = await github.rest.actions.listWorkflowRuns({
+                branch,
+                workflow_id: workflow.id,
+                status: 'completed',
+                owner,
+                repo,
+              });
+
+              let prev_sha, prev_msg;
+
+              const success_runs = prev_runs.filter(run => run.conclusion === 'success');
+
+              if (success_runs.length > 0) {
+                prev_sha = success_runs[0].head_commit.id;
+                prev_msg = success_runs[0].head_commit.message;
+
+                core.info(`Found ${success_runs.length} previously successful runs`);
+                core.debug(`Previous success run on '${branch}' branch commit sha: ${prev_sha}`);
+              } else {
+                core.info(`No previous workflow runs found on branch '${branch}'`);
+
+                const { data: { workflow_runs: main_runs } } = await github.rest.actions.listWorkflowRuns({
+                  branch: 'main',
+                  workflow_id: workflow.id,
+                  status: 'completed',
+                  conclusion: 'success',
+                  per_page: 1,
+                  owner,
+                  repo,
+                });
+
+                if (main_runs.length === 0) {
+                  core.info('No successful run found on branch \'main\'');
+                  return;
+                }
+
+                prev_sha = main_runs[0].head_commit.id;
+                prev_msg = main_runs[0].head_commit.message;
+
+                core.debug(`Latest run on 'main' branch commit sha: ${prev_sha}`);
+              }
+
+              core.setOutput('prev-commit-sha', prev_sha);
+              core.setOutput('prev-commit-msg', prev_msg);
+            } catch (error) {
+              core.setFailed(`Failed to get previous run: ${error.message}`);
+            }
+
+      - name: Get changed files
+        id: changed-files
+        uses: actions/github-script@v7
+        if: steps.previous-run.outputs.prev-commit-sha != ''
+        env:
+          PREVIOUS_SHA: ${{ steps.previous-run.outputs.prev-commit-sha }}
+          CURRENT_SHA: ${{ github.sha }}
+        with:
+          script: |
+            const prev_sha = process.env.PREVIOUS_SHA.substring(0, 8);
+            const curr_sha = process.env.CURRENT_SHA.substring(0, 8);
+
+            try {
+              await exec.exec('git', ['fetch', 'origin', process.env.PREVIOUS_SHA, '--quiet']);
+
+              let diffs = '';
+              await exec.exec('git', ['diff', '--name-only', prev_sha, curr_sha], {
+                listeners: {
+                  stdout: (data) => {
+                    diffs += data.toString().trim();
+                  }
+                }
+              });
+
+              core.setOutput('files', diffs);
+            } catch (error) {
+              core.setFailed(`Failed to get changed files: ${error.message}`);
+            }
+
+      - name: Check buildability
+        id: check-build
+        uses: actions/github-script@v7
+        if: steps.changed-files.outputs.files != ''
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
+        with:
+          script: |
+            const changed_files = process.env.CHANGED_FILES;
+            const files = changed_files.split('\n').map(f => f.trim()).filter(f => f.length > 0);
+
+            const patterns = [
+              /^database\//,
+              /^dockerfiles\//,
+              /^public\//,
+              /^src\//,
+              /^bun\.lock$/,
+              /^package\.json$/,
+              /^drizzle\.config\.ts$/,
+              /^tsconfig\.json$/
+            ];
+
+            const buildable = files.some(file => patterns.some(pattern => pattern.test(file)));
+
+            core.debug(`Buildable: ${buildable}`);
+            core.setOutput('buildable', buildable ? 1 : 0);

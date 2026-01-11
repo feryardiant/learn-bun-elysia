@@ -3,17 +3,25 @@ name: Docker
 on:
   workflow_call:
     inputs:
-      service-name:
+      app-version:
+        description: App Version
+        required: false
+        type: string
+      buildable:
+        description: Whether we need to build new image
+        required: false
+        type: boolean
+      image-name:
         description: Docker image name
+        required: true
+        type: string
+      image-prefix:
+        description: Docker image prefix
         required: true
         type: string
       image-tag:
         description: Docker image tag
         required: true
-        type: string
-      app-version:
-        description: App Version
-        required: false
         type: string
       repo-name:
         description: Repository name
@@ -24,6 +32,7 @@ jobs:
   build-and-push:
     name: Build and Push
     runs-on: ubuntu-latest
+    if: ${{ inputs.buildable }}
 
     steps:
       - name: Checkout code
@@ -37,7 +46,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
       - name: Docker meta
         id: meta
@@ -50,6 +59,7 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ inputs.image-tag }}
+            type=raw,value=${{ inputs.image-prefix }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -62,12 +72,12 @@ jobs:
           build-args: |
             BUN_VERSION=${{ vars.BUN_VERSION || '1.2.22' }}
             BASE_OS=${{ vars.BASE_OS || 'alpine' }}
-            APP_NAME=${{ inputs.service-name }}
+            APP_NAME=${{ inputs.image-name }}
             APP_VERSION=${{ inputs.image-tag }}
           context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          file: dockerfiles/${{ inputs.service-name }}.dockerfile
+          file: dockerfiles/${{ inputs.image-name }}.dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
