@@ -139,6 +139,8 @@ jobs:
               const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({ owner, repo });
               const workflow = workflows.find(w => w.name === process.env.GITHUB_WORKFLOW);
 
+              console.log(workflows.filter(w => w.name === process.env.GITHUB_WORKFLOW))
+
               if (!workflow) return;
 
               const { data: { workflow_runs } } = await github.rest.actions.listWorkflowRuns({
