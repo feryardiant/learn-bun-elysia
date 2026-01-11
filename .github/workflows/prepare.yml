@@ -96,13 +96,11 @@ jobs:
         uses: actions/github-script@v7
         continue-on-error: true
         env:
-          IMAGE_NAME: ${{ steps.repo.outputs.repo-name }}
           APP_VERSION: ${{ steps.repo.outputs.app-version }}
           BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
         with:
           script: |
             const { owner, repo } = context.repo;
-            const [, package_name] = process.env.IMAGE_NAME.split('/');
             const branch = process.env.BRANCH_NAME;
             const version = process.env.APP_VERSION;
             const prefix = `${version}-${branch.replace('/', '-')}`;
@@ -113,7 +111,7 @@ jobs:
                */
               const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
                 package_type: 'container',
-                package_name,
+                package_name: repo,
                 username: owner,
               });
 
