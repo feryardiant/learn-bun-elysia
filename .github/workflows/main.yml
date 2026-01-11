@@ -70,6 +70,7 @@ jobs:
       image-name: ${{ matrix.image-name }}
       image-prefix: ${{ needs.prepare.outputs.image-prefix }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
+      prev-image-tag: ${{ needs.prepare.outputs.prev-image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
 
     permissions:

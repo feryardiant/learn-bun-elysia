@@ -3,10 +3,6 @@ name: Docker
 on:
   workflow_call:
     inputs:
-      app-version:
-        description: App Version
-        required: false
-        type: string
       buildable:
         description: Whether we need to build new image
         required: false
@@ -22,6 +18,10 @@ on:
       image-tag:
         description: Docker image tag
         required: true
+        type: string
+      prev-image-tag:
+        description: Previous docker image tag
+        required: false
         type: string
       repo-name:
         description: Repository name
@@ -88,3 +88,73 @@ jobs:
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
+
+  build-check:
+    name: Check build
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+
+    env:
+      DB_NAME: ${{ github.repository_owner }}
+      DB_USER: ${{ github.repository_owner }}
+      DB_PASS: secret
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASS }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      app:
+        image: ghcr.io/${{ inputs.repo-name }}:latest
+        env:
+          NODE_ENV: staging
+          APP_SECRET: not-secure-secret
+          LOG_LEVEL: debug
+          DB_HOST: postgres
+          DB_NAME: ${{ env.DB_NAME }}
+          DB_USER: ${{ env.DB_USER }}
+          DB_PASS: ${{ env.DB_PASS }}
+        ports:
+          - 3000:3000
+
+    steps:
+      - name: Check Log
+        run: |
+          docker ps --filter id=${{ job.services.app.id }} --format "{{.ID}} {{.Status}}"
+          docker logs ${{ job.services.app.id }}
+          docker exec ${{ job.services.app.id }} ps aux
+          docker exec ${{ job.services.app.id }} ss -tulpn || echo "ss not found"
+
+      - name: Health check
+        env:
+          APP_PORT: ${{ job.services.app.ports['3000'] }}
+        run: |
+          echo `curl -v http://localhost:3000/health`
+          # HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+          # if [ "$HTTP_CODE" -eq 200 ]; then
+          #   echo "Health check passed"
+          #   exit 0
+          # else
+          #   echo "Health check failed with status $HTTP_CODE"
+          #   exit 1
+          # fi
+
+      - name: Compare images
+        if: false
+        env:
+          PREVIOUS_IMAGE: ${{ inputs.repo-name }}:${{ inputs.prev-image-tag }}
+          CURRENT_IMAGE: ${{ inputs.repo-name }}:${{ inputs.image-tag }}
+        run: |
+          docker image inspect "ghcr.io/$CURRENT_IMAGE" > current.json
+          docker image inspect "ghcr.io/$PREVIOUS_IMAGE" > previous.json
+          docker image diff "ghcr.io/$CURRENT_IMAGE" "ghcr.io/$PREVIOUS_IMAGE" > diff.txt
+          echo "::set-output name=diff::$(cat diff.txt)"
