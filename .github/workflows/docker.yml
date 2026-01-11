@@ -19,10 +19,6 @@ on:
         description: Docker image tag
         required: true
         type: string
-      prev-image-tag:
-        description: Previous docker image tag
-        required: false
-        type: string
       repo-name:
         description: Repository name
         required: true
@@ -91,6 +87,7 @@ jobs:
 
   schema-artifact:
     name: API Schema Artifact
+    if: ${{ inputs.buildable }}
     needs: [build-push]
     runs-on: ubuntu-latest
 
