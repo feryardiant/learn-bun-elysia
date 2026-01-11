@@ -94,6 +94,7 @@ jobs:
       - name: Get package info
         id: previous-pkgs
         uses: actions/github-script@v7
+        continue-on-error: true
         env:
           IMAGE_NAME: ${{ steps.repo.outputs.repo-name }}
         with:
@@ -110,7 +111,8 @@ jobs:
 
               console.log(data)
             } catch (error) {
-              core.setFailed(`Failed to get previous run: ${error.message}`);
+              console.log(`Failed to get package ${package_name} in ${owner}: ${error.message}`);
+              console.error(error)
             }
 
       - name: Get sha from previous run
