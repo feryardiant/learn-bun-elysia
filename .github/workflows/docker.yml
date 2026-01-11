@@ -137,13 +137,14 @@ jobs:
 
           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/health)
 
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "Health check passed"
-            exit 0
-          else
+          if [ "$HTTP_CODE" -ne 200 ]; then
             echo "Health check failed with status $HTTP_CODE"
             exit 1
           fi
+
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+
+          echo "Health check passed"
 
       - name: Set up bun
         uses: oven-sh/setup-bun@v2
