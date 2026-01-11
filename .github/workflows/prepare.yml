@@ -101,7 +101,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const version = process.env.APP_VERSION;
-            let branch = process.env.BRANCH_NAME;
+            const branch = process.env.BRANCH_NAME;
 
             try {
               const { data: { workflows } } = await github.rest.actions.listRepoWorkflows({ owner, repo });
@@ -119,14 +119,15 @@ jobs:
               });
 
               let prev_sha, prev_msg;
+              let image_slug = 'main';
 
               if (workflow_runs.length > 0) {
                 prev_sha = workflow_runs[0].head_commit.id;
                 prev_msg = workflow_runs[0].head_commit.message;
+                image_slug = branch.replace('/', '-')
               } else {
-                branch = 'main'
                 const { data: { workflow_runs: workflow_main } } = await github.rest.actions.listWorkflowRuns({
-                  branch,
+                  branch: image_slug,
                   workflow_id: workflow.id,
                   status: 'completed',
                   conclusion: 'success',
@@ -136,24 +137,23 @@ jobs:
                 });
 
                 if (workflow_main.length > 0) {
-                  core.warning('No successful run found on main.');
+                  core.info('No successful run found on main.');
                   return;
                 }
 
                 prev_sha = workflow_main[0].head_commit.id;
                 prev_msg = workflow_main[0].head_commit.message;
 
-                console.log('No workflow runs found');
+                core.info('No workflow runs found');
               }
 
-              const prev_tag = `${version}-${branch}.${prev_sha.substring(0, 8)}`;
+              const prev_tag = `${version}-${image_slug}.${prev_sha.substring(0, 8)}`;
 
               core.setOutput('prev-sha', prev_sha);
               core.setOutput('prev-msg', prev_msg);
               core.setOutput('prev-tag', prev_tag);
 
               console.log(`Using previous run on ${branch}: ${prev_tag}`);
-              console.log(workflow_runs);
             } catch (error) {
               core.setFailed(`Failed to get previous run: ${error.message}`);
             }
@@ -167,28 +167,22 @@ jobs:
           CURRENT_SHA: ${{ github.sha }}
         with:
           script: |
-            const prev_sha = process.env.PREVIOUS_SHA;
-            const curr_sha = process.env.CURRENT_SHA;
-
-            if (!prev_sha) {
-              console.log('No previous run found. Skipping diff.');
-              return;
-            }
+            const prev_sha = process.env.PREVIOUS_SHA.substring(0, 8);
+            const curr_sha = process.env.CURRENT_SHA.substring(0, 8);
 
             try {
-              await exec.exec('git', ['fetch', 'origin', prev_sha, '--depth=1']);
+              await exec.exec('git', ['fetch', 'origin', prev_sha, '--depth=1', '--quiet']);
 
               let diffs = '';
               await exec.exec('git', ['diff', '--name-only', prev_sha, curr_sha], {
                 listeners: {
                   stdout: (data) => {
-                    diffs += data.toString();
+                    diffs += data.toString().trim();
                   }
                 }
               });
 
-              console.log('Changed files:', diffs);
-              core.setOutput('files', diffs.trim());
+              core.setOutput('files', diffs);
             } catch (error) {
               core.setFailed(`Failed to get changed files: ${error.message}`);
             }
@@ -196,18 +190,13 @@ jobs:
       - name: Check buildability
         id: check-build
         uses: actions/github-script@v7
+        if: steps.changed-files.outputs.files != ''
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
         with:
           script: |
-            const changed_files = process.env.CHANGED_FILES || '';
+            const changed_files = process.env.CHANGED_FILES;
             const files = changed_files.split('\n').map(f => f.trim()).filter(f => f.length > 0);
-
-            if (files.length === 0) {
-              console.log('No files changed');
-              core.setOutput('buildable',  0);
-              return;
-            }
 
             const patterns = [
               /^database\//,
@@ -221,5 +210,6 @@ jobs:
             ];
 
             const buildable = files.some(file => patterns.some(pattern => pattern.test(file)));
-            console.log(`Buildable: ${buildable}`);
+
+            core.debug(`Buildable: ${buildable}`);
             core.setOutput('buildable', buildable ? 1 : 0);
