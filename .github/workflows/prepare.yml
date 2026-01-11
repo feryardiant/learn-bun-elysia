@@ -113,8 +113,8 @@ jobs:
 
               do {
                 /**
-                * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
-                */
+                 * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
+                 */
                 const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
                   package_type: 'container',
                   package_name: repo,
@@ -144,6 +144,8 @@ jobs:
                   tag = image_tag.substring(0, image_tag.lastIndexOf('.'))
                 }
 
+                pkg.latest = pkg.tags.includes('latest');
+
                 out[tag] = out[tag] || [];
                 out[tag].push(pkg);
 
@@ -152,6 +154,25 @@ jobs:
 
               for (const [tag, pkgs] of Object.entries(reduced)) {
                 console.log('Tag:', tag, ':', pkgs.length);
+
+                if (tag.includes('dependabot')) {
+                  await Promise.all(pkgs.map(async pkg => {
+                    /**
+                     * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
+                     */
+                    const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                      package_type: 'container',
+                      package_name: repo,
+                      package_version_id: pkg.id,
+                    });
+
+                    if (response.status === 204) {
+                      console.log(`Package version ${pkg.id} deleted successfully`);
+                    } else {
+                      console.error(`Failed to delete package version ${pkg.id}: ${response.status}`);
+                    }
+                  }));
+                }
               }
 
               // console.log(reduced);
