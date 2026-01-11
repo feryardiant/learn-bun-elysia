@@ -29,7 +29,7 @@ on:
         type: string
 
 jobs:
-  build-and-push:
+  build-push:
     name: Build and Push
     runs-on: ubuntu-latest
     if: ${{ inputs.buildable }}
@@ -89,9 +89,9 @@ jobs:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
 
-  build-check:
-    name: Check build
-    # needs: [build-and-push]
+  schema-artifact:
+    name: API Schema Artifact
+    needs: [build-push]
     runs-on: ubuntu-latest
 
     env:
@@ -114,7 +114,7 @@ jobs:
           --health-timeout=5s
           --health-retries=3
       app:
-        image: ghcr.io/${{ inputs.repo-name }}:latest
+        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
         env:
           NODE_ENV: staging
           APP_SECRET: not-secure-secret
@@ -158,7 +158,7 @@ jobs:
       - name: Upload schema artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: api-schema_${{ inputs.image-tag }}
+          name: api-schema_${{ inputs.image-prefix }}
           path: ${{ inputs.image-name }}.schema.d.ts
           retention-days: 30
           overwrite: true
