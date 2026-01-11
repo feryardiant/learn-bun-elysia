@@ -98,6 +98,39 @@ jobs:
 
           echo "deployable=$DEPLOYABLE" >> $GITHUB_OUTPUT
 
+      - name: Get previous package [test]
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let pkg_count = 50
+            let page = 1
+
+            try {
+              /**
+               * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
+               */
+              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
+                package_type: 'container',
+                package_name: repo,
+                per_page: pkg_count,
+                page,
+              });
+
+              const packages = data.map(({ metadata, ...pkg }) => ({
+                id: pkg.id,
+                url: pkg.url,
+                digest: pkg.name,
+                ...metadata.container,
+                created_at: pkg.created_at,
+              }));
+
+              console.log(packages);
+            } catch (error) {
+              console.error(error);
+            }
+
       - name: Get previous package
         id: previous-pkg
         uses: actions/github-script@v7
