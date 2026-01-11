@@ -103,10 +103,13 @@ jobs:
             const package_name = process.env.IMAGE_NAME;
 
             try {
-              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+              /**
+               * @see https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-package-owned-by-org
+               */
+              const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByUser({
                 package_type: 'docker',
                 package_name,
-                org: owner,
+                username: owner,
               })
 
               console.log(data)
