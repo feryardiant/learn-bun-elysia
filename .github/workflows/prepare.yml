@@ -104,11 +104,12 @@ jobs:
         with:
           script: |
             const { owner, repo } = context.repo;
-            const per_page = 50
-            let page = 1
 
             try {
-              const packages = []
+              const packages = [];
+              const per_page = 50;
+              let has_next = true;
+              let page = 1;
 
               do {
                 /**
@@ -131,8 +132,9 @@ jobs:
                   });
                 }
 
+                has_next = data.length === per_page
                 page++
-              } while (data.length === per_page);
+              } while (has_next);
 
               console.log(packages);
             } catch (error) {
