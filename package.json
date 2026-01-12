@@ -21,7 +21,7 @@
   "dependencies": {
     "@elysiajs/openapi": "^1.4.13",
     "@elysiajs/static": "^1.4.7",
-    "better-auth": "^1.4.10",
+    "better-auth": "^1.4.11",
     "commander": "^14.0.2",
     "drizzle-orm": "^0.45.1",
     "drizzle-typebox": "^0.3.3",
