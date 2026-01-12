@@ -178,6 +178,7 @@ jobs:
               // Containing PR branches
               const pr_branches = []
 
+              console.log(reduced)
               for (const [tag, pkgs] of Object.entries(reduced)) {
                 core.info('Tag:', tag, ':', pkgs.length);
 
