@@ -108,6 +108,8 @@ jobs:
 
               // Keep last 5 main images
               if (reduced.main && reduced.main.length > 5) {
+                // Sort by created_at descending (newest first) to keep recent images
+                reduced.main.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 to_delete.push(...reduced.main.slice(5));
               }
 
