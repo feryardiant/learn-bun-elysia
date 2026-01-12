@@ -106,6 +106,23 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
 
+            const deletePkg = async (pkg) => {
+              try {
+                /**
+                * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
+                */
+                const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                  package_type: 'container',
+                  package_name: repo,
+                  package_version_id: pkg.id,
+                });
+
+                console.log(`Package ${pkg.digest} deleted successfully.`);
+              } catch (error) {
+                console.error(error)
+              }
+            }
+
             try {
               const packages = [];
               const per_page = 50;
@@ -145,6 +162,10 @@ jobs:
                   tag = image_tag.substring(0, image_tag.lastIndexOf('.'))
                 }
 
+                if (pkg.tags.includes('main')) {
+                  tag = 'main'
+                }
+
                 pkg.latest = pkg.tags.includes('latest');
 
                 out[tag] = out[tag] || [];
@@ -153,28 +174,25 @@ jobs:
                 return out;
               }, {})
 
+              const pr_branches = []
+
               for (const [tag, pkgs] of Object.entries(reduced)) {
                 console.log('Tag:', tag, ':', pkgs.length);
 
-                if (tag.includes('dependabot')) {
-                  await Promise.all(pkgs.map(async pkg => {
-                    /**
-                     * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
-                     */
-                    const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
-                      package_type: 'container',
-                      package_name: repo,
-                      package_version_id: pkg.id,
-                    });
-
-                    if (response.status === 204) {
-                      console.log(`Package version ${pkg.id} deleted successfully`);
-                    } else {
-                      console.error(`Failed to delete package version ${pkg.id}: ${response.status}`);
-                    }
-                  }));
+                if (['main', 'untagged'].includes(tag)) {
+                  pr_branches.push(tag);
                 }
               }
+
+              const to_delete = reduced.untagged
+
+              // to_delete.push(...reduced.main.slice(5))
+
+              for (const pr_branch of pr_branches) {
+                to_delete.push(...reduced[pr_branch]);
+              }
+
+              await Promise.all(to_delete.map(deletePkg));
 
               // console.log(reduced);
             } catch (error) {
