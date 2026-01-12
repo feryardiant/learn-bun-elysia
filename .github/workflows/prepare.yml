@@ -119,7 +119,7 @@ jobs:
 
                 console.log(`Package ${pkg.digest} deleted successfully.`);
               } catch (error) {
-                console.error(error)
+                console.warn(`Unable to delete package ${pkg.digest}: ${error.message}`);
               }
             }
 
