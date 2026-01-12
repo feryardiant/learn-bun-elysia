@@ -162,6 +162,7 @@ jobs:
                   tag = image_tag.replace(/^\d+\.\d+\.\d+-(.*)\.[a-f0-9]{8}$/, '$1');
                 }
 
+                tag = tag.trim();
                 pkgs[tag] = pkgs[tag] || [];
 
                 if (pkgs[tag].find(p => p.id === pkg.id)) {
@@ -178,9 +179,8 @@ jobs:
               // Containing PR branches
               const pr_branches = []
 
-              console.log(reduced)
               for (const [tag, pkgs] of Object.entries(reduced)) {
-                core.info('Tag:', tag, ':', pkgs.length);
+                console.info('Tag:', tag, ':', pkgs.length);
 
                 if (!['main', 'untagged'].includes(tag)) {
                   pr_branches.push(tag);
@@ -194,8 +194,7 @@ jobs:
               to_delete.push(...reduced.main.slice(5))
 
               for (const pr_branch of pr_branches) {
-                const branch_count = reduced[pr_branch]?.length || 0
-                if (branch_count > 1) {
+                if ((reduced[pr_branch]?.length || 0) > 1) {
                   to_delete.push(...reduced[pr_branch]);
                 }
               }
@@ -204,7 +203,7 @@ jobs:
                 await Promise.all(to_delete.map(delete_pkg));
               }
 
-              core.info(pr_branches, to_delete, reduced);
+              console.info(pr_branches, to_delete, reduced);
             } catch (error) {
               console.error(error);
             }
