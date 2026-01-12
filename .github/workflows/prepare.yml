@@ -155,7 +155,7 @@ jobs:
               } while (has_next);
 
               const reduced = packages.reduce((pkgs, pkg) => {
-                let tag = 'untagged'
+                let tag = 'untagged';
 
                 if (pkg.tags.length > 0) {
                   const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
@@ -167,7 +167,7 @@ jobs:
 
                 if (pkgs[tag].find(p => p.id === pkg.id)) {
                   // Skip it due to duplicate ID
-                  return pkgs
+                  return pkgs;
                 }
 
                 pkg.latest = pkg.tags.includes('latest');
@@ -177,10 +177,10 @@ jobs:
               }, {})
 
               // Containing PR branches
-              const pr_branches = []
+              const pr_branches = [];
 
               for (const [tag, pkgs] of Object.entries(reduced)) {
-                console.info('Tag:', tag, ':', pkgs.length);
+                console.info(tag, ':', pkgs.length);
 
                 if (!['main', 'untagged'].includes(tag)) {
                   pr_branches.push(tag);
@@ -188,22 +188,24 @@ jobs:
               }
 
               // Images to delete
-              const to_delete = reduced.untagged || []
+              const to_delete = reduced.untagged || [];
 
               // Keep last 5 main images
-              to_delete.push(...reduced.main.slice(5))
+              to_delete.push(...reduced.main.slice(5));
 
+              // Delete images other than main and untagged
               for (const pr_branch of pr_branches) {
                 if ((reduced[pr_branch]?.length || 0) > 1) {
                   to_delete.push(...reduced[pr_branch]);
                 }
               }
 
-              if (to_delete.length > 0) {
-                await Promise.all(to_delete.map(delete_pkg));
+              if (to_delete.length === 0) {
+                core.info('No images to delete');
+                return;
               }
 
-              console.info(pr_branches, to_delete, reduced);
+              await Promise.all(to_delete.map(delete_pkg));
             } catch (error) {
               console.error(error);
             }
