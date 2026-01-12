@@ -83,23 +83,3 @@ jobs:
       fail-fast: false
       matrix:
         image-name: [elysia-app]
-
-  prune-images:
-    name: Prune old images
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    needs: [docker]
-
-    permissions:
-      packages: write
-
-    steps:
-      - uses: quartx-analytics/ghcr-cleaner@v1
-        with:
-          owner-type: user
-          token: ${{ secrets.PAT_PRUNE }}
-          repository-owner: ${{ github.repository_owner }}
-          repository-name: ${{ github.repository }}
-          delete-untagged: true
-          keep-at-most: 10
-          skip-tags: latest,main,*.*.*-main.*
