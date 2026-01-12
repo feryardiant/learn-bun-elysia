@@ -44,9 +44,9 @@ jobs:
                   package_version_id: pkg.id,
                 });
 
-                core.info('Deleted image:', pkg.digest);
+                core.info(`Deleted image: ${pkg.digest}`);
               } catch (error) {
-                core.warning('Unable to delete package', pkg.digest, error.message);
+                core.warning(`Unable to delete package ${pkg.digest}: ${error.message}`);
               }
             }
 
@@ -103,27 +103,20 @@ jobs:
                 return pkgs;
               }, {})
 
-              // Containing PR branches
-              const pr_branches = [];
-
-              for (const [tag, pkgs] of Object.entries(reduced)) {
-                console.info(tag, ':', pkgs.length);
-
-                if (!['main', 'untagged'].includes(tag)) {
-                  pr_branches.push(tag);
-                }
-              }
-
               // Images to delete
               const to_delete = reduced.untagged || [];
 
               // Keep last 5 main images
-              to_delete.push(...reduced.main.slice(5));
+              if (reduced.main && reduced.main.length > 5) {
+                to_delete.push(...reduced.main.slice(5));
+              }
 
-              // Delete images other than main and untagged
-              for (const pr_branch of pr_branches) {
-                if ((reduced[pr_branch]?.length || 0) > 1) {
-                  to_delete.push(...reduced[pr_branch]);
+              for (const [tag, pkgs] of Object.entries(reduced)) {
+                console.info(tag, ':', pkgs.length);
+
+                // Delete images other than main and untagged
+                if (pkgs.length > 0 && !['main', 'untagged'].includes(tag)) {
+                  to_delete.push(...pkgs);
                 }
               }
 
