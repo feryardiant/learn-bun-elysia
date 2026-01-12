@@ -106,7 +106,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
 
-            const deletePkg = async (pkg) => {
+            const delete_pkg = async (pkg) => {
               try {
                 /**
                 * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
@@ -117,9 +117,9 @@ jobs:
                   package_version_id: pkg.id,
                 });
 
-                console.log(`Package ${pkg.digest} deleted successfully.`);
+                core.info('Deleted image:', pkg.digest);
               } catch (error) {
-                console.warn(`Unable to delete package ${pkg.digest}: ${error.message}`);
+                core.warning('Unable to delete package', pkg.digest, error.message);
               }
             }
 
@@ -154,47 +154,56 @@ jobs:
                 page++;
               } while (has_next);
 
-              const reduced = packages.reduce((out, pkg) => {
+              const reduced = packages.reduce((pkgs, pkg) => {
                 let tag = 'untagged'
 
                 if (pkg.tags.length > 0) {
-                  const image_tag = pkg.tags.find(tag =>  /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
-                  tag = image_tag.substring(0, image_tag.lastIndexOf('.'))
+                  const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
+                  tag = image_tag.replace(/^\d+\.\d+\.\d+-(.*)\.[a-f0-9]{8}$/, '$1');
                 }
 
-                if (pkg.tags.includes('main')) {
-                  tag = 'main'
+                pkgs[tag] = pkgs[tag] || [];
+
+                if (pkgs[tag].find(p => p.id === pkg.id)) {
+                  // Skip it due to duplicate ID
+                  return pkgs
                 }
 
                 pkg.latest = pkg.tags.includes('latest');
+                pkgs[tag].push(pkg);
 
-                out[tag] = out[tag] || [];
-                out[tag].push(pkg);
-
-                return out;
+                return pkgs;
               }, {})
 
+              // Containing PR branches
               const pr_branches = []
 
               for (const [tag, pkgs] of Object.entries(reduced)) {
-                console.log('Tag:', tag, ':', pkgs.length);
+                core.info('Tag:', tag, ':', pkgs.length);
 
                 if (!['main', 'untagged'].includes(tag)) {
                   pr_branches.push(tag);
                 }
               }
 
+              // Images to delete
               const to_delete = reduced.untagged || []
 
-              // to_delete.push(...reduced.main.slice(5))
+              // Keep last 5 main images
+              to_delete.push(...reduced.main.slice(5))
 
               for (const pr_branch of pr_branches) {
-                to_delete.push(...reduced[pr_branch]);
+                const branch_count = reduced[pr_branch]?.length || 0
+                if (branch_count > 1) {
+                  to_delete.push(...reduced[pr_branch]);
+                }
               }
 
-              await Promise.all(to_delete.map(deletePkg));
+              if (to_delete.length > 0) {
+                await Promise.all(to_delete.map(delete_pkg));
+              }
 
-              console.log(reduced, pr_branches, to_delete);
+              core.info(pr_branches, to_delete, reduced);
             } catch (error) {
               console.error(error);
             }
