@@ -179,12 +179,12 @@ jobs:
               for (const [tag, pkgs] of Object.entries(reduced)) {
                 console.log('Tag:', tag, ':', pkgs.length);
 
-                if (['main', 'untagged'].includes(tag)) {
+                if (!['main', 'untagged'].includes(tag)) {
                   pr_branches.push(tag);
                 }
               }
 
-              const to_delete = reduced.untagged
+              const to_delete = reduced.untagged || []
 
               // to_delete.push(...reduced.main.slice(5))
 
@@ -194,7 +194,7 @@ jobs:
 
               await Promise.all(to_delete.map(deletePkg));
 
-              // console.log(reduced);
+              console.log(reduced, pr_branches, to_delete);
             } catch (error) {
               console.error(error);
             }
