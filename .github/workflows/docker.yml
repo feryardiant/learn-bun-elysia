@@ -240,7 +240,7 @@ jobs:
 
                 if (pkg.tags.length > 0) {
                   const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
-                  tag = image_slug
+                  tag = image_tag
                     ? image_tag.replace(/^\d+\.\d+\.\d+-(.*)\.[a-f0-9]{8}$/, '$1')
                     : pkg.tags.at(1);
 
