@@ -207,22 +207,33 @@ jobs:
           CURRENT_SHA: ${{ github.sha }}
         with:
           script: |
+            if (context.eventName === 'workflow_dispatch') {
+              return [];
+            }
+
             const prev_sha = process.env.PREVIOUS_SHA.substring(0, 8);
             const curr_sha = process.env.CURRENT_SHA.substring(0, 8);
 
             try {
               await exec.exec('git', ['fetch', 'origin', process.env.PREVIOUS_SHA, '--quiet']);
 
-              let diffs = '';
+              const diffs = [];
               await exec.exec('git', ['diff', '--name-only', prev_sha, curr_sha], {
                 listeners: {
                   stdout: (data) => {
-                    diffs += data.toString().trim();
+                    const changedFiles = data.toString().split('\n').map(f => f.trim())
+                    diffs.push(...changedFiles.filter(file => file.length > 0));
                   }
                 }
               });
 
-              core.setOutput('files', diffs);
+              for (const diff of diffs) {
+                core.info(`- \u001b[33m${diff}\u001b[0m`)
+              }
+
+              core.notice(`Found \u001b[1m${diffs.length}\u001b[0m files changed`);
+
+              return diffs;
             } catch (error) {
               core.setFailed(`Failed to get changed files: ${error.message}`);
             }
