@@ -180,3 +180,185 @@ jobs:
           path: ${{ inputs.image-name }}.schema.d.ts
           retention-days: 30
           overwrite: true
+
+  prune-images:
+    name: Prune old images
+    # if: github.event.pull_request.merged == true
+    needs: [build-push]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Get previous images
+        id: prev-images
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.PAT_PRUNE }}
+          script: |
+            const { owner, repo } = context.repo;
+            const base_branch = context.payload.pull_request?.base?.ref || 'main';
+
+            try {
+              const packages = [];
+              const per_page = 50;
+              let has_next = true;
+              let page = 1;
+
+              do {
+                /**
+                 * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
+                 */
+                const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
+                  package_type: 'container',
+                  package_name: repo,
+                  per_page,
+                  page,
+                });
+
+                for (const { metadata, ...pkg } of data) {
+                  packages.push({
+                    id: pkg.id,
+                    url: pkg.url,
+                    digest: pkg.name,
+                    ...metadata.container,
+                    created_at: pkg.created_at,
+                  });
+                }
+
+                has_next = data.length === per_page;
+                page++;
+              } while (has_next);
+
+              packages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+              const images = packages.reduce((pkgs, pkg) => {
+                let tag = 'untagged';
+
+                if (pkg.tags.length > 0) {
+                  const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
+                  tag = image_slug
+                    ? image_tag.replace(/^\d+\.\d+\.\d+-(.*)\.[a-f0-9]{8}$/, '$1')
+                    : pkg.tags.at(1);
+
+                  if (!tag) {
+                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'dangling'
+                  }
+                }
+
+                tag = tag?.trim() || 'untagged';
+
+                if (pkg.tags.includes('latest')) {
+                  // Skip latest image
+                  return pkgs;
+                }
+
+                pkgs[tag] = pkgs[tag] || [];
+
+                if (pkgs[tag].find(p => p.id === pkg.id)) {
+                  // Skip it due to duplicate ID
+                  return pkgs;
+                }
+
+                pkgs[tag].push(pkg);
+
+                return pkgs;
+              }, {
+                attestation: [],
+                dangling: [],
+                untagged: [],
+                [base_branch]: [],
+              })
+
+              core.info(`\u001b[1mFound tags:\u001b[0m`);
+              for (const [tag, pkgs] of Object.entries(images)) {
+                core.info(`- \u001b[33m${pkgs.length}\u001b[0m: \u001b[33m${tag}\u001b[0m`);
+              }
+
+              return images;
+            } catch (error) {
+              console.error(error);
+              core.setFailed(`Failed to prune images: ${error.message}`);
+            }
+
+      - name: Prune old images
+        uses: actions/github-script@v7
+        continue-on-error: true
+        env:
+          PREV_IMAGES: ${{ steps.prev-images.outputs.result }}
+        with:
+          github-token: ${{ secrets.PAT_PRUNE }}
+          script: |
+            const { owner, repo } = context.repo;
+            const base_branch = context.payload.pull_request?.base?.ref || 'main';
+            const deletion = {
+              success: 0,
+              error: 0,
+              skipped: 0,
+            };
+
+            const delete_pkg = async (pkg) => {
+              const tags = pkg.tags.length > 0
+                ? pkg.tags.join('\u001b[0m,\u001b[33m')
+                : pkg.digest;
+
+              try {
+                /**
+                 * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
+                 */
+                // const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                //   package_type: 'container',
+                //   package_name: repo,
+                //   package_version_id: pkg.id,
+                // });
+
+                core.info(`- \u001b[33m${pkg.id}\u001b[0m: \u001b[33m${tags}\u001b[0m`);
+                deletion.success++;
+              } catch (error) {
+                core.warning(`Unable to delete package \u001b[33m${pkg.id}\u001b[0m: ${error.message}`);
+                deletion.error++;
+              }
+            }
+
+            try {
+              const images = JSON.parse(process.env.PREV_IMAGES)
+
+              // Images to delete
+              const to_delete = [];
+              const keep_base_branch = 10;
+
+              // Keep most recent images from `base_branch`
+              if (images[base_branch].length > keep_base_branch) {
+                // Sort by created_at descending (newest first) to keep recent images
+                images[base_branch].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                to_delete.push(...images[base_branch].slice(keep_base_branch));
+              }
+
+              for (const [tag, pkgs] of Object.entries(images)) {
+                // Delete images other than main and untagged
+                if (pkgs.length > 0 && ![base_branch, 'untagged'].includes(tag)) {
+                  to_delete.push(...pkgs);
+                }
+              }
+
+              if (to_delete.length === 0) {
+                core.notice('No images to delete');
+                return;
+              }
+
+              core.info(`\u001b[1mDelete images:\u001b[0m`);
+              await Promise.all(to_delete.map(delete_pkg));
+
+              core.notice([
+                `From \u001b[1m${to_delete.length}\u001b[0m images:`,
+                `\u001b[32m${deletion.success}\u001b[0m deleted,`,
+                `\u001b[31m${deletion.error}\u001b[0m error and`,
+                `\u001b[34m${deletion.skipped}\u001b[0m skipped`,
+              ].join(' '));
+            } catch (error) {
+              console.error(error);
+              core.setFailed(`Failed to prune images: ${error.message}`);
+            }
