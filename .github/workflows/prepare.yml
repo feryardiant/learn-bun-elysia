@@ -267,19 +267,18 @@ jobs:
             ];
 
             let matches = 0;
-            const buildable = files.some(file => {
+            for (const file of files) {
               const match = patterns.some(pattern => pattern.test(file));
               let color = 33;
 
               if (match) {
                 color = 32;
-                matches++
+                matches++;
               }
 
-              core.info(`- \u001b[${color}m${file}\u001b[0m`)
-
-              return match
-            });
+              core.info(`- \u001b[${color}m${file}\u001b[0m`);
+            }
+            const buildable = matches > 0;
 
             core.notice([
               `From \u001b[33m${files.length}\u001b[0m changes`,
