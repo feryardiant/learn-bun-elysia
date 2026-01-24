@@ -53,7 +53,7 @@ jobs:
       image-tag: ${{ steps.deploy.outputs.image-tag }}
       prev-commit-sha: ${{ steps.previous-run.outputs.prev-commit-sha }}
       prev-commit-msg: ${{ steps.previous-run.outputs.prev-commit-msg }}
-      prev-image-tag: ${{ steps.previous-pkg.outputs.prev-image-tag }}
+      prev-image-tag: ${{ steps.previous-pkg.outputs.result }}
       repo-name: ${{ steps.repo.outputs.repo-name }}
 
     steps:
@@ -129,7 +129,10 @@ jobs:
                 return;
               }
 
-              core.setOutput('prev-image-tag', packages[0].tags.at(-1));
+              const result = packages[0].tags.at(-1);
+              core.notice(`Previous image tag: ${result}`);
+
+              return result;
             } catch (error) {
               core.setFailed(`Failed to get package '${repo}' in ${owner}: ${error.message}`);
             }
