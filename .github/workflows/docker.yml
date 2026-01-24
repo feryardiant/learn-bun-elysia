@@ -326,42 +326,35 @@ jobs:
               }
             }
 
-            try {
-              const images = JSON.parse(process.env.PREV_IMAGES)
+            // Images to delete
+            const to_delete = [];
+            const keep_base_branch = 10;
+            const base_branch = context.payload.pull_request?.base?.ref || 'main';
 
-              // Images to delete
-              const to_delete = [];
-              const keep_base_branch = 10;
-
-              // Keep most recent images from `base_branch`
-              if (images[base_branch].length > keep_base_branch) {
-                // Sort by created_at descending (newest first) to keep recent images
-                images[base_branch].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                to_delete.push(...images[base_branch].slice(keep_base_branch));
-              }
-
-              for (const [tag, pkgs] of Object.entries(images)) {
-                // Delete images other than main and untagged
-                if (pkgs.length > 0 && ![base_branch, 'untagged'].includes(tag)) {
-                  to_delete.push(...pkgs);
-                }
-              }
-
-              if (to_delete.length === 0) {
-                core.notice('No images to delete');
-                return;
-              }
-
-              core.info(`\u001b[1mDelete images:\u001b[0m`);
-              await Promise.all(to_delete.map(delete_pkg));
-
-              core.notice([
-                `From \u001b[1m${to_delete.length}\u001b[0m images:`,
-                `\u001b[32m${deletion.success}\u001b[0m deleted,`,
-                `\u001b[31m${deletion.error}\u001b[0m error and`,
-                `\u001b[34m${deletion.skipped}\u001b[0m skipped`,
-              ].join(' '));
-            } catch (error) {
-              console.error(error);
-              core.setFailed(`Failed to prune images: ${error.message}`);
+            // Keep most recent images from `base_branch`
+            if (images[base_branch].length > keep_base_branch) {
+              // Sort by created_at descending (newest first) to keep recent images
+              images[base_branch].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              to_delete.push(...images[base_branch].slice(keep_base_branch));
             }
+
+            for (const [tag, pkgs] of Object.entries(images)) {
+              // Delete images other than main and untagged
+              if (pkgs.length > 0 && ![base_branch, 'untagged'].includes(tag)) {
+                to_delete.push(...pkgs);
+              }
+            }
+
+            if (to_delete.length === 0) {
+              core.notice('No images to delete');
+              return;
+            }
+
+            core.info(`\u001b[1mDelete images:\u001b[0m`);
+            await Promise.all(to_delete.map(delete_pkg));
+
+            core.notice([
+              `From \u001b[1m${to_delete.length}\u001b[0m images:`,
+              `\u001b[32m${deletion.success}\u001b[0m deleted and`,
+              `\u001b[31m${deletion.error}\u001b[0m error`,
+            ].join(' '));
