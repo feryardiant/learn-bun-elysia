@@ -94,7 +94,7 @@ jobs:
                     : pkg.tags.at(1);
 
                   if (!tag) {
-                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'untagged'
+                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'untagged';
                   }
                 }
 
@@ -122,7 +122,6 @@ jobs:
                 untagged: [],
               })
 
-              console.log(base_branch, images)
               core.info(`\u001b[1mFound tags:\u001b[0m`);
               for (const [tag, pkgs] of Object.entries(images)) {
                 if (pkgs.length === 0) continue;
@@ -174,7 +173,6 @@ jobs:
                   });
                 }
 
-                core.info(`- \u001b[33m${pkg.id}\u001b[0m: \u001b[33m${tags}\u001b[0m`);
                 deletion.success++;
               } catch (error) {
                 core.warning(`Unable to delete package \u001b[33m${pkg.id}\u001b[0m: ${error.message}`);
@@ -187,7 +185,6 @@ jobs:
             const keep_base_branch = Number(process.env.KEEP_BASE_BRANCH);
             const to_delete = [];
 
-            console.log(keep_base_branch, typeof keep_base_branch, images)
             // Keep most recent images from `base_branch`
             if (images[base_branch].length > keep_base_branch) {
               // Sort by created_at descending (newest first) to keep recent images
