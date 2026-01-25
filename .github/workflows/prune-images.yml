@@ -11,6 +11,10 @@ on:
         description: Number of image to keep on base branch
         default: 10
         type: number
+    secrets:
+      PAT_PRUNE:
+        description: Token with packages delete permission
+        required: true
 
 jobs:
   prune-images:

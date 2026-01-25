@@ -64,7 +64,7 @@ jobs:
   docker:
     name: Docker Images for ${{ matrix.image-name }}
     needs: [prepare, tests]
-    if: needs.tests.result == 'success'
+    if: needs.tests.conclusion == 'success'
     uses: ./.github/workflows/docker.yml
     secrets: inherit
     with:
@@ -87,8 +87,8 @@ jobs:
 
   api-schema:
     name: API Schema Artifact
-    if: ${{ inputs.buildable }}
-    needs: [docker]
+    if: needs.docker.conclusion == 'success'
+    needs: [prepare, docker]
     runs-on: ubuntu-latest
 
     permissions:
@@ -114,7 +114,7 @@ jobs:
           --health-timeout=5s
           --health-retries=3
       app:
-        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        image: ghcr.io/${{ needs.prepare.outputs.repo-name }}:${{ needs.prepare.outputs.image-prefix }}
         credentials:
           username: ${{ github.actor }}
           password: ${{ github.token }}
@@ -171,12 +171,12 @@ jobs:
 
       - name: Generate API schema
         run: |
-          bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
+          bunx openapi-typescript $APP_URL/docs/json -o ${{ needs.prepare.outputs.image-name }}.schema.d.ts
 
       - name: Upload schema artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: api-schema_${{ inputs.image-prefix }}
-          path: ${{ inputs.image-name }}.schema.d.ts
+          name: api-schema_${{ needs.prepare.outputs.image-prefix }}
+          path: ${{ needs.prepare.outputs.image-name }}.schema.d.ts
           retention-days: 30
           overwrite: true
