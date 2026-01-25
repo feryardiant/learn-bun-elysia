@@ -4,6 +4,8 @@ run-name: 'prepare: environment for `${{ github.ref_name }}`'
 on:
   workflow_call:
     outputs:
+      app-version:
+        value: ${{ jobs.environments.outputs.app-version }}
       buildable:
         value: ${{ jobs.environments.outputs.buildable }}
       deployable:
