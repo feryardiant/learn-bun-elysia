@@ -69,7 +69,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           build-args: |
-            BUN_VERSION=${{ envs.BUN_VERSION }}
+            BUN_VERSION=${{ env.BUN_VERSION }}
             BASE_OS=${{ vars.BASE_OS || 'alpine' }}
             APP_NAME=${{ inputs.image-name }}
             APP_VERSION=${{ inputs.image-tag }}
@@ -170,7 +170,7 @@ jobs:
       - name: Set up bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ envs.BUN_VERSION }}
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Generate API schema
         run: |
