@@ -11,3 +11,6 @@ jobs:
     uses: ./.github/workflows/prune-images.yml
     secrets:
       PAT_PRUNE: ${{ secrets.PAT_PRUNE }}
+
+    permissions:
+      packages: read

@@ -256,7 +256,6 @@ jobs:
             const files = JSON.parse(process.env.CHANGED_FILES).filter(f => f.length > 0);
 
             const patterns = [
-              /^\.github\//, // Temporarily mark this file as buildable
               /^database\//,
               /^dockerfiles\//,
               /^public\//,
