@@ -185,6 +185,7 @@ jobs:
             const keep_base_branch = Number(process.env.KEEP_BASE_BRANCH);
             const to_delete = [];
 
+            console.log(keep_base_branch, images)
             // Keep most recent images from `base_branch`
             if (images[base_branch].length > keep_base_branch) {
               // Sort by created_at descending (newest first) to keep recent images
