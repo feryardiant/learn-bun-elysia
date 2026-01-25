@@ -85,7 +85,7 @@ jobs:
               packages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
               const images = packages.reduce((pkgs, pkg) => {
-                let tag = 'untagged';
+                let tag = 'dangling';
 
                 if (pkg.tags.length > 0) {
                   const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
@@ -94,7 +94,7 @@ jobs:
                     : pkg.tags.at(1);
 
                   if (!tag) {
-                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'dangling'
+                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'untagged'
                   }
                 }
 
