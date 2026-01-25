@@ -7,6 +7,10 @@ on:
         description: Base branch to keep
         default: main
         type: string
+      dry-run:
+        description: Whether to dry run
+        default: false
+        type: boolean
       keep-branch-base:
         description: Number of image to keep on base branch
         default: 10
@@ -32,6 +36,7 @@ jobs:
         env:
           BASE_BRANCH: ${{ inputs.branch-base }}
         with:
+          result-encoding: string
           script: |
             return context.payload.pull_request?.base?.ref || process.env.BASE_BRANCH;
 
@@ -80,7 +85,7 @@ jobs:
               packages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
               const images = packages.reduce((pkgs, pkg) => {
-                let tag = 'untagged';
+                let tag = 'dangling';
 
                 if (pkg.tags.length > 0) {
                   const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
@@ -89,7 +94,7 @@ jobs:
                     : pkg.tags.at(1);
 
                   if (!tag) {
-                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'dangling'
+                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'untagged';
                   }
                 }
 
@@ -111,10 +116,10 @@ jobs:
 
                 return pkgs;
               }, {
+                [base_branch]: [],
                 attestation: [],
                 dangling: [],
                 untagged: [],
-                [base_branch]: [],
               })
 
               core.info(`\u001b[1mFound tags:\u001b[0m`);
@@ -136,13 +141,15 @@ jobs:
         continue-on-error: true
         env:
           BASE_BRANCH: ${{ steps.base-branch.outputs.result }}
+          DRY_RUN: ${{ inputs.dry-run && 1 }}
           KEEP_BASE_BRANCH: ${{ inputs.keep-branch-base }}
           PREV_IMAGES: ${{ steps.prev-images.outputs.result }}
         with:
           github-token: ${{ secrets.PAT_PRUNE }}
           script: |
             const { owner, repo } = context.repo;
-            const images = JSON.parse(process.env.PREV_IMAGES)
+            const images = JSON.parse(process.env.PREV_IMAGES);
+            const dry_run = process.env.DRY_RUN === '1';
             const deletion = {
               success: 0,
               error: 0,
@@ -158,13 +165,14 @@ jobs:
                 /**
                  * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
                  */
-                const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
-                  package_type: 'container',
-                  package_name: repo,
-                  package_version_id: pkg.id,
-                });
+                if (!dry_run) {
+                  const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                    package_type: 'container',
+                    package_name: repo,
+                    package_version_id: pkg.id,
+                  });
+                }
 
-                core.info(`- \u001b[33m${pkg.id}\u001b[0m: \u001b[33m${tags}\u001b[0m`);
                 deletion.success++;
               } catch (error) {
                 core.warning(`Unable to delete package \u001b[33m${pkg.id}\u001b[0m: ${error.message}`);
@@ -196,7 +204,7 @@ jobs:
               return;
             }
 
-            core.info(`\u001b[1mDelete images:\u001b[0m`);
+            core.info(`\u001b[1mDelete images:\u001b[0m${(dry_run ? ' [dry run]' : '')}`);
             await Promise.all(to_delete.map(delete_pkg));
 
             core.notice([
