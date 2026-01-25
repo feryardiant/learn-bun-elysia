@@ -24,6 +24,9 @@ on:
         required: true
         type: string
 
+env:
+  BUN_VERSION: ${{ vars.BUN_VERSION || '1.2.22' }}
+
 jobs:
   build-push:
     name: Build and Push
@@ -66,7 +69,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           build-args: |
-            BUN_VERSION=${{ vars.BUN_VERSION || '1.2.22' }}
+            BUN_VERSION=${{ env.BUN_VERSION }}
             BASE_OS=${{ vars.BASE_OS || 'alpine' }}
             APP_NAME=${{ inputs.image-name }}
             APP_VERSION=${{ inputs.image-tag }}
@@ -85,9 +88,9 @@ jobs:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
 
-  schema-artifact:
+  api-schema:
     name: API Schema Artifact
-    if: ${{ inputs.buildable }}
+    if: needs.build-push.result == 'success'
     needs: [build-push]
     runs-on: ubuntu-latest
 
@@ -167,7 +170,7 @@ jobs:
       - name: Set up bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ vars.BUN_VERSION || '1.2.22' }}
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Generate API schema
         run: |
