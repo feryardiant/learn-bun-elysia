@@ -15,6 +15,7 @@
     "format": "biome format --write",
     "lint": "biome check",
     "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
+    "release": "bunx commit-and-tag-version -s",
     "start": "bun dist/server.js",
     "test:debug": "bun --inspect=ws://localhost:6499 test"
   },
@@ -32,7 +33,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.12",
     "@types/bun": "1.2.20",
-    "@types/node": "22.18.12",
+    "@types/node": "24.9.1",
     "drizzle-kit": "^0.31.8",
     "lint-staged": "^16.2.7",
     "openapi-types": "^12.1.3",
