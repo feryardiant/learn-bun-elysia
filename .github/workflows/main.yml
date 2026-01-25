@@ -84,3 +84,99 @@ jobs:
       fail-fast: false
       matrix:
         image-name: [elysia-app]
+
+  api-schema:
+    name: API Schema Artifact
+    if: ${{ inputs.buildable }}
+    needs: [docker]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+
+    env:
+      DB_NAME: ${{ github.repository_owner }}
+      DB_USER: ${{ github.repository_owner }}
+      DB_PASS: secret
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASS }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      app:
+        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+        env:
+          NODE_ENV: staging
+          APP_SECRET: not-secure-secret
+          LOG_LEVEL: debug
+          DB_HOST: postgres
+          DB_NAME: ${{ env.DB_NAME }}
+          DB_USER: ${{ env.DB_USER }}
+          DB_PASS: ${{ env.DB_PASS }}
+        ports:
+          - 3000:3000
+
+    steps:
+      - name: Health check
+        env:
+          APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
+        run: |
+          set -euo pipefail
+
+          echo "Waiting for application to start..."
+          TIMEOUT=5
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            if docker logs ${{ job.services.app.id }} 2>&1 | grep -q "$APP_URL"; then
+              break
+            fi
+
+            sleep 1
+            ELAPSED=$((ELAPSED+1))
+          done
+
+          if [ $ELAPSED -eq $TIMEOUT ]; then
+            echo "Timeout waiting for application to start"
+            docker logs ${{ job.services.app.id }}
+            exit 1
+          fi
+
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/health)
+
+          if [ "${HTTP_CODE:-0}" -ne 200 ]; then
+            echo "Health check failed with status ${HTTP_CODE:-unset}"
+            exit 1
+          fi
+
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+          echo "Health check passed"
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ vars.BUN_VERSION || '1.2.22' }}
+
+      - name: Generate API schema
+        run: |
+          bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
+
+      - name: Upload schema artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: api-schema_${{ inputs.image-prefix }}
+          path: ${{ inputs.image-name }}.schema.d.ts
+          retention-days: 30
+          overwrite: true

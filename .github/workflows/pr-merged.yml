@@ -1,0 +1,13 @@
+name: PR Merged
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  prune-images:
+    name: Prune old images
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/prune-images.yml
+    secrets:
+      PAT_PRUNE: ${{ secrets.PAT_PRUNE }}
