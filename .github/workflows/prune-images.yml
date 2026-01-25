@@ -115,12 +115,13 @@ jobs:
 
                 return pkgs;
               }, {
+                [base_branch]: [],
                 attestation: [],
                 dangling: [],
                 untagged: [],
-                [base_branch]: [],
               })
 
+              console.log(base_branch, images)
               core.info(`\u001b[1mFound tags:\u001b[0m`);
               for (const [tag, pkgs] of Object.entries(images)) {
                 if (pkgs.length === 0) continue;
