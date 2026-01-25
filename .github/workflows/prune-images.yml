@@ -36,6 +36,7 @@ jobs:
         env:
           BASE_BRANCH: ${{ inputs.branch-base }}
         with:
+          result-encoding: string
           script: |
             return context.payload.pull_request?.base?.ref || process.env.BASE_BRANCH;
 
