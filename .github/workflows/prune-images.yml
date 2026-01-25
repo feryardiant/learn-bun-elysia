@@ -173,6 +173,7 @@ jobs:
                   });
                 }
 
+                core.info(`- \u001b[33m${pkg.id}\u001b[0m: \u001b[33m${tags}\u001b[0m`);
                 deletion.success++;
               } catch (error) {
                 core.warning(`Unable to delete package \u001b[33m${pkg.id}\u001b[0m: ${error.message}`);
