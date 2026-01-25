@@ -5,7 +5,7 @@ on:
     inputs:
       buildable:
         description: Whether we need to build new image
-        required: false
+        default: true
         type: boolean
       image-name:
         description: Docker image name
