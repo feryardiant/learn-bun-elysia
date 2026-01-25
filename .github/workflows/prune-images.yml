@@ -1,0 +1,203 @@
+name: Prune Images
+
+on:
+  workflow_call:
+    inputs:
+      branch-base:
+        description: Base branch to keep
+        default: main
+        type: string
+      keep-branch-base:
+        description: Number of image to keep on base branch
+        default: 10
+        type: number
+
+jobs:
+  prune-images:
+    name: Prune old images
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Get base branch
+        id: base-branch
+        uses: actions/github-script@v7
+        continue-on-error: true
+        env:
+          BASE_BRANCH: ${{ inputs.branch-base }}
+        with:
+          script: |
+            return context.payload.pull_request?.base?.ref || process.env.BASE_BRANCH;
+
+      - name: Get previous images
+        id: prev-images
+        uses: actions/github-script@v7
+        continue-on-error: true
+        env:
+          BASE_BRANCH: ${{ steps.base-branch.outputs.result }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const base_branch = process.env.BASE_BRANCH;
+
+            try {
+              const packages = [];
+              const per_page = 50;
+              let has_next = true;
+              let page = 1;
+
+              do {
+                /**
+                 * @link https://octokit.github.io/rest.js/v22/#packages-get-all-package-versions-for-a-package-owned-by-the-authenticated-user
+                 */
+                const { data } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser({
+                  package_type: 'container',
+                  package_name: repo,
+                  per_page,
+                  page,
+                });
+
+                for (const { metadata, ...pkg } of data) {
+                  packages.push({
+                    id: pkg.id,
+                    url: pkg.url,
+                    digest: pkg.name,
+                    ...metadata.container,
+                    created_at: pkg.created_at,
+                  });
+                }
+
+                has_next = data.length === per_page;
+                page++;
+              } while (has_next);
+
+              packages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+              const images = packages.reduce((pkgs, pkg) => {
+                let tag = 'untagged';
+
+                if (pkg.tags.length > 0) {
+                  const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
+                  tag = image_tag
+                    ? image_tag.replace(/^\d+\.\d+\.\d+-(.*)\.[a-f0-9]{8}$/, '$1')
+                    : pkg.tags.at(1);
+
+                  if (!tag) {
+                    tag = pkg.tags[0].startsWith('sha256-') ? 'attestation' : 'dangling'
+                  }
+                }
+
+                tag = tag?.trim() || 'untagged';
+
+                if (pkg.tags.includes('latest')) {
+                  // Skip latest image
+                  return pkgs;
+                }
+
+                pkgs[tag] = pkgs[tag] || [];
+
+                if (pkgs[tag].find(p => p.id === pkg.id)) {
+                  // Skip it due to duplicate ID
+                  return pkgs;
+                }
+
+                pkgs[tag].push(pkg);
+
+                return pkgs;
+              }, {
+                attestation: [],
+                dangling: [],
+                untagged: [],
+                [base_branch]: [],
+              })
+
+              core.info(`\u001b[1mFound tags:\u001b[0m`);
+              for (const [tag, pkgs] of Object.entries(images)) {
+                if (pkgs.length === 0) continue;
+
+                core.info(`- \u001b[33m${pkgs.length}\u001b[0m: \u001b[33m${tag}\u001b[0m`);
+              }
+
+              return images;
+            } catch (error) {
+              console.error(error);
+              core.setFailed(`Failed get previous images: ${error.message}`);
+            }
+
+      - name: Prune old images
+        uses: actions/github-script@v7
+        if: steps.prev-images.outcome == 'success'
+        continue-on-error: true
+        env:
+          BASE_BRANCH: ${{ steps.base-branch.outputs.result }}
+          KEEP_BASE_BRANCH: ${{ inputs.keep-branch-base }}
+          PREV_IMAGES: ${{ steps.prev-images.outputs.result }}
+        with:
+          github-token: ${{ secrets.PAT_PRUNE }}
+          script: |
+            const { owner, repo } = context.repo;
+            const images = JSON.parse(process.env.PREV_IMAGES)
+            const deletion = {
+              success: 0,
+              error: 0,
+              skipped: 0,
+            };
+
+            const delete_pkg = async (pkg) => {
+              const tags = pkg.tags.length > 0
+                ? pkg.tags.join('\u001b[0m,\u001b[33m')
+                : pkg.digest;
+
+              try {
+                /**
+                 * @link https://octokit.github.io/rest.js/v22/#packages-delete-package-version-for-authenticated-user
+                 */
+                const response = await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                  package_type: 'container',
+                  package_name: repo,
+                  package_version_id: pkg.id,
+                });
+
+                core.info(`- \u001b[33m${pkg.id}\u001b[0m: \u001b[33m${tags}\u001b[0m`);
+                deletion.success++;
+              } catch (error) {
+                core.warning(`Unable to delete package \u001b[33m${pkg.id}\u001b[0m: ${error.message}`);
+                deletion.error++;
+              }
+            }
+
+            // Images to delete
+            const base_branch = process.env.BASE_BRANCH;
+            const keep_base_branch = Number(process.env.KEEP_BASE_BRANCH);
+            const to_delete = [];
+
+            // Keep most recent images from `base_branch`
+            if (images[base_branch].length > keep_base_branch) {
+              // Sort by created_at descending (newest first) to keep recent images
+              images[base_branch].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              to_delete.push(...images[base_branch].slice(keep_base_branch));
+            }
+
+            for (const [tag, pkgs] of Object.entries(images)) {
+              // Delete images other than main and untagged
+              if (pkgs.length > 0 && ![base_branch, 'untagged'].includes(tag)) {
+                to_delete.push(...pkgs);
+              }
+            }
+
+            if (to_delete.length === 0) {
+              core.notice('No images to delete');
+              return;
+            }
+
+            core.info(`\u001b[1mDelete images:\u001b[0m`);
+            await Promise.all(to_delete.map(delete_pkg));
+
+            core.notice([
+              `From \u001b[1m${to_delete.length}\u001b[0m images:`,
+              `\u001b[32m${deletion.success}\u001b[0m deleted and`,
+              `\u001b[31m${deletion.error}\u001b[0m error`,
+            ].join(' '));
