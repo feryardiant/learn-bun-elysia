@@ -83,3 +83,15 @@ jobs:
       fail-fast: false
       matrix:
         image-name: [elysia-app]
+
+  prune-images:
+    name: Prune old images
+    needs: [prepare]
+    uses: ./.github/workflows/prune-images.yml
+    secrets:
+      PAT_PRUNE: ${{ secrets.PAT_PRUNE }}
+    with:
+      dry-run: true
+
+    permissions:
+      packages: read
