@@ -87,7 +87,7 @@ jobs:
               const images = packages.reduce((pkgs, pkg) => {
                 let tag = 'dangling';
 
-                if (pkg.tags.includes('latest') || pkg.tags.find(tag => /^v\d+\.\d+\.\d$/.test(tag))) {
+                if (pkg.tags.includes('latest') || pkg.tags.find(tag => /^v\d+\.\d+\.\d+$/.test(tag))) {
                   // Skip latest and release images
                   return pkgs;
                 }
