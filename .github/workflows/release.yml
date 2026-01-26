@@ -20,7 +20,7 @@ jobs:
     with:
       image-name: ${{ matrix.image-name }}
       image-prefix: ${{ needs.prepare.outputs.image-prefix }}
-      image-tag: ${{ needs.prepare.outputs.app-version }}
+      image-tag: ${{ needs.prepare.outputs.image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
 
     permissions:

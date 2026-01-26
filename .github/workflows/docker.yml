@@ -59,9 +59,9 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=${{ inputs.image-tag }}
             type=raw,value=${{ inputs.image-prefix }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=semver,pattern=v{{major}}
             type=sha,prefix=,format=long
 
       - name: Build and push Docker image

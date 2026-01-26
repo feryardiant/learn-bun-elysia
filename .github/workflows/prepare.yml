@@ -70,8 +70,14 @@ jobs:
 
           # Extract repository branch name
           BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          echo "image-slug=$(echo "$BRANCH_NAME" | tr '/' '-')" >> $GITHUB_OUTPUT
+
+          if [[ "$BRANCH_NAME" == refs/tags/* ]]; then
+            echo "branch-name=" >> $GITHUB_OUTPUT
+            echo "image-slug=" >> $GITHUB_OUTPUT
+          else
+            echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "image-slug=$(echo "$BRANCH_NAME" | tr '/' '-')" >> $GITHUB_OUTPUT
+          fi
 
           # Extract version number from `package.json` file
           echo "app-version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
@@ -85,8 +91,13 @@ jobs:
           IMAGE_SLUG: ${{ steps.repo.outputs.image-slug }}
         run: |
           # Generate image tag with timestamp and commit
-          echo "image-tag=${APP_VERSION}-${IMAGE_SLUG}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-          echo "image-prefix=${APP_VERSION}-${IMAGE_SLUG}" >> $GITHUB_OUTPUT
+          if [[ -n "$IMAGE_SLUG" ]]; then
+            echo "image-tag=${IMAGE_SLUG}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+            echo "image-prefix=${IMAGE_SLUG}" >> $GITHUB_OUTPUT
+          else
+            echo "image-tag=v${APP_VERSION}" >> $GITHUB_OUTPUT
+            echo "image-prefix=${APP_VERSION}" >> $GITHUB_OUTPUT
+          fi
 
           # Set deployment environment
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
