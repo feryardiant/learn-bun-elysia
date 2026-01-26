@@ -70,11 +70,17 @@ jobs:
 
           # Extract repository branch name
           BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          echo "image-slug=$(echo "$BRANCH_NAME" | tr '/' '-')" >> $GITHUB_OUTPUT
+
+          if [[ "$BRANCH_NAME" == refs/tags/* ]]; then
+            echo "branch-name=" >> $GITHUB_OUTPUT
+            echo "image-slug=" >> $GITHUB_OUTPUT
+          else
+            echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "image-slug=$(echo "$BRANCH_NAME" | tr '/' '-')" >> $GITHUB_OUTPUT
+          fi
 
           # Extract version number from `package.json` file
-          echo "app-version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
+          echo "app-version=v$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
 
       - name: Deployment
         id: deploy
