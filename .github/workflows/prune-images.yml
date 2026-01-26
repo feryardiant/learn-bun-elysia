@@ -87,6 +87,11 @@ jobs:
               const images = packages.reduce((pkgs, pkg) => {
                 let tag = 'dangling';
 
+                if (pkg.tags.includes('latest') || pkg.tags.find(tag => /^v\d+\.\d+\.\d$/.test(tag))) {
+                  // Skip latest and release images
+                  return pkgs;
+                }
+
                 if (pkg.tags.length > 0) {
                   const image_tag = pkg.tags.find(tag => /^\d+\.\d+\.\d+-[\w-]+\.[a-f0-9]{8}$/.test(tag));
                   tag = image_tag
@@ -99,11 +104,6 @@ jobs:
                 }
 
                 tag = tag?.trim() || 'untagged';
-
-                if (pkg.tags.includes('latest')) {
-                  // Skip latest image
-                  return pkgs;
-                }
 
                 pkgs[tag] = pkgs[tag] || [];
 
