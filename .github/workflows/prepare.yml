@@ -91,8 +91,10 @@ jobs:
           IMAGE_SLUG: ${{ steps.repo.outputs.image-slug }}
         run: |
           # Generate image tag with timestamp and commit
-          echo "image-tag=${APP_VERSION}-${IMAGE_SLUG}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-          echo "image-prefix=${APP_VERSION}-${IMAGE_SLUG}" >> $GITHUB_OUTPUT
+          if [[ -n "$IMAGE_SLUG" ]]; then
+            echo "image-tag=${APP_VERSION}-${IMAGE_SLUG}.${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+            echo "image-prefix=${APP_VERSION}-${IMAGE_SLUG}" >> $GITHUB_OUTPUT
+          fi
 
           # Set deployment environment
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
