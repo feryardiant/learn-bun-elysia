@@ -18,7 +18,7 @@
     "release": "bunx commit-and-tag-version -s",
     "start": "bun dist/server.js",
     "test:debug": "bun --inspect=ws://localhost:6499 test",
-    "test:load": "set -a && . .env && [ -f .env.local ] && . .env.local && set +a && k6 run scripts/throughput.ts"
+    "test:load": "set -a && if [ -f .env.local ]; then . .env.local; else . .env; fi && set +a && k6 run scripts/throughput.ts"
   },
   "dependencies": {
     "@elysiajs/openapi": "^1.4.14",
