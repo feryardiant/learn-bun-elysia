@@ -2,6 +2,13 @@ integration:
   - changed-files:
       - any-glob-to-any-file:
           - '.github/**.yml'
+          - 'compose.yml'
+          - 'compose.*.yml'
+
+github_actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**.yml'
 
 docs:
   - changed-files:
@@ -9,10 +16,18 @@ docs:
           - '.env.example'
           - '**.md'
 
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'bun.lock'
+
 deployment:
   - changed-files:
       - any-glob-to-any-file:
           - 'dockerfiles/**'
+          - 'compose.yml'
+          - 'compose.*.yml'
 
 api:
   - changed-files:
@@ -23,15 +38,21 @@ api:
 auth:
   - changed-files:
       - any-glob-to-any-file:
-          - src/modules/auth/**
-          - src/config/auth.config.ts
-          - src/plugins/auth.plugin.ts
+          - 'src/modules/auth/**'
+          - 'src/config/auth.config.ts'
+          - 'src/plugins/auth.plugin.ts'
+
+feeds:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/modules/feeds/**'
 
 database:
   - changed-files:
       - any-glob-to-any-file:
           - 'database/**'
           - 'src/config/db.config.ts'
+          - 'src/modules/*/schemas/*.schema.ts'
           - 'src/plugins/database.plugin.ts'
 
 tests:
