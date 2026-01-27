@@ -13,14 +13,6 @@ updates:
   - package-ecosystem: bun
     directory: /
     open-pull-requests-limit: 5
-    versioning-strategy: increase-if-necessary
     schedule:
       interval: monthly
       timezone: Asia/Jakarta
-    groups:
-      dependencies:
-        dependency-type: production
-        patterns: ['*']
-      dev-dependencies:
-        dependency-type: development
-        patterns: ['*']
