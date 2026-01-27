@@ -17,7 +17,8 @@
     "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
     "release": "bunx commit-and-tag-version -s",
     "start": "bun dist/server.js",
-    "test:debug": "bun --inspect=ws://localhost:6499 test"
+    "test:debug": "bun --inspect=ws://localhost:6499 test",
+    "test:load": "set -a && . .env && [ -f .env.local ] && . .env.local && set +a && k6 run scripts/throughput.ts"
   },
   "dependencies": {
     "@elysiajs/openapi": "^1.4.14",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
     "@types/bun": "1.2.20",
+    "@types/k6": "^1.5.0",
     "@types/node": "24.9.1",
     "drizzle-kit": "^0.31.8",
     "lint-staged": "^16.2.7",
