@@ -33,7 +33,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
     "@types/bun": "1.2.20",
-    "@types/node": "24.9.1",
+    "@types/node": "25.0.10",
     "drizzle-kit": "^0.31.8",
     "lint-staged": "^16.2.7",
     "openapi-types": "^12.1.3",
