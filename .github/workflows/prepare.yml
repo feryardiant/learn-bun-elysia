@@ -113,7 +113,7 @@ jobs:
 
       - name: Get previous package
         id: previous-pkg
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         continue-on-error: true
         env:
           IMAGE_PREFIX: ${{ steps.deploy.outputs.image-prefix }}
@@ -152,7 +152,7 @@ jobs:
 
       - name: Get commit sha from previous successful run
         id: previous-run
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           BRANCH_NAME: ${{ steps.repo.outputs.branch-name }}
         with:
@@ -216,7 +216,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: steps.previous-run.outputs.prev-commit-sha != ''
         env:
           PREVIOUS_SHA: ${{ steps.previous-run.outputs.prev-commit-sha }}
@@ -256,7 +256,7 @@ jobs:
 
       - name: Check buildability
         id: buildable
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: steps.changed-files.outputs.result != ''
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.result }}

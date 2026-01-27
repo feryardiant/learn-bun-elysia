@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Get base branch
         id: base-branch
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         continue-on-error: true
         env:
           BASE_BRANCH: ${{ inputs.branch-base }}
@@ -42,7 +42,7 @@ jobs:
 
       - name: Get previous images
         id: prev-images
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         continue-on-error: true
         env:
           BASE_BRANCH: ${{ steps.base-branch.outputs.result }}
@@ -136,7 +136,7 @@ jobs:
             }
 
       - name: Prune old images
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         if: steps.prev-images.outcome == 'success'
         continue-on-error: true
         env:
