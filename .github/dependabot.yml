@@ -9,3 +9,10 @@ updates:
     groups:
       dependencies:
         patterns: ['*']
+
+  - package-ecosystem: bun
+    directory: /
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+      timezone: Asia/Jakarta
