@@ -25,6 +25,11 @@ services:
       DB_PASS: ${DB_PASS:-secret}
     depends_on:
       - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
   postgres:
     image: postgres:17.4-alpine
@@ -43,6 +48,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
 
 networks:
   default:

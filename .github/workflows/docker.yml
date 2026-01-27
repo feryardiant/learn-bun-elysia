@@ -183,3 +183,104 @@ jobs:
           path: ${{ inputs.image-name }}.schema.d.ts
           retention-days: 30
           overwrite: true
+
+  stress-test:
+    name: Stress Test
+    if: needs.build-push.result == 'success'
+    needs: [build-push]
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: read
+
+    env:
+      DB_NAME: ${{ github.repository_owner }}
+      DB_USER: ${{ github.repository_owner }}
+      DB_PASS: secret
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASS }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd=pg_isready
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+      app:
+        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+        env:
+          NODE_ENV: staging
+          APP_SECRET: not-secure-secret
+          LOG_LEVEL: debug
+          DB_HOST: postgres
+          DB_NAME: ${{ env.DB_NAME }}
+          DB_USER: ${{ env.DB_USER }}
+          DB_PASS: ${{ env.DB_PASS }}
+        ports:
+          - 3000:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Health check
+        env:
+          APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
+        run: |
+          set -euo pipefail
+
+          echo "Waiting for application to start..."
+          TIMEOUT=5
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            if docker logs ${{ job.services.app.id }} 2>&1 | grep -q "$APP_URL"; then
+              break
+            fi
+
+            sleep 1
+            ELAPSED=$((ELAPSED+1))
+          done
+
+          if [ $ELAPSED -eq $TIMEOUT ]; then
+            echo "Timeout waiting for application to start"
+            docker logs ${{ job.services.app.id }}
+            exit 1
+          fi
+
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $APP_URL/health)
+
+          if [ "${HTTP_CODE:-0}" -ne 200 ]; then
+            echo "Health check failed with status ${HTTP_CODE:-unset}"
+            exit 1
+          fi
+
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+          echo "Health check passed"
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 load test
+        run: |
+          k6 run scripts/throughput.ts --summary-export=load-performance.json
+
+      - name: Create Summary
+        if: always()
+        run: |
+          echo "### Load Test Results 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Requests | $(jq .metrics.http_reqs.count load-performance.json) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed Requests | $(jq .metrics.http_req_failed.count load-performance.json) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Avg Duration | $(jq .metrics.http_req_duration.avg load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
+          echo "| P95 Duration | $(jq '.metrics.http_req_duration["p(95)"]' load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
+
