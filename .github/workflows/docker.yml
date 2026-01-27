@@ -177,7 +177,7 @@ jobs:
           bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
 
       - name: Upload schema artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: api-schema_${{ inputs.image-prefix }}
           path: ${{ inputs.image-name }}.schema.d.ts
