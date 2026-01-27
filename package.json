@@ -20,7 +20,7 @@
     "test:debug": "bun --inspect=ws://localhost:6499 test"
   },
   "dependencies": {
-    "@elysiajs/openapi": "^1.4.13",
+    "@elysiajs/openapi": "^1.4.14",
     "@elysiajs/static": "^1.4.7",
     "better-auth": "^1.4.11",
     "commander": "^14.0.2",
