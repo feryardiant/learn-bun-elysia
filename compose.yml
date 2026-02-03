@@ -7,7 +7,7 @@ services:
       args:
         APP_NAME: ${APP_NAME:-learn-elysia}
         APP_VERSION: ${APP_VERSION:-0.0.0-local}
-        BUN_VERSION: ${BUN_VERSION:-1.2.22}
+        BUN_VERSION: ${BUN_VERSION:-1.2.23}
         BASE_OS: ${BASE_OS:-alpine}
         BASE_VERSION: ${BASE_VERSION:-3.22}
     image: ghcr.io/feryardiant/learn-bun-elysia:local
