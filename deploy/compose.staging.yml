@@ -4,7 +4,7 @@ services:
       file: compose.yml
       service: app
     env_file:
-      - path: .env.staging
+      - path: ../.env.staging
         required: false
     environment:
       NODE_ENV: ${NODE_ENV:-staging}
