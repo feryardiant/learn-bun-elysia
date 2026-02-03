@@ -3,7 +3,6 @@
 # Stage 1: Build
 ARG BUN_VERSION="1.2.23"
 ARG BASE_OS="alpine"
-ARG BASE_VERSION="3.23"
 
 FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 
