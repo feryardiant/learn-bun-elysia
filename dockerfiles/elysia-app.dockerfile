@@ -52,7 +52,7 @@ COPY --from=build /app/public ./public
 
 EXPOSE ${PORT}
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:${PORT}/health || exit 1
 
 ENTRYPOINT [ "server" ]
