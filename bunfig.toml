@@ -6,7 +6,7 @@
 root = "./test"
 preload = ["./test/setup.ts"]
 coverageReporter  = ["text", "lcov"]
-coverageDir = "tmp/coverage"
+coverageDir = "test/coverage"
 # Multiple patterns
 coveragePathIgnorePatterns = [
   "test/**/*.ts",
