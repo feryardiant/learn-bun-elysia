@@ -27,7 +27,7 @@ EOF
 
 # -----------------------------------
 # Stage 2: Runtime
-FROM alpine:${BASE_VERSION} AS runtime
+FROM ${BASE_OS}:${BASE_VERSION} AS runtime
 
 WORKDIR /app
 
