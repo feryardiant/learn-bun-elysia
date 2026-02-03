@@ -28,7 +28,6 @@ coverage
 
 # IDE and AI Agents
 .idea
-.tool-versions
 .vscode
 .zed
 GEMINI.md

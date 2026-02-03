@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-ARG BUN_VERSION="1.2.22"
+ARG BUN_VERSION="1.2.23"
 ARG BASE_OS="alpine"
 ARG BASE_VERSION="3.22"
 
