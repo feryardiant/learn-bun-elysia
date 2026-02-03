@@ -270,7 +270,7 @@ jobs:
 
             const patterns = [
               /^database\//,
-              /^dockerfiles\//,
+              /^deploy\/docker\//,
               /^public\//,
               /^src\//,
               /^bun\.lock$/,

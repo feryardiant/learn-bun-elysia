@@ -1,8 +1,11 @@
 services:
   app:
+    extends:
+      file: deploy/compose.yml
+      service: app
     build:
       context: .
-      dockerfile: ./dockerfiles/elysia-app.dockerfile
+      dockerfile: ./deploy/docker/elysia-app.dockerfile
       pull: false
       args:
         APP_NAME: ${APP_NAME:-learn-elysia}
@@ -11,62 +14,13 @@ services:
         BASE_OS: ${BASE_OS:-alpine}
         BASE_VERSION: ${BASE_VERSION:-3.23}
     image: ghcr.io/feryardiant/learn-bun-elysia:local
-    container_name: elysia-app
-    ports:
-      - ${FORWARD_APP_PORT:-3000}:3000
-    env_file:
-      - path: .env
-        required: true
     environment:
-      PORT: 3000
-      HOST: 0.0.0.0
       NODE_ENV: ${NODE_ENV:-local}
-      APP_URL: ${APP_URL:-http://localhost:${FORWARD_APP_PORT:-3000}}
-      APP_DOMAIN: ${APP_DOMAIN:-localhost}
-      BASE_PATH: ${BASE_PATH:-}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      AUTH_SECRET: ${AUTH_SECRET:-}
-      DB_NAME: ${DB_NAME:-elysia_app}
-      DB_PORT: 5432
-      DB_HOST: ${DB_HOST:-postgres}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASS: ${DB_PASS:-secret}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
 
   postgres:
-    image: postgres:${DB_VERSION:-17.7}-${BASE_OS:-alpine}${BASE_VERSION:-3.23}
-    container_name: elysia-db
-    ports:
-      - ${FORWARD_DB_PORT:-5432}:5432
-    environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASS:-secret}
-      POSTGRES_DB: ${DB_NAME:-elysia_app}
-    volumes:
-      - ./tmp/init-db.sql:/docker-entrypoint-initdb.d/10-init-db.sql
-      - ./tmp/postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-elysia_app}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
+    extends:
+      file: deploy/compose.yml
+      service: postgres
 
 networks:
   default:
