@@ -18,6 +18,11 @@ services:
     image: ghcr.io/feryardiant/learn-bun-elysia:development
     environment:
       NODE_ENV: development
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
 
   postgres:
     extends:
