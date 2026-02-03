@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.5](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.4...v0.0.5) (2026-02-03)
+
+
+### Features
+
+* **ci:** add basic load testing using `k6` ([#36](https://github.com/feryardiant/learn-bun-elysia/issues/36)) ([f1806ff](https://github.com/feryardiant/learn-bun-elysia/commit/f1806ffa51306ebd154184b88d814033fff7c2a4))
+* **ci:** upload API-Schema as release assets ([#42](https://github.com/feryardiant/learn-bun-elysia/issues/42)) ([f00fdd4](https://github.com/feryardiant/learn-bun-elysia/commit/f00fdd4f87ee4db8a06c3bc5764e8a7879997b1d))
+
 ## [0.0.4](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.3...v0.0.4) (2026-01-27)
 
 
