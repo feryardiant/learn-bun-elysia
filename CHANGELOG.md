@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.6](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.5...v0.0.6) (2026-02-03)
+
+
+### Bug Fixes
+
+* **ci:** fix api-schema release asset ([#43](https://github.com/feryardiant/learn-bun-elysia/issues/43)) ([7e27006](https://github.com/feryardiant/learn-bun-elysia/commit/7e27006c795fd9299a9edc4df7be6d3751fa1ffc)), closes [#42](https://github.com/feryardiant/learn-bun-elysia/issues/42)
+
 ## [0.0.5](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.4...v0.0.5) (2026-02-03)
 
 
