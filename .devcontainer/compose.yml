@@ -17,7 +17,7 @@ services:
     ports:
       - ${FORWARD_STUDIO_PORT:-4000}:4000
     volumes:
-      - elysia-node_modules:/app/node_modules
+      - node_modules:/app/node_modules
     environment:
       NODE_ENV: development
     deploy:
@@ -32,7 +32,8 @@ services:
       service: postgres
 
 volumes:
-  elysia-node_modules:
+  node_modules:
+    name: elysia-dev-node_modules
 
 networks:
   default:
