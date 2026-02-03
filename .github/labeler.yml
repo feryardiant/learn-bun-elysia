@@ -25,7 +25,7 @@ dependencies:
 deployment:
   - changed-files:
       - any-glob-to-any-file:
-          - 'dockerfiles/**'
+          - 'deploy/docker/**'
           - 'compose.yml'
           - 'compose.*.yml'
 
