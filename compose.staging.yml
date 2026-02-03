@@ -3,7 +3,7 @@ services:
     image: ghcr.io/feryardiant/learn-bun-elysia:${STAGING_BRANCH:-latest}
     container_name: elysia-app
     ports:
-      - ${FORWARD_PORT:-3000}:3000
+      - ${FORWARD_APP_PORT:-3000}:3000
     env_file:
       - path: .env
         required: true
@@ -13,7 +13,7 @@ services:
       PORT: 3000
       HOST: 0.0.0.0
       NODE_ENV: ${NODE_ENV:-staging}
-      APP_URL: ${APP_URL:-http://localhost:${FORWARD_PORT:-3000}}
+      APP_URL: ${APP_URL:-http://localhost:${FORWARD_APP_PORT:-3000}}
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
       BASE_PATH: ${BASE_PATH:-}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
@@ -24,7 +24,13 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASS: ${DB_PASS:-secret}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     deploy:
       resources:
         limits:
@@ -32,7 +38,7 @@ services:
           memory: 256M
 
   postgres:
-    image: postgres:17.4-alpine
+    image: postgres:17.7-${BASE_OS:-alpine}${BASE_VERSION:-3.23}
     container_name: elysia-db
     ports:
       - ${FORWARD_DB_PORT:-5432}:5432
