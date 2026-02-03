@@ -1,0 +1,19 @@
+services:
+  app:
+    extends:
+      file: compose.yml
+      service: app
+    env_file:
+      - path: .env.staging
+        required: false
+    environment:
+      NODE_ENV: ${NODE_ENV:-staging}
+
+  postgres:
+    extends:
+      file: compose.yml
+      service: postgres
+
+networks:
+  default:
+    name: elysia-stack
