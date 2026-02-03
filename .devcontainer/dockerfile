@@ -19,7 +19,7 @@ RUN bun ci --no-cache --ignore-scripts
 
 ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
 
-EXPOSE ${PORT}
+EXPOSE ${PORT} 4000
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:${PORT}/health || exit 1

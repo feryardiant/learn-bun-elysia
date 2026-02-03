@@ -13,9 +13,11 @@ services:
         BUN_VERSION: ${BUN_VERSION:-1.2.23}
         BASE_OS: ${BASE_OS:-alpine}
         BASE_VERSION: ${BASE_VERSION:-3.23}
+    image: ghcr.io/feryardiant/learn-bun-elysia:development
+    ports:
+      - ${FORWARD_STUDIO_PORT:-4000}:4000
     volumes:
       - elysia-node_modules:/app/node_modules
-    image: ghcr.io/feryardiant/learn-bun-elysia:development
     environment:
       NODE_ENV: development
     deploy:
