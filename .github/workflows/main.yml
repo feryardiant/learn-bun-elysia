@@ -62,13 +62,13 @@ jobs:
         run: bun test --coverage
 
   docker:
-    name: Docker Images for ${{ matrix.image-name }}
+    name: Docker Images for elysia-app
     needs: [prepare, tests]
     if: needs.tests.result == 'success'
     uses: ./.github/workflows/docker.yml
     with:
       buildable: ${{ needs.prepare.outputs.buildable == '1' }}
-      image-name: ${{ matrix.image-name }}
+      image-name: elysia-app
       image-prefix: ${{ needs.prepare.outputs.image-prefix }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
@@ -78,8 +78,3 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        image-name: [elysia-app]

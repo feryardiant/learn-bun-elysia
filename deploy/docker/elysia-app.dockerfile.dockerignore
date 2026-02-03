@@ -7,7 +7,7 @@ tmp
 biome.json
 compose.*.yml
 compose.yml
-dockerfiles
+deploy/docker
 node_modules
 test
 
