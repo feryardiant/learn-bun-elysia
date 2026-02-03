@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/dockerfile
+      target: build
+      args:
+        BUN_VERSION: ${BUN_VERSION:-1.2.23}
+        BASE_OS: ${BASE_OS:-alpine}
+        BASE_VERSION: ${BASE_VERSION:-3.23}
+    volumes:
+      - elysia-node_modules:/app/node_modules
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-secret}
+      DB_NAME: ${DB_NAME:-elysia_app}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:${DB_VERSION:-17.7}-${BASE_OS:-alpine}${BASE_VERSION:-3.23}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-secret}
+      POSTGRES_DB: ${DB_NAME:-elysia_app}
+    volumes:
+      - ../tmp/init-db.sql:/docker-entrypoint-initdb.d/10-init-db.sql
+      - elysia-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-elysia_app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  elysia-postgres-data:
+  elysia-node_modules:
+
+networks:
+  default:
+    name: elysia-dev

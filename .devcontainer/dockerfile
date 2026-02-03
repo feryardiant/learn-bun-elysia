@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1.4
+# -----------------------------------
+# Stage 1: Build
+ARG BUN_VERSION="1.2.23"
+ARG BASE_OS="alpine"
+ARG BASE_VERSION="3.23"
+
+FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
+
+WORKDIR /app
+
+ENV NODE_ENV=development
+
+COPY . .
+
+RUN apk add --no-cache curl
+
+RUN bun ci --no-cache --ignore-scripts
+
+ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
+
+EXPOSE ${PORT}
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/health || exit 1
+
+ENTRYPOINT [ "bun", "run", "--watch", "src/server.ts" ]

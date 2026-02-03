@@ -1,0 +1,29 @@
+{
+  "name": "Elysia Dev",
+  "dockerComposeFile": "./compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "mounts": [
+    {
+      "type": "bind",
+      "source": "..",
+      "target": "/app"
+    }
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "oven.bun-vscode"
+      ]
+    },
+    "codespaces": {
+      "extensions": [
+        "oven.bun-vscode"
+      ]
+    }
+  },
+  "remoteUser": "root",
+  "runServices": [
+    "postgres"
+  ]
+}
