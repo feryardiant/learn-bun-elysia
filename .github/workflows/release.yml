@@ -14,11 +14,11 @@ jobs:
       pull-requests: write
 
   docker:
-    name: Docker Images for ${{ matrix.image-name }}
+    name: Docker Images for elysia-app
     needs: [prepare]
     uses: ./.github/workflows/docker.yml
     with:
-      image-name: ${{ matrix.image-name }}
+      image-name: elysia-app
       image-prefix: ${{ needs.prepare.outputs.image-prefix }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
       repo-name: ${{ needs.prepare.outputs.repo-name }}
@@ -29,14 +29,30 @@ jobs:
       id-token: write
       attestations: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        image-name: [elysia-app]
-
   publish:
     name: Publish
     uses: projek-xyz/actions/.github/workflows/release.yml@main
 
     permissions:
       contents: write
+
+  upload-assets:
+    name: Upload Release Assets
+    needs: [docker, publish]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download API Schema artifact
+        uses: actions/download-artifact@v7
+        with:
+          artifact-ids: ${{ needs.docker.outputs.artifact-id }}
+          path: assets
+
+      - name: Upload assets to release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ github.ref_name }} assets/*.schema.d.ts --clobber
