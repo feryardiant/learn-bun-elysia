@@ -7,9 +7,9 @@
   "private": true,
   "scripts": {
     "build": "bun build src/server.ts --minify-whitespace --minify-syntax --sourcemap --target bun --outdir ./dist",
-    "db:generate": "bunx --bun drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio --port 4000",
+    "db:generate": "bunx --bun drizzle-kit --config drizzle.config.ts generate",
+    "db:migrate": "bunx --bun drizzle-kit --config drizzle.config.ts migrate",
+    "db:studio": "bunx --bun drizzle-kit --config drizzle.config.ts studio --port 4000",
     "dev": "bun run --watch src/server.ts",
     "dev:debug": "bun run --inspect=ws://localhost:6499 src/server.ts",
     "format": "biome format --write",
