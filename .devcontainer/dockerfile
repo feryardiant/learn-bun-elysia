@@ -8,15 +8,13 @@ FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 
 WORKDIR /app
 
-ENV NODE_ENV=development
-
 COPY . .
 
 RUN apk add --no-cache curl git
 
 RUN bun ci --no-cache --ignore-scripts
 
-ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
+ENV NODE_ENV=devcontainer PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
 
 EXPOSE ${PORT} 4000
 
