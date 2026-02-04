@@ -23,4 +23,4 @@ EXPOSE ${PORT} 4000
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:${PORT}/health || exit 1
 
-ENTRYPOINT [ "bun", "run", "--watch", "src/server.ts" ]
+ENTRYPOINT [ "bun", "run", ".devcontainer/init.ts" ]
