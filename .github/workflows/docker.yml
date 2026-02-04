@@ -144,6 +144,8 @@ jobs:
           bun-version: ${{ env.BUN_VERSION }}
 
       - name: Generate API schema
+        env:
+          APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
         run: |
           bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
 
@@ -208,6 +210,8 @@ jobs:
         uses: grafana/setup-k6-action@v1
 
       - name: Run k6 load test
+        env:
+          APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
         run: |
           k6 run scripts/throughput.ts --summary-export=load-performance.json
 
