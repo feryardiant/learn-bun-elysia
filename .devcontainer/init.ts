@@ -1,6 +1,16 @@
-import { spawn } from 'bun'
+import { spawn, spawnSync } from 'bun'
 
 console.info('🚀 Starting dev container services...')
+
+const migration = spawnSync(['bun', 'run', 'src/server.ts', 'migrate'], {
+  stdout: 'inherit',
+  stderr: 'inherit',
+})
+
+if (migration.exitCode !== 0) {
+  console.error('❌ migration failed with code', migration.exitCode)
+  process.exit(1)
+}
 
 const processes: ReturnType<typeof spawn>[] = []
 
@@ -8,7 +18,6 @@ const processes: ReturnType<typeof spawn>[] = []
 // Since the server handles 'watch', it might restart if migration changes files,
 // but migrations usually just touch DB.
 const commands: Record<string, string[]> = {
-  migration: ['bun', 'run', 'src/server.ts', 'migrate'],
   server: ['bun', 'run', '--watch', 'src/server.ts'],
   studio: ['bun', 'run', 'db:studio', '--host', process.env.HOST || '0.0.0.0'],
 }
