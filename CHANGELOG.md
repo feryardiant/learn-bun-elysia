@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.8](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.7...v0.0.8) (2026-02-04)
+
+
+### Bug Fixes
+
+* **ci:** missing `APP_URL` due to removal of health check step ([186e849](https://github.com/feryardiant/learn-bun-elysia/commit/186e84976b8af9ffef230e6617eaa9cd2a8dc84c))
+
 ## [0.0.7](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.6...v0.0.7) (2026-02-04)
 
 

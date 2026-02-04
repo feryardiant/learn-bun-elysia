@@ -1,7 +1,7 @@
 {
   "name": "learn-elysia",
   "description": "Learning Elysia.js and Bun.js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "module": "dist/server.js",
   "type": "module",
   "private": true,
