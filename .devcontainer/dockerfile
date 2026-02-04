@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-ARG BUN_VERSION="1.2.23"
+ARG BUN_VERSION="1.3.3"
 ARG BASE_OS="alpine"
 
 FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
