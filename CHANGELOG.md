@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.7](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.6...v0.0.7) (2026-02-04)
+
+
+### Features
+
+* add `health` command and remove `curl` ([#49](https://github.com/feryardiant/learn-bun-elysia/issues/49)) ([8bfee78](https://github.com/feryardiant/learn-bun-elysia/commit/8bfee78075641eb3f575f86915737ee83f6e7e70))
+* **deps:** bum dependencies ([6eb024c](https://github.com/feryardiant/learn-bun-elysia/commit/6eb024c555e3ea327a9543e8df196cb141b02721))
+* **deps:** bump `bun` version to `v1.3.3` across environments ([#48](https://github.com/feryardiant/learn-bun-elysia/issues/48)) ([3362974](https://github.com/feryardiant/learn-bun-elysia/commit/3362974abe6f5116ef9733f693bdec1d1a7a697d))
+* **dev:** add `healthcheck` in docker built and streamline base os image with the database ([#45](https://github.com/feryardiant/learn-bun-elysia/issues/45)) ([fdd44b0](https://github.com/feryardiant/learn-bun-elysia/commit/fdd44b0c849774f2a11eef5bc948c710fe200a4d))
+* **dev:** bump `bun` version to `v1.2.23` ([#44](https://github.com/feryardiant/learn-bun-elysia/issues/44)) ([6a7f8ec](https://github.com/feryardiant/learn-bun-elysia/commit/6a7f8ec9f44e1c310ba18ac5fd3c807166b7ddd5))
+* init `devcontainer` ([#46](https://github.com/feryardiant/learn-bun-elysia/issues/46)) ([09b353e](https://github.com/feryardiant/learn-bun-elysia/commit/09b353e0575e79818aed787c7b8d0804f06fa16a))
+
 ## [0.0.6](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.5...v0.0.6) (2026-02-03)
 
 
