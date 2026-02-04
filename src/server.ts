@@ -18,6 +18,21 @@ program
     process.exit(migrated ? 0 : 1)
   })
 
+program
+  .command('health')
+  .description('Health check')
+  .action(async () => {
+    try {
+      const response = await fetch(
+        `http://${ENV.APP_DOMAIN}:${ENV.PORT}/health`,
+      )
+
+      process.exit(response.ok ? 0 : 1)
+    } catch {
+      process.exit(1)
+    }
+  })
+
 program.action(() => {
   app.listen({ port: ENV.PORT, hostname: ENV.HOST }, ({ url }) => {
     const ACCESS_URL = !url.href.includes(ENV.APP_URL)
