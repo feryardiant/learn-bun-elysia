@@ -39,8 +39,6 @@ ARG LOG_LEVEL="info"
 COPY --from=build /usr/lib/libstdc++.so.6 /usr/lib/
 COPY --from=build /usr/lib/libgcc_s.so.1 /usr/lib/
 
-RUN apk add --no-cache curl
-
 ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0 \
     APP_NAME=${APP_NAME} APP_VERSION=${APP_VERSION} \
     LOG_LEVEL=${LOG_LEVEL} PATH="/app:$PATH"
@@ -53,6 +51,6 @@ COPY --from=build /app/public ./public
 EXPOSE ${PORT}
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
-  CMD curl -f http://localhost:${PORT}/health || exit 1
+  CMD server health
 
 ENTRYPOINT [ "server" ]
