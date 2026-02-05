@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { posts, comments, CommentRepository } from '~/modules/feeds'
-import { db } from '~/plugins/db.plugin'
+import { db } from '~/plugins/database.plugin'
 
 describe('Comment Repository', () => {
   let commentRepository: CommentRepository

@@ -1,4 +1,4 @@
-import type { AppDatabase } from '~/plugins/db.plugin'
+import type { AppDatabase } from '~/plugins/database.plugin'
 import type { Post } from '../types'
 
 export class PostRepository {

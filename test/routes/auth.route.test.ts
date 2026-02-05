@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'bun:test'
 import { ENV } from '~/config'
-import { db } from '~/plugins/db.plugin'
+import { db } from '~/plugins/database.plugin'
 import {
   accounts,
   SessionRepository,

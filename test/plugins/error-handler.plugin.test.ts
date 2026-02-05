@@ -9,7 +9,7 @@ import {
 } from 'bun:test'
 import { sql } from 'drizzle-orm'
 import { Elysia, InternalServerError, t } from 'elysia'
-import { db } from '~/plugins/db.plugin'
+import { db } from '~/plugins/database.plugin'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
 import { logger } from '~/plugins/logger.plugin'
 import type { ValidationError } from '~/utils/response.util'

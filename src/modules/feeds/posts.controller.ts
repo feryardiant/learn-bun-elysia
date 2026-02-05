@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia'
 import { asItemResponse, asItemsResponse } from '~/utils/response.util'
 import { PostRepository } from './repositories'
 import { PostSchema } from './schemas'
-import { db } from '~/plugins/db.plugin'
+import { db } from '~/plugins/database.plugin'
 
 export const postsController = new Elysia({
   prefix: '/posts',
