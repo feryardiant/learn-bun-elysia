@@ -8,7 +8,7 @@ import {
   type Mock,
 } from 'bun:test'
 import { sql } from 'drizzle-orm'
-import Elysia, { InternalServerError, t } from 'elysia'
+import { Elysia, InternalServerError, t } from 'elysia'
 import type { LogFn } from 'pino'
 import { db } from '~/plugins/db.plugin'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'

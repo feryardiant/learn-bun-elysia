@@ -1,4 +1,4 @@
-import Elysia from 'elysia'
+import { Elysia } from 'elysia'
 import pino from 'pino'
 import pinoPretty from 'pino-pretty'
 import { ENV } from '~/config'

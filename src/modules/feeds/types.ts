@@ -1,4 +1,4 @@
-import Elysia from 'elysia'
+import { Elysia } from 'elysia'
 import { CommentSchema, PostSchema } from './schemas'
 
 export type Post = typeof PostSchema.static

@@ -7,8 +7,7 @@ import {
   spyOn,
   type Mock,
 } from 'bun:test'
-import Elysia from 'elysia'
-import type { LogFn } from 'pino'
+import { Elysia } from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
