@@ -10,8 +10,8 @@ import { baseRoute } from './routes/base.route'
 import { v1Route } from './routes/v1.route'
 
 export const app = new Elysia({ prefix: ENV.BASE_PATH })
-  .use(errorHandlerPlugin)
   .use(loggerPlugin)
+  .use(errorHandlerPlugin)
   .use(staticPlugin)
   .use(openapiPlugin)
   .use(authRoute)

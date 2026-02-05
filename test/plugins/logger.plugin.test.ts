@@ -11,7 +11,10 @@ import { Elysia } from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
-  let logDebug: Mock<LogFn>
+  const baseUrl = 'http://localhost'
+  let logDebug: Mock<typeof logger.debug>
+
+  type LogObj = Record<string, unknown>
 
   const loggerApp = new Elysia()
     .use(loggerPlugin)
@@ -32,7 +35,7 @@ describe('Logger Plugin', () => {
 
   it('should not log GET / request', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost', { method: 'GET' }),
+      new Request(baseUrl, { method: 'GET' }),
     )
 
     expect(logDebug).not.toHaveBeenCalled()
@@ -43,10 +46,12 @@ describe('Logger Plugin', () => {
       new Request('http://localhost/logged', { method: 'GET' }),
     )
 
+    await response.text()
+
     expect(logDebug).toHaveBeenCalled()
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
-    expect(obj).toContainKey('headers')
+    expect(obj).toContainKey<LogObj>('headers')
     expect(msg).toContain('Request received')
   })
 
@@ -62,8 +67,7 @@ describe('Logger Plugin', () => {
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('payload')
+    expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
     expect(msg).toContain('Request received')
   })
 
@@ -84,8 +88,7 @@ describe('Logger Plugin', () => {
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('payload')
+    expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
     expect(msg).toContain('Request received')
   })
 })
