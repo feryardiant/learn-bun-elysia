@@ -20,9 +20,8 @@ export const logger = pino(
 
 const ignorePathnames = ['/', '/docs', '/docs/json', '/favicon.ico', '/health']
 
-export const loggerPlugin = () =>
-  new Elysia({ name: 'logger' })
-    .as('scoped')
+export const loggerPlugin = (app: Elysia) =>
+  app
     .decorate('logger', logger)
     .onBeforeHandle(async ({ body, headers, request }) => {
       const { pathname, search } = new URL(request.url)
