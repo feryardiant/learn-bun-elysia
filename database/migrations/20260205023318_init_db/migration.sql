@@ -54,7 +54,7 @@ CREATE TABLE "comments" (
 	"id" varchar PRIMARY KEY,
 	"post_id" varchar NOT NULL,
 	"content" text NOT NULL,
-	"created_by_id" varchar NOT NULL,
+	"created_by_id" varchar,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -62,7 +62,7 @@ CREATE TABLE "comments" (
 CREATE TABLE "posts" (
 	"id" varchar PRIMARY KEY,
 	"content" text NOT NULL,
-	"created_by_id" varchar NOT NULL,
+	"created_by_id" varchar,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
