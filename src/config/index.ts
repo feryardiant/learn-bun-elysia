@@ -1,7 +1,7 @@
 import { t } from 'elysia'
 import { Value } from '@sinclair/typebox/value'
 import { authConfig } from './auth.config'
-import { dbConfig } from './db.config'
+import { dbConfig } from './database.config'
 import { appConfig } from './app.config'
 
 const envSchema = t.Object({

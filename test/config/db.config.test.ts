@@ -1,6 +1,6 @@
 import { Value } from '@sinclair/typebox/value'
 import { describe, expect, it } from 'bun:test'
-import { dbConfig } from '~/config/db.config'
+import { dbConfig } from '~/config/database.config'
 
 describe('DB Config', () => {
   it('should have default values', () => {
