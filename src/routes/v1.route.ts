@@ -3,6 +3,7 @@ import { feedModels, postsController } from '~/modules/feeds'
 import { authPlugin } from '~/plugins/auth.plugin'
 
 export const v1Route = new Elysia({
+  name: 'v1-route',
   prefix: '/v1',
 })
   .use(authPlugin)

@@ -4,7 +4,7 @@ import { Elysia, t } from 'elysia'
  * Base Controller
  * Provides basic endpoints for monitoring and load balancing
  */
-export const baseRoute = new Elysia()
+export const baseRoute = new Elysia({ name: 'base-route' })
   .get('/', () => ({ message: 'Nothing to see here' }), {
     detail: { hide: true },
   })
