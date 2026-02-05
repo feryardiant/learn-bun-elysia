@@ -74,11 +74,21 @@ export const authPlugin = () =>
     .as('scoped')
     .guard({
       headers: t.Object({
-        authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
+        Authorization: t.Optional(
+          t.String({
+            title: 'User Credential',
+            description: 'Authorization Token',
+          }),
+        ),
       }),
       response: {
-        400: ApiErrorSchema,
-        401: ApiErrorSchema,
+        401: t.Object(ApiErrorSchema.properties, {
+          description:
+            'Unauthorized. Due to missing or invalid authentication.',
+        }),
+        404: t.Object(ApiErrorSchema.properties, {
+          description: 'Not Found. The requested resource was not found.',
+        }),
       },
     })
     .resolve(async ({ request }) => {

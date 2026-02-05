@@ -1,4 +1,4 @@
-import Elysia from 'elysia'
+import { Elysia, t } from 'elysia'
 import { asItemResponse, asItemsResponse } from '~/utils/response.util'
 import { PostRepository } from './repositories'
 import { PostSchema } from './schemas'
@@ -45,6 +45,9 @@ export const postsController = new Elysia({
         summary: 'Post Detail',
         description: 'Retrieve detail of a post',
       },
+      params: t.Object({
+        id: t.String({ title: 'Post ID' }),
+      }),
       response: {
         200: asItemResponse(PostSchema),
       },

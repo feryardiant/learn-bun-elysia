@@ -1,6 +1,6 @@
 import type { ValueError } from '@sinclair/typebox/errors'
 import { DrizzleQueryError } from 'drizzle-orm'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import {
   ApiErrorSchema,
   ValidationErrorSchema,
@@ -29,7 +29,10 @@ export const errorHandlerPlugin = () =>
     .as('global')
     .guard({
       response: {
-        500: ApiErrorSchema,
+        500: t.Object(ApiErrorSchema.properties, {
+          description:
+            'Internal Server Error. This is a problem with the server that you cannot fix.',
+        }),
         422: ValidationErrorSchema,
       },
     })

@@ -1,4 +1,4 @@
-import type { TSchema } from '@sinclair/typebox'
+import type { ObjectOptions, TSchema } from '@sinclair/typebox'
 import { t } from 'elysia'
 
 export const ApiErrorSchema = t.Object({
@@ -20,20 +20,33 @@ export const ValidationValueErrorSchema = t.Object({
 
 export type ValidationValueError = (typeof ValidationValueErrorSchema)['static']
 
-export const ValidationErrorSchema = t.Object({
-  ...ApiErrorSchema.properties,
-  errors: t.Array(ValidationValueErrorSchema),
-})
+export const ValidationErrorSchema = t.Object(
+  {
+    ...ApiErrorSchema.properties,
+    errors: t.Array(ValidationValueErrorSchema),
+  },
+  {
+    description:
+      'Bad Request. Usually due to missing parameters, or invalid parameters.',
+  },
+)
 
 export type ValidationError = (typeof ValidationErrorSchema)['static']
 
-export const asItemResponse = <D extends TSchema>(data: D) => t.Object({ data })
+export const asItemResponse = <D extends TSchema>(
+  data: D,
+  options?: ObjectOptions,
+) => t.Object({ data }, options)
 
 export const asItemsResponse = <D extends TSchema, M extends TApiItemsMeta>(
   data: D,
   meta?: M,
+  options?: ObjectOptions,
 ) =>
-  t.Object({
-    data: t.Array(data),
-    meta: meta || ApiItemsMetaSchema,
-  })
+  t.Object(
+    {
+      data: t.Array(data),
+      meta: meta || ApiItemsMetaSchema,
+    },
+    options,
+  )
