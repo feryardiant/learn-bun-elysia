@@ -36,7 +36,14 @@ export type ValidationError = (typeof ValidationErrorSchema)['static']
 export const asItemResponse = <D extends TSchema>(
   data: D,
   options?: ObjectOptions,
-) => t.Object({ data }, options)
+) =>
+  t.Object(
+    { data },
+    {
+      description: options?.description || 'Success - Returns the resource',
+      ...options,
+    },
+  )
 
 export const asItemsResponse = <D extends TSchema, M extends TApiItemsMeta>(
   data: D,
@@ -45,8 +52,11 @@ export const asItemsResponse = <D extends TSchema, M extends TApiItemsMeta>(
 ) =>
   t.Object(
     {
-      data: t.Array(data),
+      data: t.Array(data, { description: 'List of items' }),
       meta: meta || ApiItemsMetaSchema,
     },
-    options,
+    {
+      description: options?.description || 'Success - Returns the collection',
+      ...options,
+    },
   )
