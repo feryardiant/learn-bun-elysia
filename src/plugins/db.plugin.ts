@@ -50,4 +50,5 @@ export async function migrate() {
   }
 }
 
-export const dbPlugin = new Elysia({ name: 'database' }).decorate({ db })
+export const dbPlugin = () =>
+  new Elysia({ name: 'database' }).as('scoped').decorate({ db })
