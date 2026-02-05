@@ -1,12 +1,22 @@
 import { defineRelationsPart } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-typebox'
+import { t } from 'elysia'
 import { users } from '~/modules/auth'
 import { posts } from './posts.schema'
 import { comments } from './comments.schema'
 
-export const PostSchema = createSelectSchema(posts)
+export const PostSchema = createSelectSchema(posts, {
+  createdById: t.Nullable(
+    t.String({ description: 'User ID who create the post' }),
+  ),
+})
 
-export const CommentSchema = createSelectSchema(comments)
+export const CommentSchema = createSelectSchema(comments, {
+  createdById: t.Nullable(
+    t.String({ description: 'User ID who create the comment' }),
+  ),
+  postId: t.String({ description: 'Post ID where this comment belongs' }),
+})
 
 export const feedTables = { comments, posts }
 
