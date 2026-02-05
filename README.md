@@ -23,11 +23,11 @@ This project demonstrates a modern backend API built with [ElysiaJS](https://ely
 
 The project uses different environment files for various contexts:
 
-- **`[.env.example](.env.example)`**: Acts as the template. It lists all required environment variables with safe defaults for local development.
+- **[`.env.example`](.env.example)**: Acts as the template. It lists all required environment variables with safe defaults for local development.
 - **`.env`**: Default configuration used by **Docker Compose**. It sets `DB_HOST=postgres` to communicate within the Docker network.
 - **`.env.local`**: Configuration for **Local Development** on your host machine. It sets `DB_HOST=localhost` to connect to the exposed database port.
 - **`.env.test`**: Automatically used when running `bun test`. It configures a separate test database (`postgres_test`) and reduces log verbosity.
-- **`[src/config/*.ts](src/config/)`**: These files use schema validation (TypeBox) to load these variables into the application at runtime, ensuring types and required fields are present.
+- **[`src/config/*.ts`](src/config/)**: These files use schema validation (TypeBox) to load these variables into the application at runtime, ensuring types and required fields are present.
 
 #### Configuration Breakdown
 
@@ -43,24 +43,24 @@ These define the base images and versions for Docker. They are **not** used by t
 - `FORWARD_APP_PORT`, `FORWARD_DB_PORT`: Allow you to change which ports are exposed to your host machine without changing the internal container ports.
 
 **3. Application Metadata**
-*Config: `[src/config/app.config.ts](src/config/app.config.ts)`*
-- `APP_NAME`, `APP_VERSION`: Metadata (can be baked into Docker image) with defaults value come from `[package.json](package.json)`. They are unique because they are often injected at **build time** (see below) to bake the version into the release binary.
+*Config: [`src/config/app.config.ts`](src/config/app.config.ts)*
+- `APP_NAME`, `APP_VERSION`: Metadata (can be baked into Docker image) with defaults value come from [`package.json`](package.json). They are unique because they are often injected at **build time** (see below) to bake the version into the release binary.
 - `APP_URL`, `APP_DOMAIN`: Public access URLs.
 - `LOG_LEVEL`: Logging verbosity.
 
 **4. Authentication & Security**
-*Config: `[src/config/auth.config.ts](src/config/auth.config.ts)`*
+*Config: [`src/config/auth.config.ts`](src/config/auth.config.ts)*
 - `AUTH_SECRET`: Critical key for cryptographic signing.
 - `TRUSTED_ORIGINS`: CORS allowlist (CSV format).
 
 **5. Database**
-*Config: `[src/config/db.config.ts](src/config/db.config.ts)`*
+*Config: [`src/config/db.config.ts`](src/config/db.config.ts)*
 - `DB_USER`, `DB_PASS`, `DB_NAME`: Credentials.
 - `DB_HOST`: `postgres` (internal Docker DNS) or `localhost` (host).
 
 #### Docker Strategy
 
-**Build vs Runtime (`[deploy/docker/elysia-app.dockerfile](deploy/docker/elysia-app.dockerfile)`)**:
+**Build vs Runtime ([`deploy/docker/elysia-app.dockerfile`](deploy/docker/elysia-app.dockerfile))**:
 | Variable | Type | Stage | Description |
 | :--- | :--- | :--- | :--- |
 | **BUN_VERSION** | `ARG` | Build | Selects the Bun version for the builder image. |
@@ -72,24 +72,24 @@ These define the base images and versions for Docker. They are **not** used by t
 | **NODE_ENV** | `ENV` | Run | Hardcoded to `production` in the final stage. |
 | **PORT / HOST** | `ENV` | Run | Hardcoded to `3000` / `0.0.0.0` for container compatibility. |
 
-**Dev Container (`[.devcontainer/dockerfile](.devcontainer/dockerfile)`)**:
+**Dev Container ([`.devcontainer/dockerfile`](.devcontainer/dockerfile))**:
 - Uses `ARG` only for image selection (`BUN_VERSION`, `BASE_OS`).
 - Everything else is Runtime `ENV`.
 - Sets `NODE_ENV=devcontainer` so the app knows it's in a dev environment.
 
 **Compose Structure**
-1. **`[deploy/compose.yml](deploy/compose.yml)` (Base)**:
+1. **[`deploy/compose.yml`](deploy/compose.yml) (Base)**:
    * Defines the core services (`app`, `postgres`).
    * Uses shell expansion (`${VAR:-default}`) to allow `.env` overrides but provides sane defaults (e.g., `DB_HOST` defaults to `postgres`).
    * **Crucial**: It loads the `.env` file (`env_file: - path: ../.env`) so your local config works immediately.
 
-2. **`[deploy/compose.staging.yml](deploy/compose.staging.yml)`**:
+2. **[`deploy/compose.staging.yml`](deploy/compose.staging.yml)**:
    * Extends the base.
    * Forces `NODE_ENV: staging`.
 
-3. **`[compose.yml](compose.yml)` (Root)**:
+3. **[`compose.yml`](compose.yml) (Root)**:
    * This is likely your main entry point for `docker compose up`.
-   * Extends `[deploy/compose.yml](deploy/compose.yml)`.
+   * Extends [`deploy/compose.yml`](deploy/compose.yml).
    * **Build Context**: Points to current directory (`.`) so it can copy source code.
    * **Build Args**: Passes `APP_NAME`, `APP_VERSION`, etc., from your `.env` to the Docker build process.
 
