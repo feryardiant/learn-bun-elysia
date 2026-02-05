@@ -19,9 +19,16 @@ This document outlines the conventions, technologies, and patterns used in this 
 The project follows a modular, feature-based architecture.
 
 ```
-/database           # Drizzle ORM setup and migrations.
-└── migrations/     # Drizzle migration files.
+/database           # Drizzle ORM setup, migrations, and seeders.
+├── migrations/     # Drizzle migration files.
+└── seeders/        # Database seed scripts.
+/deploy             # Deployment configurations (Docker, Compose).
+├── docker/         # Dockerfiles.
+└── ...             # Compose files for different environments.
+/scripts            # Utility scripts (e.g., load testing).
 /src
+├── app.ts          # App initialization and configuration.
+├── server.ts       # Application entry point.
 ├── config/         # Environment variable schemas and parsing (auth, db).
 ├── modules/        # Business logic, grouped by feature (e.g., "feeds").
 │   └── [feature]/
@@ -32,6 +39,7 @@ The project follows a modular, feature-based architecture.
 ├── plugins/        # Reusable Elysia plugins (auth, error handling, openapi).
 ├── routes/         # Top-level route composition.
 └── utils/          # Shared utilities (API response formatters, custom errors).
+/test               # Test files mirroring src structure.
 ```
 
 ## 3. Development Workflow & Commands
@@ -122,7 +130,11 @@ All commands are run using `bun`.
 
 ### Database (Drizzle ORM)
 
-- **Schema Definition**: Schemas are defined in `src/modules/[feature]/schemas/`. Each table gets its own file. An `index.ts` file in the same directory exports all schemas.
+- **Schema Definition**: Schemas are defined in `src/modules/[feature]/schemas/`. Each table gets its own file (e.g., `posts.schema.ts`).
+- **Schema Index**: The `index.ts` file in the `schemas` directory is responsible for:
+  - **Exporting Tables**: Grouping all module tables into an exported object (e.g., `export const feedTables = { comments, posts }`).
+  - **Defining Relations**: Defining relationships using `defineRelationsPart` (e.g., `export const feedRelations = ...`).
+  - **TypeBox Schemas**: Generating and exporting TypeBox schemas using `createSelectSchema` from `drizzle-typebox` for use in API validation (e.g., `PostSchema`).
 - **Database Plugin**: The database instance and configuration are centrally managed in `src/plugins/database.plugin.ts`. Modules should import the `db` instance from this plugin rather than initializing Drizzle directly.
 - **Migrations**: Use `drizzle-kit` for generating and applying migrations. Migrations are stored in `database/migrations`. Never alter migration files manually after they are generated.
 - **Queries**: Repositories should encapsulate all database query logic. Controllers should call repository methods, not interact with `drizzle` directly.
