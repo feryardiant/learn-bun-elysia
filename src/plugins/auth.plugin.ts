@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth'
+import { betterAuth, type Path } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
@@ -76,12 +76,12 @@ export const authDoc: Partial<OpenAPIV3.Document> = {
   components: components as OpenAPIV3.ComponentsObject,
   paths: Object.keys(paths).reduce((res, path) => {
     // Retrieve original path object
-    const ref = paths[path] as OpenAPIV3.PathItemObject
+    const ref = paths[path] as Path
 
     // Rewrite path by adding prefix `${basePath}` from auth config
     res[`${auth.options.basePath}${path}`] = Object.keys(ref).reduce(
       (item, mtd) => {
-        const method = mtd as OpenAPIV3.HttpMethods
+        const method = mtd as keyof Path
 
         // Better-auth uses `Default` tag for all it's endpoint
         // We need to replace it with `Auth` for better organize
@@ -90,7 +90,7 @@ export const authDoc: Partial<OpenAPIV3.Document> = {
 
         return item
       },
-      {} as OpenAPIV3.PathItemObject,
+      {} as Pick<OpenAPIV3.PathItemObject, OpenAPIV3.HttpMethods>,
     )
 
     return res
