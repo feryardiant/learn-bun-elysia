@@ -1,13 +1,12 @@
 import { Value } from '@sinclair/typebox/value'
 import { defineConfig } from 'drizzle-kit'
 import { dbConfig } from '~/config/db.config'
-import { schemaFiles } from './database/schema'
 
 const ENV = Value.Parse(dbConfig, process.env)
 const isLocal = ['local', 'test'].includes(process.env.NODE_ENV || 'local')
 
 export default defineConfig({
-  schema: schemaFiles,
+  schema: './src/modules/*/schemas/*.schema.ts',
   out: './database/migrations',
   dialect: 'postgresql',
   dbCredentials: {
