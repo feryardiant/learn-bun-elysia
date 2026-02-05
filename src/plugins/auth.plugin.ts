@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
+import type { OpenAPIV3 } from 'openapi-types'
 import { ENV } from '~/config'
 import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
@@ -69,13 +70,38 @@ export const auth = betterAuth({
   ],
 })
 
+const { components, paths, security } = await auth.api.generateOpenAPISchema()
+
+export const authDoc: Partial<OpenAPIV3.Document> = {
+  components: components as OpenAPIV3.ComponentsObject,
+  paths: Object.keys(paths).reduce((res, path) => {
+    // Retrieve original path object
+    const ref = paths[path] as OpenAPIV3.PathItemObject
+
+    // Rewrite path by adding prefix `${basePath}` from auth config
+    res[`${auth.options.basePath}${path}`] = Object.keys(ref).reduce(
+      (item, mtd) => {
+        const method = mtd as OpenAPIV3.HttpMethods
+
+        // Better-auth uses `Default` tag for all it's endpoint
+        // We need to replace it with `Auth` for better organize
+        item[method] = ref[method] as OpenAPIV3.OperationObject
+        item[method].tags = ['Auth']
+
+        return item
+      },
+      {} as OpenAPIV3.PathItemObject,
+    )
+
+    return res
+  }, {} as OpenAPIV3.PathsObject),
+}
+
 export const authPlugin = () =>
   new Elysia({ name: 'auth' })
     .as('scoped')
     .guard({
-      detail: {
-        security: [{ bearerAuth: [] }, { apiKeyCookie: [] }],
-      },
+      detail: { security },
       response: {
         401: t.Object(ApiErrorSchema.properties, {
           description:
