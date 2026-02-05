@@ -19,27 +19,27 @@ This document outlines the conventions, technologies, and patterns used in this 
 The project follows a modular, feature-based architecture.
 
 ```
-/database           # Drizzle ORM setup, migrations, and seeders.
-├── migrations/     # Drizzle migration files.
-└── seeders/        # Database seed scripts.
-/deploy             # Deployment configurations (Docker, Compose).
-├── docker/         # Dockerfiles.
-└── ...             # Compose files for different environments.
-/scripts            # Utility scripts (e.g., load testing).
-/src
-├── app.ts          # App initialization and configuration.
-├── server.ts       # Application entry point.
-├── config/         # Environment variable schemas and parsing (auth, db).
-├── modules/        # Business logic, grouped by feature (e.g., "feeds").
-│   └── [feature]/
-│       ├── schemas/        # Drizzle table definitions (e.g., posts.schema.ts).
-│       ├── repositories/   # Data access logic using Drizzle.
-│       ├── *.controller.ts # ElysiaJS controllers defining routes and handlers.
-│       └── types.ts        # TypeScript types for the module.
-├── plugins/        # Reusable Elysia plugins (auth, error handling, openapi).
-├── routes/         # Top-level route composition.
-└── utils/          # Shared utilities (API response formatters, custom errors).
-/test               # Test files mirroring src structure.
+├── database           # Drizzle ORM setup, migrations, and seeders.
+│   ├── migrations/     # Drizzle migration files.
+│   └── seeders/        # Database seed scripts.
+├── deploy             # Deployment configurations (Docker, Compose).
+│   ├── docker/         # Dockerfiles.
+│   └── ...             # Compose files for different environments.
+├── scripts            # Utility scripts (e.g., load testing).
+├── src
+│   ├── app.ts          # App initialization and configuration.
+│   ├── server.ts       # Application entry point.
+│   ├── config/         # Environment variable schemas and parsing (auth, db).
+│   ├── modules/        # Business logic, grouped by feature (e.g., "feeds").
+│   │   └── [feature]/
+│   │       ├── schemas/        # Drizzle table definitions (e.g., posts.schema.ts).
+│   │       ├── repositories/   # Data access logic using Drizzle.
+│   │       ├── *.controller.ts # ElysiaJS controllers defining routes and handlers.
+│   │       └── types.ts        # TypeScript types for the module.
+│   ├── plugins/        # Reusable Elysia plugins (auth, error handling, openapi).
+│   ├── routes/         # Top-level route composition.
+│   └── utils/          # Shared utilities (API response formatters, custom errors).
+└── test               # Test files mirroring src structure.
 ```
 
 ## 3. Development Workflow & Commands
