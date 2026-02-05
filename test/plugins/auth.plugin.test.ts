@@ -6,8 +6,9 @@ import { accounts, sessions, users } from '~/modules/auth'
 import { auth, authPlugin } from '~/plugins/auth.plugin'
 
 describe('Auth Plugin', () => {
-  const baseUrl = 'http://localhost'
-  const handler = mock(({}) => 'Auth')
+  const APP_URL = 'http://localhost'
+
+  const handler = mock(() => 'Auth')
   const authApp = new Elysia().use(authPlugin).get('', handler)
 
   afterEach(() => {
@@ -30,7 +31,7 @@ describe('Auth Plugin', () => {
 
     it('should returns 401 status when credential is invalid', async () => {
       const response = await authApp.handle(
-        new Request(baseUrl, {
+        new Request(APP_URL, {
           headers: { authorization: 'Bearer invalid' },
         }),
       )
@@ -42,7 +43,7 @@ describe('Auth Plugin', () => {
     it('should receive user object when authenticated', async () => {
       const authenticated = await auth.api.signInAnonymous()
       const response = await authApp.handle(
-        new Request(baseUrl, {
+        new Request(APP_URL, {
           headers: { authorization: `Bearer ${authenticated?.token}` },
         }),
       )

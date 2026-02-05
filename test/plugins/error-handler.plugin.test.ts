@@ -15,6 +15,8 @@ import { logger } from '~/plugins/logger.plugin'
 import type { ValidationError } from '~/utils/response.util'
 
 describe('Error Handler Plugin', () => {
+  const APP_URL = 'http://localhost'
+
   let logError: Mock<typeof logger.error>
   let logFatal: Mock<typeof logger.fatal>
 
@@ -48,9 +50,7 @@ describe('Error Handler Plugin', () => {
   })
 
   it('should log error whenever an error thrown from handler', async () => {
-    const response = await errorHandlerApp.handle(
-      new Request('http://localhost'),
-    )
+    const response = await errorHandlerApp.handle(new Request(APP_URL))
 
     expect(logError).toHaveBeenCalled()
     expect(response.status).toBe(500)
@@ -65,7 +65,7 @@ describe('Error Handler Plugin', () => {
 
   it("should log error whenever there's a validation error thrown", async () => {
     const response = await errorHandlerApp.handle(
-      new Request('http://localhost', {
+      new Request(APP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ foo: ['baz'] }),
@@ -86,7 +86,7 @@ describe('Error Handler Plugin', () => {
 
   it("should log fatal whenever there's a drizzle error thrown", async () => {
     const response = await errorHandlerApp.handle(
-      new Request('http://localhost', {
+      new Request(APP_URL, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),

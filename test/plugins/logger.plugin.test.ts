@@ -11,7 +11,8 @@ import { Elysia } from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
-  const baseUrl = 'http://localhost'
+  const APP_URL = 'http://localhost'
+
   let logDebug: Mock<typeof logger.debug>
 
   type LogObj = Record<string, unknown>
@@ -35,7 +36,7 @@ describe('Logger Plugin', () => {
 
   it('should not log GET / request', async () => {
     const response = await loggerApp.handle(
-      new Request(baseUrl, { method: 'GET' }),
+      new Request(APP_URL, { method: 'GET' }),
     )
 
     expect(logDebug).not.toHaveBeenCalled()
@@ -43,7 +44,7 @@ describe('Logger Plugin', () => {
 
   it('should log GET /logged request', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', { method: 'GET' }),
+      new Request(`${APP_URL}/logged`, { method: 'GET' }),
     )
 
     await response.text()
@@ -57,7 +58,7 @@ describe('Logger Plugin', () => {
 
   it('should log POST /logged request with JSON payload', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', {
+      new Request(`${APP_URL}/logged`, {
         method: 'POST',
         body: JSON.stringify({ foo: 'bar' }),
       }),
@@ -78,7 +79,7 @@ describe('Logger Plugin', () => {
     body.append('file', file)
 
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', {
+      new Request(`${APP_URL}/logged`, {
         method: 'POST',
         body,
       }),
