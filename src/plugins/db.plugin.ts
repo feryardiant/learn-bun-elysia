@@ -5,8 +5,8 @@ import { Elysia } from 'elysia'
 import { ENV, isLocal } from '~/config'
 import { logger } from './logger.plugin'
 
-import * as authSchema from '~/modules/auth/schemas'
-import * as feedSchema from '~/modules/feeds/schemas'
+import { authRelations, authTables } from '~/modules/auth/schemas'
+import { feedRelations, feedTables } from '~/modules/feeds/schemas'
 
 export const db = drizzle({
   connection: {
@@ -24,8 +24,12 @@ export const db = drizzle({
         : false,
   },
   schema: {
-    ...authSchema,
-    ...feedSchema,
+    ...authTables,
+    ...feedTables,
+  },
+  relations: {
+    ...authRelations,
+    ...feedRelations,
   },
 })
 

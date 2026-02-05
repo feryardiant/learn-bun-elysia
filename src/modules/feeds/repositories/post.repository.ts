@@ -14,7 +14,7 @@ export class PostRepository {
 
   async getById(id: Post['id']): Promise<Post> {
     const item = await this.db.query.posts.findFirst({
-      where: (field, { eq }) => eq(field.id, id),
+      where: { id },
     })
 
     if (!item) {

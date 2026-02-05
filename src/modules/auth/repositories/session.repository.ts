@@ -6,7 +6,7 @@ export class SessionRepository {
 
   async getAllByUserId(userId: User['id']): Promise<Session[]> {
     const data = await this.db.query.sessions.findMany({
-      where: (field, { eq }) => eq(field.userId, userId),
+      where: { userId },
     })
 
     return data
