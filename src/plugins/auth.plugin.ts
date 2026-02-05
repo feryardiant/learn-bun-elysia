@@ -73,29 +73,17 @@ export const authPlugin = () =>
   new Elysia({ name: 'auth' })
     .as('scoped')
     .guard({
-      headers: t.Object({
-        Authorization: t.Optional(
-          t.String({
-            title: 'User Credential',
-            description: 'Authorization Token',
-          }),
-        ),
-      }),
+      detail: {
+        security: [{ bearerAuth: [] }, { apiKeyCookie: [] }],
+      },
       response: {
         401: t.Object(ApiErrorSchema.properties, {
           description:
             'Unauthorized. Due to missing or invalid authentication.',
         }),
-        404: t.Object(ApiErrorSchema.properties, {
-          description: 'Not Found. The requested resource was not found.',
-        }),
       },
     })
     .resolve(async ({ request }) => {
-      if (!request.headers.has('authorization')) {
-        throw new NotFoundError('Page not found')
-      }
-
       const authenticated = await auth.api.getSession({
         headers: request.headers,
       })
@@ -106,5 +94,6 @@ export const authPlugin = () =>
 
       return {
         user: authenticated.user,
+        session: authenticated.session,
       }
     })
