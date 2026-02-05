@@ -2,6 +2,7 @@
 
 ```mermaid
 erDiagram
+  %% Auth Module
   users {
     varchar id PK
     varchar name
@@ -34,13 +35,13 @@ erDiagram
     varchar id PK
     varchar user_id FK
     varchar token
-    varchar ip_address
     varchar user_agent
+    varchar ip_address
     boolean revoked
     timestamp revoked_at
     varchar revoked_reason
-    timestamp last_used_at
     timestamp expires_at
+    timestamp last_used_at
     timestamp created_at
     timestamp updated_at
   }
@@ -54,22 +55,28 @@ erDiagram
     timestamp updated_at
   }
 
+  %% Feeds Module
   posts {
     varchar id PK
     text content
-    bigint created_at
-    bigint updated_at
+    varchar created_by_id FK
+    timestamp created_at
+    timestamp updated_at
   }
 
   comments {
     varchar id PK
     varchar post_id FK
     text content
-    bigint created_at
-    bigint updated_at
+    varchar created_by_id FK
+    timestamp created_at
+    timestamp updated_at
   }
 
+  %% Relationships
   users ||--o{ accounts : "has"
   users ||--o{ sessions : "has"
+  users ||--o{ posts : "creates"
+  users ||--o{ comments : "creates"
   posts ||--o{ comments : "has"
 ```
