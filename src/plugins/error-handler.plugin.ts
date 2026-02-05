@@ -48,7 +48,7 @@ export const errorHandlerPlugin = new Elysia({ name: 'error-handler' })
 
     if (error instanceof APIError) {
       set.status = error.statusCode
-      errorObj.headers = error.headers
+      errorObj.headers = reduceHeaders(error.headers)
       errorObj.error = {
         name: error.name,
         ...error.body,
