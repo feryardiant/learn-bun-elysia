@@ -1,14 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { posts } from '~/modules/feeds'
-import { postRepository } from '~/modules/feeds/repositories'
+import { PostRepository, posts } from '~/modules/feeds'
 import { db } from '~/plugins/db.plugin'
 
 describe('Post Repository', () => {
+  let postRepository: PostRepository
+
   beforeAll(async () => {
     await db.insert(posts).values([
       { id: '10', content: 'Post 10' },
       { id: '20', content: 'Post 20' },
     ])
+
+    postRepository = new PostRepository(db)
   })
 
   afterAll(async () => {

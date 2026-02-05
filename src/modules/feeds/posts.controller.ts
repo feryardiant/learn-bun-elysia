@@ -2,14 +2,13 @@ import Elysia from 'elysia'
 import { asItemResponse, asItemsResponse } from '~/utils/response.util'
 import { PostRepository } from './repositories'
 import { PostSchema } from './schemas'
-import { dbPlugin } from '~/plugins/db.plugin'
+import { db } from '~/plugins/db.plugin'
 
 export const postsController = new Elysia({
   prefix: '/posts',
   tags: ['Feed'],
 })
-  .use(dbPlugin)
-  .resolve(({ db }) => ({
+  .resolve(() => ({
     repo: new PostRepository(db),
   }))
   .get(

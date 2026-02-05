@@ -1,17 +1,21 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { posts, comments } from '~/modules/feeds'
-import { commentRepository } from '~/modules/feeds/repositories'
+import { posts, comments, CommentRepository } from '~/modules/feeds'
 import { db } from '~/plugins/db.plugin'
 
 describe('Comment Repository', () => {
+  let commentRepository: CommentRepository
+
   beforeAll(async () => {
     await db.insert(posts).values([
       { id: '30', content: 'Post 30' },
       { id: '40', content: 'Post 40' },
     ])
+
     await db
       .insert(comments)
       .values([{ id: '3', content: 'Comment 3', postId: '30' }])
+
+    commentRepository = new CommentRepository(db)
   })
 
   afterAll(async () => {
