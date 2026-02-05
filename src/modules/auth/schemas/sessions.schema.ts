@@ -1,4 +1,3 @@
-import { relations } from 'drizzle-orm'
 import {
   boolean,
   index,
@@ -36,10 +35,3 @@ export const sessions = pgTable(
     index('session_created_at_idx').on(table.createdAt),
   ],
 )
-
-export const sessionUser = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
-  }),
-}))

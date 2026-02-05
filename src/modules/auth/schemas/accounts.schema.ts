@@ -1,6 +1,5 @@
 import { index, pgTable, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { users } from './users.schema'
-import { relations } from 'drizzle-orm'
 
 export const accounts = pgTable(
   'accounts',
@@ -26,10 +25,3 @@ export const accounts = pgTable(
     index('account_created_at_idx').on(table.createdAt),
   ],
 )
-
-export const accountUser = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
-  }),
-}))

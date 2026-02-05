@@ -1,6 +1,6 @@
 import { index, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { posts } from './posts.schema'
-import { relations } from 'drizzle-orm'
+import { users } from '~/modules/auth'
 
 export const comments = pgTable(
   'comments',
@@ -10,15 +10,11 @@ export const comments = pgTable(
       .notNull()
       .references(() => posts.id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
+    createdById: varchar('created_by_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => [index('comment_created_at_idx').on(table.createdAt)],
 )
-
-export const commentPost = relations(comments, ({ one }) => ({
-  post: one(posts, {
-    fields: [comments.postId],
-    references: [posts.id],
-  }),
-}))
