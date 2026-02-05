@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
-import Elysia, { NotFoundError, t } from 'elysia'
+import { Elysia, t } from 'elysia'
 import { ENV } from '~/config'
 import { ApiErrorSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
@@ -73,19 +73,17 @@ export const authPlugin = () =>
   new Elysia({ name: 'auth' })
     .as('scoped')
     .guard({
-      headers: t.Object({
-        authorization: t.Optional(t.String({ pattern: '^Bearer .+$' })),
-      }),
+      detail: {
+        security: [{ bearerAuth: [] }, { apiKeyCookie: [] }],
+      },
       response: {
-        400: ApiErrorSchema,
-        401: ApiErrorSchema,
+        401: t.Object(ApiErrorSchema.properties, {
+          description:
+            'Unauthorized. Due to missing or invalid authentication.',
+        }),
       },
     })
     .resolve(async ({ request }) => {
-      if (!request.headers.has('authorization')) {
-        throw new NotFoundError('Page not found')
-      }
-
       const authenticated = await auth.api.getSession({
         headers: request.headers,
       })
@@ -96,5 +94,6 @@ export const authPlugin = () =>
 
       return {
         user: authenticated.user,
+        session: authenticated.session,
       }
     })

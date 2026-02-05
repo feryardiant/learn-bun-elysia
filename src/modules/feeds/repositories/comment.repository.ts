@@ -21,7 +21,7 @@ export class CommentRepository {
     const post = await this.postRepo.getById(id)
 
     const items = await this.db.query.comments.findMany({
-      where: (field, { eq }) => eq(field.postId, post.id),
+      where: { postId: post.id },
     })
 
     return items

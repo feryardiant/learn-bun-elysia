@@ -1,14 +1,7 @@
-import { createSelectSchema } from 'drizzle-typebox'
-import { accounts, sessions, users } from './schemas'
+import type { AccountSchema, SessionSchema, UserSchema } from './schemas'
 
-export const AccountSchema = createSelectSchema(accounts)
+export type Account = typeof AccountSchema.static
 
-export type Account = (typeof AccountSchema)['static']
+export type User = typeof UserSchema.static
 
-export const UserSchema = createSelectSchema(users)
-
-export type User = (typeof UserSchema)['static']
-
-export const SessionSchema = createSelectSchema(sessions)
-
-export type Session = (typeof SessionSchema)['static']
+export type Session = typeof SessionSchema.static

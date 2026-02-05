@@ -1,8 +1,14 @@
 import { afterAll, describe, expect, it } from 'bun:test'
 import { ENV } from '~/config'
 import { db } from '~/plugins/db.plugin'
-import { accounts, sessions, users, type User } from '~/modules/auth'
-import { sessionRepository, userRepository } from '~/modules/auth/repositories'
+import {
+  accounts,
+  SessionRepository,
+  sessions,
+  UserRepository,
+  users,
+  type User,
+} from '~/modules/auth'
 import { authRoute } from '~/routes/auth.route'
 
 describe('Auth Routes', () => {
@@ -39,6 +45,9 @@ describe('Auth Routes', () => {
         updatedAt: expect.any(String),
       }),
     })
+
+    const userRepository = new UserRepository(db)
+    const sessionRepository = new SessionRepository(db)
 
     // Ensure that the anonymous user exists
     expect(await userRepository.exists(body.user.id)).toBeTrue()

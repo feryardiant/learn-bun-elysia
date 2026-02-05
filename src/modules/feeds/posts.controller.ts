@@ -1,13 +1,20 @@
-import Elysia from 'elysia'
+import { Elysia, t } from 'elysia'
 import { asItemResponse, asItemsResponse } from '~/utils/response.util'
-import { postRepository } from './repositories'
-import { PostSchema } from './types'
+import { PostRepository } from './repositories'
+import { PostSchema } from './schemas'
+import { db } from '~/plugins/db.plugin'
 
-export const postsController = new Elysia({ prefix: '/posts' })
+export const postsController = new Elysia({
+  prefix: '/posts',
+  tags: ['Feed'],
+})
+  .resolve(() => ({
+    repo: new PostRepository(db),
+  }))
   .get(
     '/',
-    async () => {
-      const data = await postRepository.getAll()
+    async ({ repo }) => {
+      const data = await repo.getAll()
 
       return {
         data,
@@ -20,7 +27,6 @@ export const postsController = new Elysia({ prefix: '/posts' })
       detail: {
         summary: 'Post Collection',
         description: 'Retrieve list of all posts',
-        tags: ['Posts'],
       },
       response: {
         200: asItemsResponse(PostSchema),
@@ -29,8 +35,8 @@ export const postsController = new Elysia({ prefix: '/posts' })
   )
   .get(
     '/:id',
-    async ({ params }) => {
-      const data = await postRepository.getById(params.id)
+    async ({ params, repo }) => {
+      const data = await repo.getById(params.id)
 
       return { data }
     },
@@ -38,8 +44,10 @@ export const postsController = new Elysia({ prefix: '/posts' })
       detail: {
         summary: 'Post Detail',
         description: 'Retrieve detail of a post',
-        tags: ['Posts'],
       },
+      params: t.Object({
+        id: t.String({ title: 'Post ID' }),
+      }),
       response: {
         200: asItemResponse(PostSchema),
       },

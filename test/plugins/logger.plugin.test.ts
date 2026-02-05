@@ -7,12 +7,15 @@ import {
   spyOn,
   type Mock,
 } from 'bun:test'
-import Elysia from 'elysia'
-import type { LogFn } from 'pino'
+import { Elysia } from 'elysia'
 import { logger, loggerPlugin } from '~/plugins/logger.plugin'
 
 describe('Logger Plugin', () => {
-  let logDebug: Mock<LogFn>
+  const APP_URL = 'http://localhost'
+
+  let logDebug: Mock<typeof logger.debug>
+
+  type LogObj = Record<string, unknown>
 
   const loggerApp = new Elysia()
     .use(loggerPlugin)
@@ -33,7 +36,7 @@ describe('Logger Plugin', () => {
 
   it('should not log GET / request', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost', { method: 'GET' }),
+      new Request(APP_URL, { method: 'GET' }),
     )
 
     expect(logDebug).not.toHaveBeenCalled()
@@ -41,19 +44,21 @@ describe('Logger Plugin', () => {
 
   it('should log GET /logged request', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', { method: 'GET' }),
+      new Request(`${APP_URL}/logged`, { method: 'GET' }),
     )
+
+    await response.text()
 
     expect(logDebug).toHaveBeenCalled()
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
-    expect(obj).toContainKey('headers')
+    expect(obj).toContainKey<LogObj>('headers')
     expect(msg).toContain('Request received')
   })
 
   it('should log POST /logged request with JSON payload', async () => {
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', {
+      new Request(`${APP_URL}/logged`, {
         method: 'POST',
         body: JSON.stringify({ foo: 'bar' }),
       }),
@@ -63,8 +68,7 @@ describe('Logger Plugin', () => {
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('payload')
+    expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
     expect(msg).toContain('Request received')
   })
 
@@ -75,7 +79,7 @@ describe('Logger Plugin', () => {
     body.append('file', file)
 
     const response = await loggerApp.handle(
-      new Request('http://localhost/logged', {
+      new Request(`${APP_URL}/logged`, {
         method: 'POST',
         body,
       }),
@@ -85,8 +89,7 @@ describe('Logger Plugin', () => {
 
     const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('payload')
+    expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
     expect(msg).toContain('Request received')
   })
 })

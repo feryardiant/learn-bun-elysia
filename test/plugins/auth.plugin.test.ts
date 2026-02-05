@@ -1,16 +1,18 @@
-import type { UserWithAnonymous } from 'better-auth/plugins'
+import type { UserWithAnonymous, AnonymousSession } from 'better-auth/plugins'
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
-import Elysia from 'elysia'
+import { Elysia } from 'elysia'
 import { db } from '~/plugins/db.plugin'
 import { accounts, sessions, users } from '~/modules/auth'
 import { auth, authPlugin } from '~/plugins/auth.plugin'
 
 describe('Auth Plugin', () => {
+  const APP_URL = 'http://localhost'
+
   const handler = mock(() => 'Auth')
   const authApp = new Elysia().use(authPlugin).get('', handler)
 
   afterEach(() => {
-    handler.mockClear()
+    handler.mockRestore()
   })
 
   afterAll(async () => {
@@ -20,16 +22,16 @@ describe('Auth Plugin', () => {
   })
 
   describe('Middleware', () => {
-    it('should returns 404 status when no authorization header', async () => {
+    it('should returns 401 status when no authorization header', async () => {
       const response = await authApp.handle(new Request('http://localhost'))
 
-      expect(response.status).toBe(404)
+      expect(response.status).toBe(401)
       expect(handler).not.toHaveBeenCalled()
     })
 
     it('should returns 401 status when credential is invalid', async () => {
       const response = await authApp.handle(
-        new Request('http://localhost', {
+        new Request(APP_URL, {
           headers: { authorization: 'Bearer invalid' },
         }),
       )
@@ -41,7 +43,7 @@ describe('Auth Plugin', () => {
     it('should receive user object when authenticated', async () => {
       const authenticated = await auth.api.signInAnonymous()
       const response = await authApp.handle(
-        new Request('http://localhost', {
+        new Request(APP_URL, {
           headers: { authorization: `Bearer ${authenticated?.token}` },
         }),
       )
@@ -50,14 +52,18 @@ describe('Auth Plugin', () => {
       expect(handler).toHaveBeenCalled()
 
       // Ensure `user` is get passed to request context
-      const [ctx] =
-        handler.mock.lastCall || ([{}] as [{ user?: UserWithAnonymous }])
-      expect(ctx).toContainKey('user')
+      const ctx =
+        handler.mock.lastCall?.at(0) ||
+        ({} as {
+          user: UserWithAnonymous
+          session: AnonymousSession
+        })
+
+      expect(ctx).toContainKeys(['user', 'session'])
 
       // Ensure instance of `user` is expected to be Anonymous
-      const user = ctx?.user as UserWithAnonymous
-      expect(user.isAnonymous).toBeTrue()
-      expect(user.emailVerified).toBeFalse()
+      expect(ctx.user.isAnonymous).toBeTrue()
+      expect(ctx.user.emailVerified).toBeFalse()
     })
   })
 })

@@ -4,6 +4,8 @@ import { db } from '~/plugins/db.plugin'
 import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {
+  const APP_URL = 'http://localhost/posts'
+
   beforeAll(async () => {
     await db.insert(posts).values([
       { id: '10', content: 'Post 10' },
@@ -16,12 +18,7 @@ describe('Posts Controller', () => {
   })
 
   it('should retrieve posts collection', async () => {
-    const response = await postsController.handle(
-      new Request('http://localhost/posts', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    )
+    const response = await postsController.handle(new Request(APP_URL))
     const { data } = (await response.json()) as {
       data: Post[]
       meta: ApiItemsMeta
@@ -34,10 +31,7 @@ describe('Posts Controller', () => {
   it('should retrieve a post by id', async () => {
     const id = '10'
     const response = await postsController.handle(
-      new Request(`http://localhost/posts/${id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      new Request(`${APP_URL}/${id}`),
     )
     const { data } = (await response.json()) as { data: Post }
 

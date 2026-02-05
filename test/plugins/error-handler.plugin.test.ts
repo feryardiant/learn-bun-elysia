@@ -8,16 +8,19 @@ import {
   type Mock,
 } from 'bun:test'
 import { sql } from 'drizzle-orm'
-import Elysia, { InternalServerError, t } from 'elysia'
-import type { LogFn } from 'pino'
+import { Elysia, InternalServerError, t } from 'elysia'
 import { db } from '~/plugins/db.plugin'
 import { errorHandlerPlugin } from '~/plugins/error-handler.plugin'
 import { logger } from '~/plugins/logger.plugin'
 import type { ValidationError } from '~/utils/response.util'
 
 describe('Error Handler Plugin', () => {
-  let logError: Mock<LogFn>
-  let logFatal: Mock<LogFn>
+  const APP_URL = 'http://localhost'
+
+  let logError: Mock<typeof logger.error>
+  let logFatal: Mock<typeof logger.fatal>
+
+  type LogObj = Record<string, unknown>
 
   const errorHandlerApp = new Elysia()
     .use(errorHandlerPlugin)
@@ -47,9 +50,7 @@ describe('Error Handler Plugin', () => {
   })
 
   it('should log error whenever an error thrown from handler', async () => {
-    const response = await errorHandlerApp.handle(
-      new Request('http://localhost'),
-    )
+    const response = await errorHandlerApp.handle(new Request(APP_URL))
 
     expect(logError).toHaveBeenCalled()
     expect(response.status).toBe(500)
@@ -59,14 +60,12 @@ describe('Error Handler Plugin', () => {
 
     expect(msg).toBe(body.message)
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('error')
-    expect(obj).toContainKey('endpoint')
+    expect(obj).toContainKeys<LogObj>(['headers', 'error', 'endpoint'])
   })
 
   it("should log error whenever there's a validation error thrown", async () => {
     const response = await errorHandlerApp.handle(
-      new Request('http://localhost', {
+      new Request(APP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ foo: ['baz'] }),
@@ -82,14 +81,12 @@ describe('Error Handler Plugin', () => {
     expect(body.errors).toBeArrayOfSize(1)
     expect(msg).toBe(body.message)
 
-    expect(obj).toContainKey('headers')
-    expect(obj).toContainKey('error')
-    expect(obj).toContainKey('endpoint')
+    expect(obj).toContainKeys<LogObj>(['headers', 'error', 'endpoint'])
   })
 
   it("should log fatal whenever there's a drizzle error thrown", async () => {
     const response = await errorHandlerApp.handle(
-      new Request('http://localhost', {
+      new Request(APP_URL, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -105,10 +102,7 @@ describe('Error Handler Plugin', () => {
     expect(body.message).toBe('Something went wrong in our end')
     expect(msg).toContain('ERR_POSTGRES_SERVER_ERROR')
 
-    expect(obj).not.toContainKey('headers')
-    expect(obj).toContainKey('error')
-    expect(obj).toContainKey('endpoint')
-    expect(obj).toContainKey('query')
-    expect(obj).toContainKey('params')
+    expect(obj).not.toContainKey<LogObj>('headers')
+    expect(obj).toContainKeys<LogObj>(['query', 'error', 'endpoint', 'params'])
   })
 })

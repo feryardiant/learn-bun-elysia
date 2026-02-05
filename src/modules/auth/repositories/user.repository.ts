@@ -1,7 +1,7 @@
 import { count, eq } from 'drizzle-orm'
 import type { AppDatabase } from '~/plugins/db.plugin'
 import type { User } from '../types'
-import { users } from '../schemas'
+import { users } from '../schemas/users.schema'
 
 export class UserRepository {
   constructor(private readonly db: AppDatabase) {}
