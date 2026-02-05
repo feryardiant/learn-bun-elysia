@@ -31,8 +31,14 @@ export const authRelations = defineRelationsPart(
     },
     users: {
       accounts: rel.many.accounts(),
-      comments: rel.many.comments(),
-      posts: rel.many.posts(),
+      comments: rel.many.comments({
+        from: rel.users.id,
+        to: rel.comments.createdById,
+      }),
+      posts: rel.many.posts({
+        from: rel.users.id,
+        to: rel.posts.createdById,
+      }),
       sessions: rel.many.sessions(),
     },
   }),
