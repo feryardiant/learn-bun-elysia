@@ -11,6 +11,7 @@ services:
         BUN_VERSION: ${BUN_VERSION:-1.3.3}
         BASE_OS: ${BASE_OS:-alpine}
     image: ghcr.io/feryardiant/learn-bun-elysia:devcontainer
+    container_name: elysia-dev-app
     ports:
       - ${FORWARD_STUDIO_PORT:-4000}:4000
     volumes:
@@ -28,6 +29,7 @@ services:
     extends:
       file: ../deploy/compose.yml
       service: postgres
+    container_name: elysia-dev-db
 
 volumes:
   node_modules:

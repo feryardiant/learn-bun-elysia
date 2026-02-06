@@ -8,12 +8,14 @@ services:
         required: false
     environment:
       NODE_ENV: ${NODE_ENV:-staging}
+    container_name: elysia-staging-app
 
   postgres:
     extends:
       file: compose.yml
       service: postgres
+    container_name: elysia-staging-db
 
 networks:
   default:
-    name: elysia-stack
+    name: elysia-staging-stack
