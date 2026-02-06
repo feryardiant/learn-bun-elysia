@@ -6,7 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build src/server.ts --minify-whitespace --minify-syntax --sourcemap --target bun --outdir ./dist",
+    "build": "bun build src/server.ts --compile --minify-whitespace --minify-syntax --sourcemap --target bun --outfile ./dist/server",
     "db:generate": "bunx --bun drizzle-kit --config drizzle.config.ts generate",
     "db:migrate": "bunx --bun drizzle-kit --config drizzle.config.ts migrate",
     "db:studio": "bunx --bun drizzle-kit --config drizzle.config.ts studio --port 4000",

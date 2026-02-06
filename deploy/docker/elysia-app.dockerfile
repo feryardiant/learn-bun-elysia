@@ -15,13 +15,11 @@ COPY . .
 
 RUN bun ci --no-cache --ignore-scripts
 RUN <<EOF
-    bun build \
-      --compile \
-      --production \
-      --target bun \
-      --sourcemap src/server.ts \
-      --outfile server \
-       src/server.ts
+    bun build src/server.ts \
+      --compile --production \
+      --minify-syntax --minify-whitespace \
+      --sourcemap --target bun \
+      --outfile server
     chmod +x server
 EOF
 
