@@ -9,16 +9,18 @@ export interface Paginable {
   /**
    * Retrieve next page token based on current query and last entry.
    *
-   * @param query Current query parameters
-   * @param entry Instance of last entry
+   * @param query Current query parameters.
+   * @param entry Instance of last entry.
+   * @returns Base64 encoded next page token or null if no more pages.
    */
   getNextToken(query: PaginatedQuery, entry?: unknown): Promise<string | null>
 
   /**
-   * Retrieve next page token based on current query and first entry.
+   * Retrieve prev page token based on current query and first entry.
    *
-   * @param query Current query parameters
-   * @param entry Instance of last entry
+   * @param query Current query parameters.
+   * @param entry Instance of first entry.
+   * @returns Base64 encoded prev page token or null if no more pages.
    */
   getPrevToken(query: PaginatedQuery, entry?: unknown): Promise<string | null>
 }
@@ -32,6 +34,7 @@ export const ERRORS = {
 const PageTokenSchema = t.String({
   minLength: 1,
   pattern: '^[A-Za-z0-9+/]+=*$',
+  description: 'Base64 encoded page token',
   error({ errors, property }) {
     const error = errors.find((err) => err.path === property)
     const field = property?.slice(1)
@@ -42,19 +45,35 @@ const PageTokenSchema = t.String({
   },
 })
 
-export const PaginatedQuerySchema = t.Object({
-  next_page_token: t.Optional(PageTokenSchema),
-  prev_page_token: t.Optional(PageTokenSchema),
-  limit: t.Optional(t.Number({ minimum: 0 })),
-})
+export const PaginatedQuerySchema = t.Object(
+  {
+    next_page_token: t.Optional(PageTokenSchema),
+    prev_page_token: t.Optional(PageTokenSchema),
+    limit: t.Optional(t.Number({ minimum: 0 })),
+  },
+  { description: 'Paginated request query parameter' },
+)
 
-export const PaginatedMetaSchema = t.Object({
-  next_page_token: t.Nullable(t.String()),
-  prev_page_token: t.Nullable(t.String()),
-})
+export const PaginatedMetaSchema = t.Object(
+  {
+    next_page_token: t.Nullable(
+      t.String({ description: PageTokenSchema.description }),
+    ),
+    prev_page_token: t.Nullable(
+      t.String({ description: PageTokenSchema.description }),
+    ),
+  },
+  { description: 'Paginated response metadata' },
+)
 
+/**
+ * Paginated request query parameter.
+ */
 export type PaginatedQuery = typeof PaginatedQuerySchema.static
 
+/**
+ * Paginated response metadata.
+ */
 export type PaginatedMeta = typeof PaginatedMetaSchema.static
 
 /**
@@ -66,6 +85,7 @@ export function encodeToken(timestamp: number, id: string): string {
 
 /**
  * Decode page token.
+ *
  * @throws {InvalidParamError} if token is invalid
  */
 export function decodeToken(token: string): [number, string] {
@@ -94,6 +114,13 @@ export function decodeToken(token: string): [number, string] {
   return [Number(timestamp), identifier]
 }
 
+/**
+ * Retrieve the next and prev token based on given query.
+ *
+ * @param entries The data entries.
+ * @param repo A repository class that implement Paginable interface.
+ * @param query Request query parameters.
+ */
 export async function paginate(
   entries: unknown[],
   repo: Paginable,
