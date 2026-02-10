@@ -18,8 +18,14 @@ export class NotFoundError extends ElysiaNotFoundError {
   }
 }
 
+export class InvalidParamError extends Error {
+  static readonly code = 'INVALID_PARAM'
+  readonly status = 422
+}
+
 export default {
   [AuthenticationError.code]: AuthenticationError,
   [AuthorizationError.code]: AuthorizationError,
   [NotFoundError.code]: NotFoundError,
+  [InvalidParamError.code]: InvalidParamError,
 }
