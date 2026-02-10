@@ -166,7 +166,7 @@ describe('Validations', () => {
       expect(debugLog).not.toHaveBeenCalled()
     })
 
-    it('only calls getPrevToken when limit is not equals to total entries', async () => {
+    it('calls getNextToken when limit is equals to total entries', async () => {
       const limit = 3
       const entries = Array.from({ length: limit })
       const pageMeta = await paginate(entries, repo, { limit })
@@ -182,7 +182,7 @@ describe('Validations', () => {
       expect(debugLog).not.toHaveBeenCalled()
     })
 
-    it('calls getNextToken when limit is equals to total entries', async () => {
+    it('only calls getPrevToken when limit is not equals to total entries', async () => {
       const pageMeta = await paginate([], repo, { limit: 10 })
 
       expect(pageMeta).toEqual({
