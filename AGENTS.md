@@ -64,7 +64,7 @@ All commands are run using `bun`.
   - Semicolons are omitted (`as-needed`).
   - Follows `recommended` BiomeJS rules.
 - **Imports**: Imports are organized automatically by Biome.
-- **Module Alias**: The project uses the `~/*` alias for `src/*`. Always use this for internal imports (e.g., `import { logger } from '~/plugins/logger.plugin'`).
+- **Module Alias**: The project uses the `~/*` alias for `src/*`. Always use this when importing modules from sibling or parent directories (e.g., `import { logger } from '~/plugins/logger.plugin'`). For imports within the same directory or from a child directory, relative paths are allowed.
 
 ### Naming Conventions
 
