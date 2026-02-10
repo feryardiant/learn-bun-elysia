@@ -209,6 +209,12 @@ describe('Validations', () => {
       })
 
       expect(debugLog).toHaveBeenCalled()
+
+      const [err, msg] = debugLog.mock.calls[0] || [{}, '']
+      const error = err as Error
+
+      expect(error.message).toEqual('Mocked error')
+      expect(msg).toEqual('Error occurred while paginating')
     })
   })
 })
