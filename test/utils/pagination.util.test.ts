@@ -61,7 +61,7 @@ describe('Validations', () => {
 
   it('rejects token without pipe separator', () => {
     // Create a token without pipe separator
-    const invalidToken = Buffer.from('1768232385000').toString('base64')
+    const invalidToken = Buffer.from(`${validTimestamp}`).toString('base64')
 
     expect(() => decodeToken(invalidToken)).toThrow(
       new InvalidParamError(ERRORS.INVALID_TOKEN_FORMAT),
@@ -77,7 +77,7 @@ describe('Validations', () => {
   })
 
   it('rejects token with multiple pipe separators', () => {
-    const invalidToken = Buffer.from('1768232385000|id|extra').toString(
+    const invalidToken = Buffer.from(`${validTimestamp}|id|extra`).toString(
       'base64',
     )
 
@@ -87,9 +87,7 @@ describe('Validations', () => {
   })
 
   it('rejects token with invalid timestamp', () => {
-    const invalidToken = Buffer.from('notanumber|2010738478460621263').toString(
-      'base64',
-    )
+    const invalidToken = encodeToken(NaN, validId)
 
     expect(() => decodeToken(invalidToken)).toThrow(
       new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT),
@@ -97,7 +95,7 @@ describe('Validations', () => {
   })
 
   it('rejects token with empty timestamp', () => {
-    const invalidToken = Buffer.from('|2010738478460621263').toString('base64')
+    const invalidToken = Buffer.from(`|${validId}`).toString('base64')
 
     expect(() => decodeToken(invalidToken)).toThrow(
       new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT),
@@ -105,7 +103,7 @@ describe('Validations', () => {
   })
 
   it('rejects token with empty id', () => {
-    const invalidToken = Buffer.from('1768232385000|').toString('base64')
+    const invalidToken = Buffer.from(`${validTimestamp}|`).toString('base64')
 
     expect(() => decodeToken(invalidToken)).toThrow(
       new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT),
@@ -113,7 +111,7 @@ describe('Validations', () => {
   })
 
   it('rejects token with whitespace-only id', () => {
-    const invalidToken = Buffer.from('1768232385000|   ').toString('base64')
+    const invalidToken = Buffer.from(`${validTimestamp}|   `).toString('base64')
 
     expect(() => decodeToken(invalidToken)).toThrow(
       new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT),

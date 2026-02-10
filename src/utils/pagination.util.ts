@@ -26,9 +26,8 @@ export interface Paginable {
 }
 
 export const ERRORS = {
-  INVALID_TOKEN_FORMAT: 'Invalid token format: not a valid base64 token',
-  INVALID_TOKEN_CONTENT:
-    'Invalid token format: token appears to be truncated or modified',
+  INVALID_TOKEN_FORMAT: 'Page token is invalid',
+  INVALID_TOKEN_CONTENT: 'Page token appears to be truncated or modified',
 } as const
 
 const PageTokenSchema = t.String({
@@ -106,12 +105,14 @@ export function decodeToken(token: string): [number, string] {
     throw new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT)
   }
 
+  const time = Number(timestamp)
+
   // Validate that re-encoding produces the same token (prevents truncation)
-  if (encodeToken(Number(timestamp), identifier) !== token) {
+  if (Number.isNaN(time) || encodeToken(time, identifier) !== token) {
     throw new InvalidParamError(ERRORS.INVALID_TOKEN_CONTENT)
   }
 
-  return [Number(timestamp), identifier]
+  return [time, identifier]
 }
 
 /**
