@@ -17,3 +17,9 @@ export class NotFoundError extends ElysiaNotFoundError {
     super('Page Not Found')
   }
 }
+
+export default {
+  [AuthenticationError.code]: AuthenticationError,
+  [AuthorizationError.code]: AuthorizationError,
+  [NotFoundError.code]: NotFoundError,
+}

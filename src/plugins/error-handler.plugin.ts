@@ -6,20 +6,10 @@ import {
   ValidationErrorSchema,
   type ValidationValueError,
 } from '~/utils/response.util'
-import {
-  AuthenticationError,
-  AuthorizationError,
-  NotFoundError,
-} from '~/utils/errors.util'
+import customErrors from '~/utils/errors.util'
 import { reduceHeaders } from '~/utils/request.util'
 import { logger } from './logger.plugin'
 import { APIError } from 'better-auth'
-
-const customErrors = {
-  [AuthenticationError.code]: AuthenticationError,
-  [AuthorizationError.code]: AuthorizationError,
-  [NotFoundError.code]: NotFoundError,
-}
 
 /**
  * Error handler
