@@ -1,5 +1,5 @@
 import type { AppDatabase } from '~/plugins/database.plugin'
-import type { FeedQuery, Post } from '../types'
+import { FeedQuerySchema, type FeedQuery, type Post } from '../types'
 import { decodeToken, type Paginable } from '~/utils/pagination.util'
 import { posts } from '../schemas/posts.schema'
 import { and, between, eq, gt, lt, or, SQL } from 'drizzle-orm'
@@ -50,7 +50,7 @@ export class PostRepository implements Paginable {
   async getAll({
     prev_page_token,
     next_page_token,
-    limit,
+    limit = FeedQuerySchema.properties.limit.default,
     ...query
   }: FeedQuery = {}): Promise<Post[]> {
     const AND: PostRelationsFilter[] = []

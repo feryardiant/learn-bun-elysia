@@ -55,7 +55,11 @@ export const PaginatedQuerySchema = t.Object(
     next_page_token: t.Optional(PageTokenSchema),
     prev_page_token: t.Optional(PageTokenSchema),
     limit: t.Optional(
-      t.Number({ description: 'Number of entries to show', minimum: 0 }),
+      t.Number({
+        description: 'Number of entries to show',
+        minimum: 0,
+        default: 20,
+      }),
     ),
   },
   { description: 'Paginated request query parameter' },
