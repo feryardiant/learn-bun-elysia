@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { posts, postsController, type Post } from '~/modules/feeds'
+import {
+  posts,
+  postsController,
+  type PostResponse,
+  type PostsResponse,
+} from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 import type { ApiItemsMeta } from '~/utils/response.util'
 
@@ -19,10 +24,7 @@ describe('Posts Controller', () => {
 
   it('should retrieve posts collection', async () => {
     const response = await postsController.handle(new Request(APP_URL))
-    const { data } = (await response.json()) as {
-      data: Post[]
-      meta: ApiItemsMeta
-    }
+    const { data } = (await response.json()) as PostsResponse
 
     expect(response.status).toBe(200)
     expect(data).toHaveLength(2)
@@ -33,7 +35,7 @@ describe('Posts Controller', () => {
     const response = await postsController.handle(
       new Request(`${APP_URL}/${id}`),
     )
-    const { data } = (await response.json()) as { data: Post }
+    const { data } = (await response.json()) as PostResponse
 
     expect(response.status).toBe(200)
     expect(data.id).toBe(id)

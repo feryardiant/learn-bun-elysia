@@ -1,9 +1,10 @@
 import type { AppDatabase } from '~/plugins/database.plugin'
 import type { FeedQuery, Post } from '../types'
-import { type Paginable } from '~/utils/pagination.util'
+import { decodeToken, type Paginable } from '~/utils/pagination.util'
 import { posts } from '../schemas/posts.schema'
 import { and, between, eq, gt, lt, or, SQL } from 'drizzle-orm'
 import { getRange } from '~/utils/filters.util'
+import type { PostRelationsFilter } from '../schemas'
 
 export class PostRepository implements Paginable {
   constructor(private readonly db: AppDatabase) {}
@@ -46,9 +47,58 @@ export class PostRepository implements Paginable {
     return entries > 0 ? [new Date(entry.createdAt).getTime(), entry.id] : null
   }
 
-  async getAll(): Promise<Post[]> {
+  async getAll({
+    prev_page_token,
+    next_page_token,
+    limit,
+    ...query
+  }: FeedQuery): Promise<Post[]> {
+    const AND: PostRelationsFilter[] = []
+    const today = new Date()
+
+    if (next_page_token) {
+      const [timestamp, id] = decodeToken(next_page_token)
+      const createdAt = new Date(timestamp)
+
+      AND.push({
+        OR: [
+          { createdAt: { lt: createdAt } },
+          { createdAt: { eq: createdAt }, id: { lt: id } },
+        ],
+      })
+    } else if (prev_page_token) {
+      const [timestamp, id] = decodeToken(prev_page_token)
+      const createdAt = new Date(timestamp)
+
+      AND.push({
+        OR: [
+          { createdAt: { gt: createdAt } },
+          { createdAt: { eq: createdAt }, id: { gt: id } },
+        ],
+      })
+    } else {
+      AND.push({
+        createdAt: { lte: today },
+      })
+    }
+
+    if (query.date_range) {
+      AND.push({
+        createdAt: {
+          gte: getRange(query.date_range, today),
+          lte: today,
+        },
+      })
+    }
+
+    const sortOrder = prev_page_token ? 'asc' : 'desc'
     const items = await this.db.query.posts.findMany({
-      //
+      where: { AND },
+      limit,
+      orderBy: {
+        createdAt: sortOrder,
+        id: sortOrder,
+      },
     })
 
     return items

@@ -1,4 +1,4 @@
-import { defineRelationsPart } from 'drizzle-orm'
+import { defineRelationsPart, type RelationsFilter } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-typebox'
 import { t } from 'elysia'
 import { users } from '~/modules/auth'
@@ -42,3 +42,8 @@ export const feedRelations = defineRelationsPart(
     },
   }),
 )
+
+export type PostRelationsFilter = RelationsFilter<
+  typeof feedRelations.posts,
+  typeof PostSchema
+>

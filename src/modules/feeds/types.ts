@@ -33,3 +33,12 @@ export const FeedMetaSchema = t.Object(
 export type FeedQuery = typeof FeedQuerySchema.static
 
 export type FeedMeta = typeof FeedMetaSchema.static
+
+export interface PostsResponse {
+  data: Post[]
+  meta: FeedMeta
+}
+
+export interface PostResponse {
+  data: Post
+}

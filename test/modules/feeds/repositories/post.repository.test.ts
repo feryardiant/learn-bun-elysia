@@ -19,7 +19,7 @@ describe('Post Repository', () => {
   })
 
   it('should get all posts', async () => {
-    const results = await postRepository.getAll()
+    const results = await postRepository.getAll({})
     expect(results).toBeArray()
     expect(results.length).toBeGreaterThan(0)
   })
