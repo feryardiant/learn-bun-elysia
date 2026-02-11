@@ -101,6 +101,11 @@ export class PostRepository implements Paginable {
       },
     })
 
+    // Backward pagination correction
+    if (prev_page_token) {
+      items.reverse()
+    }
+
     return items
   }
 
