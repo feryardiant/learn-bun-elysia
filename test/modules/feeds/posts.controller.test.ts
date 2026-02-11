@@ -83,6 +83,9 @@ describe('Posts Controller', () => {
       let nextBody: PostsResponse | null = null
 
       it(`should be able to filter by ${scenario.label}`, async () => {
+        // Reset old filteried URL
+        scenario.reset(filteringUrl.searchParams)
+        // Reset new filteried URL
         scenario.apply(filteringUrl.searchParams)
 
         do {
@@ -90,7 +93,7 @@ describe('Posts Controller', () => {
             filteringUrl.searchParams.set('next_page_token', nextPageToken)
           }
 
-          // First page of comments
+          // First page of posts
           const currentPage = await postsController.handle(
             new Request(filteringUrl.toString(), { headers }),
           )
@@ -120,7 +123,7 @@ describe('Posts Controller', () => {
             filteringUrl.searchParams.set('prev_page_token', prevPageToken)
           }
 
-          // First page of comments
+          // First page of posts
           const currentPage = await postsController.handle(
             new Request(filteringUrl.toString(), { headers }),
           )
@@ -146,9 +149,6 @@ describe('Posts Controller', () => {
         // We're at first page we should have next page but no prev page
         expect(nextBody.meta.next_page_token).not.toBeNull()
         expect(nextBody.meta.prev_page_token).toBeNull()
-
-        // Reset filteried URL
-        scenario.reset(filteringUrl.searchParams)
       })
     }
   })
@@ -167,7 +167,7 @@ describe('Posts Controller', () => {
           pagingUrl.searchParams.set('next_page_token', nextPageToken)
         }
 
-        // First page of comments
+        // First page of posts
         const currentPage = await postsController.handle(
           new Request(pagingUrl.toString(), { headers }),
         )
@@ -201,7 +201,7 @@ describe('Posts Controller', () => {
           pagingUrl.searchParams.set('prev_page_token', prevPageToken)
         }
 
-        // First page of comments
+        // First page of posts
         const currentPage = await postsController.handle(
           new Request(pagingUrl.toString(), { headers }),
         )

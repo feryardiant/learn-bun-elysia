@@ -33,8 +33,6 @@ export interface FilterCriteria extends Record<string, unknown> {
   reset: (param: URLSearchParams) => void
 }
 
-const combinations: string[] = []
-
 interface Assertion {
   value: string
   callback: (post: Post) => void
@@ -44,8 +42,10 @@ export interface FilterObject {
   [k: string]: Record<string, Assertion>
 }
 
-export const createScenario = (filters: FilterObject) =>
-  Object.entries(filters).reduce((out, [query, filter]) => {
+export const createScenario = (filters: FilterObject) => {
+  let combinations: string[] = []
+
+  return Object.entries(filters).reduce((out, [query, filter]) => {
     for (const [scope, assertion] of Object.entries(filter)) {
       out.push({
         params: [query] as FilterQuery[],
@@ -93,3 +93,4 @@ export const createScenario = (filters: FilterObject) =>
 
     return out
   }, [] as FilterCriteria[])
+}
