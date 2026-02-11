@@ -1,21 +1,21 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { createPosts } from 'test/fixtures'
 import {
+  FeedQuerySchema,
   posts,
   postsController,
+  type Post,
   type PostResponse,
   type PostsResponse,
 } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
-import type { ApiItemsMeta } from '~/utils/response.util'
 
 describe('Posts Controller', () => {
   const APP_URL = 'http://localhost/posts'
+  const entries = createPosts() as [Post, ...Post[]]
 
   beforeAll(async () => {
-    await db.insert(posts).values([
-      { id: '10', content: 'Post 10' },
-      { id: '20', content: 'Post 20' },
-    ])
+    await db.insert(posts).values(entries)
   })
 
   afterAll(async () => {
@@ -27,11 +27,11 @@ describe('Posts Controller', () => {
     const { data } = (await response.json()) as PostsResponse
 
     expect(response.status).toBe(200)
-    expect(data).toHaveLength(2)
+    expect(data).toHaveLength(FeedQuerySchema.properties.limit.default)
   })
 
   it('should retrieve a post by id', async () => {
-    const id = '10'
+    const id = entries[0].id
     const response = await postsController.handle(
       new Request(`${APP_URL}/${id}`),
     )
