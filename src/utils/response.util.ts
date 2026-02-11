@@ -59,3 +59,12 @@ export const asItemsResponse = <D extends TSchema>(
       ...options,
     },
   )
+
+export interface ResourceResponse<D = unknown> {
+  data: D
+}
+
+export interface CollectionResponse<D = unknown, M = ApiItemsMeta> {
+  data: D[]
+  meta: M
+}

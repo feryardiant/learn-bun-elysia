@@ -5,6 +5,10 @@ import {
   PaginatedQuerySchema,
 } from '~/utils/pagination.util'
 import { DateRangeSchema } from '~/utils/filters.util'
+import type {
+  CollectionResponse,
+  ResourceResponse,
+} from '~/utils/response.util'
 
 export type Post = typeof PostSchema.static
 
@@ -34,11 +38,6 @@ export type FeedQuery = typeof FeedQuerySchema.static
 
 export type FeedMeta = typeof FeedMetaSchema.static
 
-export interface PostsResponse {
-  data: Post[]
-  meta: FeedMeta
-}
+export interface PostsResponse extends CollectionResponse<Post, FeedMeta> {}
 
-export interface PostResponse {
-  data: Post
-}
+export interface PostResponse extends ResourceResponse<Post> {}
