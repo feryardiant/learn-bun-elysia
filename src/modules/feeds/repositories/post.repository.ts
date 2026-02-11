@@ -52,7 +52,7 @@ export class PostRepository implements Paginable {
     next_page_token,
     limit,
     ...query
-  }: FeedQuery): Promise<Post[]> {
+  }: FeedQuery = {}): Promise<Post[]> {
     const AND: PostRelationsFilter[] = []
     const today = new Date()
 

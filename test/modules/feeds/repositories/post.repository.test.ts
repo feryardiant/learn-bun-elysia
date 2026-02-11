@@ -1,25 +1,34 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'bun:test'
 import { PostRepository, posts } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
 describe('Post Repository', () => {
   let postRepository: PostRepository
 
-  beforeAll(async () => {
+  beforeAll(() => {
+    postRepository = new PostRepository(db)
+  })
+
+  beforeEach(async () => {
     await db.insert(posts).values([
       { id: '10', content: 'Post 10' },
       { id: '20', content: 'Post 20' },
     ])
-
-    postRepository = new PostRepository(db)
   })
 
-  afterAll(async () => {
+  afterEach(async () => {
     await db.delete(posts)
   })
 
   it('should get all posts', async () => {
-    const results = await postRepository.getAll({})
+    const results = await postRepository.getAll()
     expect(results).toBeArray()
     expect(results.length).toBeGreaterThan(0)
   })
