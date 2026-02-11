@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.9](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.8...v0.0.9) (2026-02-11)
+
+
+### Features
+
+* **dev:** simplify tsconfig by combining `@tsconfig/bun` and `@tsconfig/strictest` ([#54](https://github.com/feryardiant/learn-bun-elysia/issues/54)) ([50b84ea](https://github.com/feryardiant/learn-bun-elysia/commit/50b84eae2d98d2ca9c5564e5ace11c433197b642))
+* differentiate container name between environments ([603de36](https://github.com/feryardiant/learn-bun-elysia/commit/603de3693df8aeafd01be079e60fd770e6fea6a1))
+* Implement post pagination ([#56](https://github.com/feryardiant/learn-bun-elysia/issues/56)) ([f7fada5](https://github.com/feryardiant/learn-bun-elysia/commit/f7fada563b9592bf36940321c068695448434ef2))
+* init `pagination` utility ([#55](https://github.com/feryardiant/learn-bun-elysia/issues/55)) ([de1e08a](https://github.com/feryardiant/learn-bun-elysia/commit/de1e08a1a9501d3fa856ffd6f500c2a730ba2098))
+* init drizzle beta version ([#50](https://github.com/feryardiant/learn-bun-elysia/issues/50)) ([567c3c9](https://github.com/feryardiant/learn-bun-elysia/commit/567c3c9b3f0d94a883f19169dbbf1c33844915d8))
+
+
+### Bug Fixes
+
+* ensure `error-handler` and `logger` plugin are globally available [#52](https://github.com/feryardiant/learn-bun-elysia/issues/52) ([#53](https://github.com/feryardiant/learn-bun-elysia/issues/53)) ([b26c33e](https://github.com/feryardiant/learn-bun-elysia/commit/b26c33e1748c4eb2e04bd437e22bae1f09d5a530))
+
 ## [0.0.8](https://github.com/feryardiant/learn-bun-elysia/compare/v0.0.7...v0.0.8) (2026-02-04)
 
 
