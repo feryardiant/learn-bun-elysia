@@ -13,6 +13,9 @@ coveragePathIgnorePatterns = [
   "*.config.js"
 ]
 
+[test.reporter]
+junit = "test/coverage/junit.xml"  # Output path for JUnit XML report
+
 [run]
 # Runtime configuration
 bun = true

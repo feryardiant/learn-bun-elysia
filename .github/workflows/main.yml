@@ -22,6 +22,7 @@ jobs:
     needs: prepare
 
     env:
+      APP_VERSION: ${{ needs.prepare.outputs.image-tag }}
       DB_NAME: ${{ github.repository_owner }}
       DB_USER: ${{ github.repository_owner }}
       DB_PASS: secret
@@ -56,10 +57,23 @@ jobs:
       - name: Test
         env:
           APP_NAME: elysia-app
-          APP_VERSION: ${{ needs.prepare.outputs.image-tag }}
           AUTH_SECRET: secret
           NODE_ENV: test
         run: bun test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: test/coverage
+          env_vars: APP_VERSION
+
+      - name: Upload test results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: test/coverage
+          report_type: test_results
 
   docker:
     name: Docker Images for elysia-app
