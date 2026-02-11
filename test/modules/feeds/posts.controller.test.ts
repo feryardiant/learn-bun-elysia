@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { createPosts } from 'test/fixtures'
+import { createPosts, dateRanges, createScenario } from 'test/fixtures'
 import {
   FeedQuerySchema,
   posts,
@@ -10,10 +10,13 @@ import {
 } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 import { assertBackwardPagination, assertForwardPagination } from '../helpers'
+import { getRange, type DateRange } from '~/utils/filters.util'
+import { endOfDay } from 'date-fns'
 
 describe('Posts Controller', () => {
   const APP_URL = 'http://localhost/posts'
   const entries = createPosts() as [Post, ...Post[]]
+  const headers = new Headers({})
 
   beforeAll(async () => {
     await db.insert(posts).values(entries)
@@ -42,9 +45,116 @@ describe('Posts Controller', () => {
     expect(data.id).toBe(id)
   })
 
+  describe('Filtering', () => {
+    const filteringUrl = new URL(APP_URL)
+
+    const filters = {
+      date_range: dateRanges.reduce(
+        (out, range) => {
+          out[range] = {
+            value: range,
+            callback: (post: Post) => {
+              const today = new Date()
+              const createdAt = new Date(post.createdAt)
+
+              expect(createdAt.getTime()).toBeLessThan(
+                endOfDay(today).getTime(),
+              )
+              expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+                getRange(range, today).getTime(),
+              )
+            },
+          }
+
+          return out
+        },
+        {} as Record<
+          string,
+          { value: DateRange; callback: (post: Post) => void }
+        >,
+      ),
+    }
+
+    for (const scenario of createScenario(filters)) {
+      let page = 0
+      let prevPageToken: string | null = null
+      let nextPageToken: string | null = null
+      let prevBody: PostsResponse | null = null
+      let nextBody: PostsResponse | null = null
+
+      it(`should be able to filter by ${scenario.label}`, async () => {
+        // Reset old filteried URL
+        scenario.reset(filteringUrl.searchParams)
+        // Reset new filteried URL
+        scenario.apply(filteringUrl.searchParams)
+
+        do {
+          if (nextPageToken) {
+            filteringUrl.searchParams.set('next_page_token', nextPageToken)
+          }
+
+          // First page of posts
+          const currentPage = await postsController.handle(
+            new Request(filteringUrl.toString(), { headers }),
+          )
+
+          expect(currentPage.status).toBe(200)
+          const currentBody = (await currentPage.json()) as PostsResponse
+
+          currentBody.data.forEach(scenario.callback)
+          assertForwardPagination(currentBody, page, nextPageToken, prevBody)
+
+          prevBody = currentBody
+          nextPageToken = currentBody.meta.next_page_token
+
+          page++
+        } while (nextPageToken)
+
+        // We're at the last page we should have no next page but a prev page
+        expect(prevBody.meta.next_page_token).toBeNull()
+        expect(prevBody.meta.prev_page_token).not.toBeNull()
+
+        page--
+        const lastPage = page
+
+        do {
+          if (prevPageToken) {
+            filteringUrl.searchParams.delete('next_page_token')
+            filteringUrl.searchParams.set('prev_page_token', prevPageToken)
+          }
+
+          // First page of posts
+          const currentPage = await postsController.handle(
+            new Request(filteringUrl.toString(), { headers }),
+          )
+
+          expect(currentPage.status).toBe(200)
+          const currentBody = (await currentPage.json()) as PostsResponse
+
+          currentBody.data.forEach(scenario.callback)
+          assertBackwardPagination(
+            currentBody,
+            page,
+            lastPage,
+            prevPageToken,
+            nextBody,
+          )
+
+          nextBody = currentBody
+          prevPageToken = currentBody.meta.prev_page_token
+
+          page--
+        } while (page >= 0)
+
+        // We're at first page we should have next page but no prev page
+        expect(nextBody.meta.next_page_token).not.toBeNull()
+        expect(nextBody.meta.prev_page_token).toBeNull()
+      })
+    }
+  })
+
   describe('Pagination', () => {
     const pagingUrl = new URL(APP_URL)
-    const headers = new Headers({})
 
     let page = 0
 
@@ -57,7 +167,7 @@ describe('Posts Controller', () => {
           pagingUrl.searchParams.set('next_page_token', nextPageToken)
         }
 
-        // First page of comments
+        // First page of posts
         const currentPage = await postsController.handle(
           new Request(pagingUrl.toString(), { headers }),
         )
@@ -91,7 +201,7 @@ describe('Posts Controller', () => {
           pagingUrl.searchParams.set('prev_page_token', prevPageToken)
         }
 
-        // First page of comments
+        // First page of posts
         const currentPage = await postsController.handle(
           new Request(pagingUrl.toString(), { headers }),
         )

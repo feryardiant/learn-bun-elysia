@@ -1,5 +1,7 @@
 import type { Post } from '~/modules/feeds'
 
+export * from './post-filters'
+
 /**
  * Create posts.
  *
