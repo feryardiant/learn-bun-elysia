@@ -13,7 +13,10 @@ export interface Paginable {
    * @param entry Instance of last entry.
    * @returns Base64 encoded next page token or null if no more pages.
    */
-  getNextToken(query: PaginatedQuery, entry?: unknown): Promise<string | null>
+  getNextToken(
+    query: PaginatedQuery,
+    entry?: unknown,
+  ): Promise<[number, string] | null>
 
   /**
    * Retrieve prev page token based on current query and first entry.
@@ -22,7 +25,10 @@ export interface Paginable {
    * @param entry Instance of first entry.
    * @returns Base64 encoded prev page token or null if no more pages.
    */
-  getPrevToken(query: PaginatedQuery, entry?: unknown): Promise<string | null>
+  getPrevToken(
+    query: PaginatedQuery,
+    entry?: unknown,
+  ): Promise<[number, string] | null>
 }
 
 export const ERRORS = {
@@ -138,12 +144,20 @@ export async function paginate(
   }
 
   try {
-    result.prev_page_token = await repo.getPrevToken(query, entries.at(0))
+    const prevToken = await repo.getPrevToken(query, entries.at(0))
+
+    result.prev_page_token = prevToken
+      ? encodeToken(prevToken[0], prevToken[1])
+      : prevToken
 
     // Here we check if we have reached the last page,
     // in which case we don't need to fetch the last entry
     if (entries.length === query.limit) {
-      result.next_page_token = await repo.getNextToken(query, entries.at(-1))
+      const nextToken = await repo.getNextToken(query, entries.at(-1))
+
+      result.next_page_token = nextToken
+        ? encodeToken(nextToken[0], nextToken[1])
+        : nextToken
     }
 
     return result

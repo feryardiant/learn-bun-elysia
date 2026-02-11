@@ -133,9 +133,11 @@ describe('Validations', () => {
     let getNextToken: Mock<Paginable['getNextToken']>
     let getPrevToken: Mock<Paginable['getPrevToken']>
 
+    const nextToken = 'MXxuZXh0LWlk' // encoded token
+    const prevToken = 'MnxwcmV2LWlk' // encoded token
     const repo: Paginable = {
-      getNextToken: async () => 'next-token',
-      getPrevToken: async () => 'prev-token',
+      getNextToken: async () => [1, 'next-id'],
+      getPrevToken: async () => [2, 'prev-id'],
     }
 
     beforeEach(() => {
@@ -170,8 +172,8 @@ describe('Validations', () => {
       const pageMeta = await paginate(entries, repo, { limit })
 
       expect(pageMeta).toEqual({
-        next_page_token: 'next-token',
-        prev_page_token: 'prev-token',
+        next_page_token: nextToken,
+        prev_page_token: prevToken,
       })
 
       expect(getPrevToken).toHaveBeenCalled()
@@ -185,7 +187,7 @@ describe('Validations', () => {
 
       expect(pageMeta).toEqual({
         next_page_token: null,
-        prev_page_token: 'prev-token',
+        prev_page_token: prevToken,
       })
 
       expect(getPrevToken).toHaveBeenCalled()
