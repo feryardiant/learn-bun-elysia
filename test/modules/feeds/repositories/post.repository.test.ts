@@ -47,6 +47,6 @@ describe('Post Repository', () => {
   })
 
   it('should throw an error if post not found', async () => {
-    expect(() => postRepository.getById('999')).toThrow('Post not found')
+    expect(postRepository.getById('999')).rejects.toThrow('Post not found')
   })
 })
