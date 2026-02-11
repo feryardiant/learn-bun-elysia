@@ -7,12 +7,16 @@ coverage:
         paths:
           - src
 
+comment:
+  layout: header, diff, components
+
 component_management:
   default_rules:
-    - type: project
-      target: auto
-      branches:
-        - '!main'
+    statuses:
+      - type: project
+        target: auto
+        branches:
+          - '!main'
   individual_components:
     - component_id: module_auth
       name: auth
@@ -23,7 +27,6 @@ component_management:
       name: feed
       paths:
         - src/modules/feed/**
-        - src/plugins/feed.plugin.ts
     - component_id: utilities
       name: utils
       paths:
