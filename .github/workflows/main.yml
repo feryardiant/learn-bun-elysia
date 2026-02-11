@@ -61,12 +61,19 @@ jobs:
           NODE_ENV: test
         run: bun test --coverage
 
-      - name: Upload results to Codecov
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: test/coverage
           env_vars: APP_VERSION
+
+      - name: Upload test results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: test/coverage
+          report_type: test_results
 
   docker:
     name: Docker Images for elysia-app
