@@ -26,8 +26,7 @@ export const ValidationErrorSchema = t.Object(
     errors: t.Array(ValidationValueErrorSchema),
   },
   {
-    description:
-      'Bad Request. Usually due to missing parameters, or invalid parameters.',
+    description: 'Bad Request. Usually due to missing or invalid parameters.',
   },
 )
 
@@ -45,9 +44,9 @@ export const asItemResponse = <D extends TSchema>(
     },
   )
 
-export const asItemsResponse = <D extends TSchema, M extends TApiItemsMeta>(
+export const asItemsResponse = <D extends TSchema>(
   data: D,
-  meta?: M,
+  meta?: TSchema,
   options?: ObjectOptions,
 ) =>
   t.Object(
@@ -60,3 +59,12 @@ export const asItemsResponse = <D extends TSchema, M extends TApiItemsMeta>(
       ...options,
     },
   )
+
+export interface ResourceResponse<D = unknown> {
+  data: D
+}
+
+export interface CollectionResponse<D = unknown, M = ApiItemsMeta> {
+  data: D[]
+  meta: M
+}

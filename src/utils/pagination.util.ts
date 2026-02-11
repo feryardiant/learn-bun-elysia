@@ -11,7 +11,7 @@ export interface Paginable {
    *
    * @param query Current query parameters.
    * @param entry Instance of last entry.
-   * @returns Base64 encoded next page token or null if no more pages.
+   * @returns Array of [timestamp, identifier] or null if no more pages.
    */
   getNextToken(
     query: PaginatedQuery,
@@ -23,7 +23,7 @@ export interface Paginable {
    *
    * @param query Current query parameters.
    * @param entry Instance of first entry.
-   * @returns Base64 encoded prev page token or null if no more pages.
+   * @returns Array of [timestamp, identifier] or null if no more pages.
    */
   getPrevToken(
     query: PaginatedQuery,
@@ -54,7 +54,13 @@ export const PaginatedQuerySchema = t.Object(
   {
     next_page_token: t.Optional(PageTokenSchema),
     prev_page_token: t.Optional(PageTokenSchema),
-    limit: t.Optional(t.Number({ minimum: 0 })),
+    limit: t.Optional(
+      t.Number({
+        description: 'Number of entries to show',
+        minimum: 0,
+        default: 20,
+      }),
+    ),
   },
   { description: 'Paginated request query parameter' },
 )
