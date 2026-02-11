@@ -1,5 +1,5 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { createPosts } from 'test/fixtures'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
+import { createPosts, filtersScenario } from 'test/fixtures'
 import {
   FeedQuerySchema,
   posts,
@@ -14,6 +14,7 @@ import { assertBackwardPagination, assertForwardPagination } from '../helpers'
 describe('Posts Controller', () => {
   const APP_URL = 'http://localhost/posts'
   const entries = createPosts() as [Post, ...Post[]]
+  const headers = new Headers({})
 
   beforeAll(async () => {
     await db.insert(posts).values(entries)
@@ -42,9 +43,90 @@ describe('Posts Controller', () => {
     expect(data.id).toBe(id)
   })
 
+  describe('Filtering', () => {
+    const filteringUrl = new URL(APP_URL)
+
+    for (const scenario of filtersScenario) {
+      afterEach(() => {
+        scenario.reset(filteringUrl.searchParams)
+      })
+
+      let page = 0
+      let prevPageToken: string | null = null
+      let nextPageToken: string | null = null
+      let prevBody: PostsResponse | null = null
+      let nextBody: PostsResponse | null = null
+
+      it(`should able to filter by ${scenario.label}`, async () => {
+        scenario.apply(filteringUrl.searchParams)
+
+        do {
+          if (nextPageToken) {
+            filteringUrl.searchParams.set('next_page_token', nextPageToken)
+          }
+
+          // First page of comments
+          const currentPage = await postsController.handle(
+            new Request(filteringUrl.toString(), { headers }),
+          )
+
+          expect(currentPage.status).toBe(200)
+          const currentBody = (await currentPage.json()) as PostsResponse
+
+          currentBody.data.forEach(scenario.callback)
+          assertForwardPagination(currentBody, page, nextPageToken, prevBody)
+
+          prevBody = currentBody
+          nextPageToken = currentBody.meta.next_page_token
+
+          page++
+        } while (nextPageToken)
+
+        // We're at the last page we should have no next page but a prev page
+        expect(prevBody.meta.next_page_token).toBeNull()
+        expect(prevBody.meta.prev_page_token).not.toBeNull()
+
+        page--
+        const lastPage = page
+
+        do {
+          if (prevPageToken) {
+            filteringUrl.searchParams.delete('next_page_token')
+            filteringUrl.searchParams.set('prev_page_token', prevPageToken)
+          }
+
+          // First page of comments
+          const currentPage = await postsController.handle(
+            new Request(filteringUrl.toString(), { headers }),
+          )
+
+          expect(currentPage.status).toBe(200)
+          const currentBody = (await currentPage.json()) as PostsResponse
+
+          currentBody.data.forEach(scenario.callback)
+          assertBackwardPagination(
+            currentBody,
+            page,
+            lastPage,
+            prevPageToken,
+            nextBody,
+          )
+
+          nextBody = currentBody
+          prevPageToken = currentBody.meta.prev_page_token
+
+          page--
+        } while (page >= 0)
+
+        // We're at first page we should have next page but no prev page
+        expect(nextBody.meta.next_page_token).not.toBeNull()
+        expect(nextBody.meta.prev_page_token).toBeNull()
+      })
+    }
+  })
+
   describe('Pagination', () => {
     const pagingUrl = new URL(APP_URL)
-    const headers = new Headers({})
 
     let page = 0
 
