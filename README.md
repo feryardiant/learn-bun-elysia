@@ -1,5 +1,9 @@
 # Learn Elysia.js & Bun
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/feryardiant/learn-bun-elysia/main.yml)
+![Codecov](https://img.shields.io/codecov/c/github/feryardiant/learn-bun-elysia)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/feryardiant/learn-bun-elysia)
+
 This project demonstrates a modern backend API built with [ElysiaJS](https://elysiajs.com) running on the [Bun](https://bun.sh) runtime. It features a modular architecture, PostgreSQL database integration via Drizzle ORM, and comprehensive Docker support.
 
 ## Features
