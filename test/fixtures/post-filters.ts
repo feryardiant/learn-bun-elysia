@@ -1,33 +1,9 @@
-import { expect } from 'bun:test'
-import { endOfDay } from 'date-fns'
-import type { Post } from '~/modules/feeds'
-import { getRange, type DateRange } from '~/utils/filters.util'
+import type { FeedQuery, Post } from '~/modules/feeds'
+import { type DateRange } from '~/utils/filters.util'
 
 export const dateRanges: DateRange[] = ['24 hours', '7 days', '30 days']
 
-export const filters = {
-  date_range: dateRanges.reduce(
-    (out, range) => {
-      out[range] = {
-        value: range,
-        callback: (post: Post) => {
-          const today = new Date()
-          const createdAt = new Date(post.createdAt)
-
-          expect(createdAt.getTime()).toBeLessThan(endOfDay(today).getTime())
-          expect(createdAt.getTime()).toBeGreaterThan(
-            getRange(range, today).getTime(),
-          )
-        },
-      }
-
-      return out
-    },
-    {} as Record<string, { value: DateRange; callback: (post: Post) => void }>,
-  ),
-}
-
-export type FilterQuery = keyof typeof filters
+export type FilterQuery = keyof FeedQuery
 
 export interface FilterCriteria extends Record<string, unknown> {
   /**
@@ -42,7 +18,7 @@ export interface FilterCriteria extends Record<string, unknown> {
 
   /**
    * Assertion callback.
-   * @param post Post instance to test againts
+   * @param post Post instance to test against
    */
   callback: (post: Post) => void
 
@@ -59,8 +35,17 @@ export interface FilterCriteria extends Record<string, unknown> {
 
 const combinations: string[] = []
 
-export const filtersScenario = Object.entries(filters).reduce(
-  (out, [query, filter]) => {
+interface Assertion {
+  value: string
+  callback: (post: Post) => void
+}
+
+export interface FilterObject {
+  [k: string]: Record<string, Assertion>
+}
+
+export const createScenario = (filters: FilterObject) =>
+  Object.entries(filters).reduce((out, [query, filter]) => {
     for (const [scope, assertion] of Object.entries(filter)) {
       out.push({
         params: [query] as FilterQuery[],
@@ -107,6 +92,4 @@ export const filtersScenario = Object.entries(filters).reduce(
     }
 
     return out
-  },
-  [] as FilterCriteria[],
-)
+  }, [] as FilterCriteria[])

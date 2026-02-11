@@ -1,5 +1,5 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
-import { createPosts, filtersScenario } from 'test/fixtures'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { createPosts, dateRanges, createScenario } from 'test/fixtures'
 import {
   FeedQuerySchema,
   posts,
@@ -10,6 +10,8 @@ import {
 } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 import { assertBackwardPagination, assertForwardPagination } from '../helpers'
+import { getRange, type DateRange } from '~/utils/filters.util'
+import { endOfDay } from 'date-fns'
 
 describe('Posts Controller', () => {
   const APP_URL = 'http://localhost/posts'
@@ -46,18 +48,41 @@ describe('Posts Controller', () => {
   describe('Filtering', () => {
     const filteringUrl = new URL(APP_URL)
 
-    for (const scenario of filtersScenario) {
-      afterEach(() => {
-        scenario.reset(filteringUrl.searchParams)
-      })
+    const filters = {
+      date_range: dateRanges.reduce(
+        (out, range) => {
+          out[range] = {
+            value: range,
+            callback: (post: Post) => {
+              const today = new Date()
+              const createdAt = new Date(post.createdAt)
 
+              expect(createdAt.getTime()).toBeLessThan(
+                endOfDay(today).getTime(),
+              )
+              expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+                getRange(range, today).getTime(),
+              )
+            },
+          }
+
+          return out
+        },
+        {} as Record<
+          string,
+          { value: DateRange; callback: (post: Post) => void }
+        >,
+      ),
+    }
+
+    for (const scenario of createScenario(filters)) {
       let page = 0
       let prevPageToken: string | null = null
       let nextPageToken: string | null = null
       let prevBody: PostsResponse | null = null
       let nextBody: PostsResponse | null = null
 
-      it(`should able to filter by ${scenario.label}`, async () => {
+      it(`should be able to filter by ${scenario.label}`, async () => {
         scenario.apply(filteringUrl.searchParams)
 
         do {
@@ -121,6 +146,9 @@ describe('Posts Controller', () => {
         // We're at first page we should have next page but no prev page
         expect(nextBody.meta.next_page_token).not.toBeNull()
         expect(nextBody.meta.prev_page_token).toBeNull()
+
+        // Reset filteried URL
+        scenario.reset(filteringUrl.searchParams)
       })
     }
   })
