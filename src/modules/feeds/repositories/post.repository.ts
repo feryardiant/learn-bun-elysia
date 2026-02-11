@@ -21,7 +21,7 @@ export class PostRepository implements Paginable {
     )
 
     const entries = await this.db.$count(
-      posts.id,
+      posts,
       and(filters, ...this.buildFilters(query)),
     )
 
@@ -40,7 +40,7 @@ export class PostRepository implements Paginable {
     )
 
     const entries = await this.db.$count(
-      posts.id,
+      posts,
       and(filters, ...this.buildFilters(query)),
     )
 
