@@ -5,10 +5,8 @@ import { db } from '~/plugins/database.plugin'
 export * from './post-filters'
 
 export async function tearDownTables(...tables: PgTable[]) {
-  await Promise.all(
-    tables.map(async (table) => {
-      await db.delete(table)
-    }),
+  await db.transaction(async (tx) =>
+    tables.forEach(async (table) => await tx.delete(table)),
   )
 }
 
