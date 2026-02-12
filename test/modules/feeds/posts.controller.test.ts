@@ -13,168 +13,90 @@ import { assertBackwardPagination, assertForwardPagination } from '../helpers'
 import { getRange, type DateRange } from '~/utils/filters.util'
 import { endOfDay } from 'date-fns'
 
-describe('Posts Controller', () => {
-  const APP_URL = 'http://localhost/posts'
-  const entries = createPosts() as [Post, ...Post[]]
-  const headers = new Headers({})
+const APP_URL = 'http://localhost/posts'
+const entries = createPosts() as [Post, ...Post[]]
+const headers = new Headers({})
 
-  beforeAll(async () => {
-    await db.insert(posts).values(entries)
-  })
+beforeAll(async () => {
+  await db.insert(posts).values(entries)
+})
 
-  afterAll(async () => {
-    await db.delete(posts)
-  })
+afterAll(async () => {
+  await db.delete(posts)
+})
 
-  it('should retrieve posts collection', async () => {
-    const response = await postsController.handle(new Request(APP_URL))
-    const { data } = (await response.json()) as PostsResponse
+it('should retrieve posts collection', async () => {
+  const response = await postsController.handle(new Request(APP_URL))
+  const { data } = (await response.json()) as PostsResponse
 
-    expect(response.status).toBe(200)
-    expect(data).toHaveLength(FeedQuerySchema.properties.limit.default)
-  })
+  expect(response.status).toBe(200)
+  expect(data).toHaveLength(FeedQuerySchema.properties.limit.default)
+})
 
-  it('should retrieve a post by id', async () => {
-    const id = entries[0].id
-    const response = await postsController.handle(
-      new Request(`${APP_URL}/${id}`),
-    )
-    const { data } = (await response.json()) as PostResponse
+it('should retrieve a post by id', async () => {
+  const id = entries[0].id
+  const response = await postsController.handle(new Request(`${APP_URL}/${id}`))
+  const { data } = (await response.json()) as PostResponse
 
-    expect(response.status).toBe(200)
-    expect(data.id).toBe(id)
-  })
+  expect(response.status).toBe(200)
+  expect(data.id).toBe(id)
+})
 
-  describe('Filtering', () => {
-    const filteringUrl = new URL(APP_URL)
+describe('Filtering', () => {
+  const filteringUrl = new URL(APP_URL)
 
-    const filters = {
-      date_range: dateRanges.reduce(
-        (out, range) => {
-          out[range] = {
-            value: range,
-            callback: (post: Post) => {
-              const today = new Date()
-              const createdAt = new Date(post.createdAt)
+  const filters = {
+    date_range: dateRanges.reduce(
+      (out, range) => {
+        out[range] = {
+          value: range,
+          callback: (post: Post) => {
+            const today = new Date()
+            const createdAt = new Date(post.createdAt)
 
-              expect(createdAt.getTime()).toBeLessThan(
-                endOfDay(today).getTime(),
-              )
-              expect(createdAt.getTime()).toBeGreaterThanOrEqual(
-                getRange(range, today).getTime(),
-              )
-            },
-          }
+            expect(createdAt.getTime()).toBeLessThan(endOfDay(today).getTime())
+            expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+              getRange(range, today).getTime(),
+            )
+          },
+        }
 
-          return out
-        },
-        {} as Record<
-          string,
-          { value: DateRange; callback: (post: Post) => void }
-        >,
-      ),
-    }
+        return out
+      },
+      {} as Record<
+        string,
+        { value: DateRange; callback: (post: Post) => void }
+      >,
+    ),
+  }
 
-    for (const scenario of createScenario(filters)) {
-      let page = 0
-      let prevPageToken: string | null = null
-      let nextPageToken: string | null = null
-      let prevBody: PostsResponse | null = null
-      let nextBody: PostsResponse | null = null
-
-      it(`should be able to filter by ${scenario.label}`, async () => {
-        // Reset old filteried URL
-        scenario.reset(filteringUrl.searchParams)
-        // Reset new filteried URL
-        scenario.apply(filteringUrl.searchParams)
-
-        do {
-          if (nextPageToken) {
-            filteringUrl.searchParams.set('next_page_token', nextPageToken)
-          }
-
-          // First page of posts
-          const currentPage = await postsController.handle(
-            new Request(filteringUrl.toString(), { headers }),
-          )
-
-          expect(currentPage.status).toBe(200)
-          const currentBody = (await currentPage.json()) as PostsResponse
-
-          currentBody.data.forEach(scenario.callback)
-          assertForwardPagination(currentBody, page, nextPageToken, prevBody)
-
-          prevBody = currentBody
-          nextPageToken = currentBody.meta.next_page_token
-
-          page++
-        } while (nextPageToken)
-
-        // We're at the last page we should have no next page but a prev page
-        expect(prevBody.meta.next_page_token).toBeNull()
-        expect(prevBody.meta.prev_page_token).not.toBeNull()
-
-        page--
-        const lastPage = page
-
-        do {
-          if (prevPageToken) {
-            filteringUrl.searchParams.delete('next_page_token')
-            filteringUrl.searchParams.set('prev_page_token', prevPageToken)
-          }
-
-          // First page of posts
-          const currentPage = await postsController.handle(
-            new Request(filteringUrl.toString(), { headers }),
-          )
-
-          expect(currentPage.status).toBe(200)
-          const currentBody = (await currentPage.json()) as PostsResponse
-
-          currentBody.data.forEach(scenario.callback)
-          assertBackwardPagination(
-            currentBody,
-            page,
-            lastPage,
-            prevPageToken,
-            nextBody,
-          )
-
-          nextBody = currentBody
-          prevPageToken = currentBody.meta.prev_page_token
-
-          page--
-        } while (page >= 0)
-
-        // We're at first page we should have next page but no prev page
-        expect(nextBody.meta.next_page_token).not.toBeNull()
-        expect(nextBody.meta.prev_page_token).toBeNull()
-      })
-    }
-  })
-
-  describe('Pagination', () => {
-    const pagingUrl = new URL(APP_URL)
-
+  for (const scenario of createScenario(filters)) {
     let page = 0
+    let prevPageToken: string | null = null
+    let nextPageToken: string | null = null
+    let prevBody: PostsResponse | null = null
+    let nextBody: PostsResponse | null = null
 
-    it('should navigate forwards using next_page_token', async () => {
-      let nextPageToken: string | null = null
-      let prevBody: PostsResponse | null = null
+    it(`should be able to filter by ${scenario.label}`, async () => {
+      // Reset old filteried URL
+      scenario.reset(filteringUrl.searchParams)
+      // Reset new filteried URL
+      scenario.apply(filteringUrl.searchParams)
 
       do {
         if (nextPageToken) {
-          pagingUrl.searchParams.set('next_page_token', nextPageToken)
+          filteringUrl.searchParams.set('next_page_token', nextPageToken)
         }
 
         // First page of posts
         const currentPage = await postsController.handle(
-          new Request(pagingUrl.toString(), { headers }),
+          new Request(filteringUrl.toString(), { headers }),
         )
 
         expect(currentPage.status).toBe(200)
         const currentBody = (await currentPage.json()) as PostsResponse
 
+        currentBody.data.forEach(scenario.callback)
         assertForwardPagination(currentBody, page, nextPageToken, prevBody)
 
         prevBody = currentBody
@@ -186,29 +108,25 @@ describe('Posts Controller', () => {
       // We're at the last page we should have no next page but a prev page
       expect(prevBody.meta.next_page_token).toBeNull()
       expect(prevBody.meta.prev_page_token).not.toBeNull()
-    })
-
-    it('should navigate backwards using prev_page_token', async () => {
-      let prevPageToken: string | null = null
-      let nextBody: PostsResponse | null = null
 
       page--
       const lastPage = page
 
       do {
         if (prevPageToken) {
-          pagingUrl.searchParams.delete('next_page_token')
-          pagingUrl.searchParams.set('prev_page_token', prevPageToken)
+          filteringUrl.searchParams.delete('next_page_token')
+          filteringUrl.searchParams.set('prev_page_token', prevPageToken)
         }
 
         // First page of posts
         const currentPage = await postsController.handle(
-          new Request(pagingUrl.toString(), { headers }),
+          new Request(filteringUrl.toString(), { headers }),
         )
 
         expect(currentPage.status).toBe(200)
         const currentBody = (await currentPage.json()) as PostsResponse
 
+        currentBody.data.forEach(scenario.callback)
         assertBackwardPagination(
           currentBody,
           page,
@@ -227,5 +145,81 @@ describe('Posts Controller', () => {
       expect(nextBody.meta.next_page_token).not.toBeNull()
       expect(nextBody.meta.prev_page_token).toBeNull()
     })
+  }
+})
+
+describe('Pagination', () => {
+  const pagingUrl = new URL(APP_URL)
+
+  let page = 0
+
+  it('should navigate forwards using next_page_token', async () => {
+    let nextPageToken: string | null = null
+    let prevBody: PostsResponse | null = null
+
+    do {
+      if (nextPageToken) {
+        pagingUrl.searchParams.set('next_page_token', nextPageToken)
+      }
+
+      // First page of posts
+      const currentPage = await postsController.handle(
+        new Request(pagingUrl.toString(), { headers }),
+      )
+
+      expect(currentPage.status).toBe(200)
+      const currentBody = (await currentPage.json()) as PostsResponse
+
+      assertForwardPagination(currentBody, page, nextPageToken, prevBody)
+
+      prevBody = currentBody
+      nextPageToken = currentBody.meta.next_page_token
+
+      page++
+    } while (nextPageToken)
+
+    // We're at the last page we should have no next page but a prev page
+    expect(prevBody.meta.next_page_token).toBeNull()
+    expect(prevBody.meta.prev_page_token).not.toBeNull()
+  })
+
+  it('should navigate backwards using prev_page_token', async () => {
+    let prevPageToken: string | null = null
+    let nextBody: PostsResponse | null = null
+
+    page--
+    const lastPage = page
+
+    do {
+      if (prevPageToken) {
+        pagingUrl.searchParams.delete('next_page_token')
+        pagingUrl.searchParams.set('prev_page_token', prevPageToken)
+      }
+
+      // First page of posts
+      const currentPage = await postsController.handle(
+        new Request(pagingUrl.toString(), { headers }),
+      )
+
+      expect(currentPage.status).toBe(200)
+      const currentBody = (await currentPage.json()) as PostsResponse
+
+      assertBackwardPagination(
+        currentBody,
+        page,
+        lastPage,
+        prevPageToken,
+        nextBody,
+      )
+
+      nextBody = currentBody
+      prevPageToken = currentBody.meta.prev_page_token
+
+      page--
+    } while (page >= 0)
+
+    // We're at first page we should have next page but no prev page
+    expect(nextBody.meta.next_page_token).not.toBeNull()
+    expect(nextBody.meta.prev_page_token).toBeNull()
   })
 })
