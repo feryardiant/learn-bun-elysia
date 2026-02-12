@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'bun:test'
+import { afterAll, expect, it } from 'bun:test'
 import { ENV } from '~/config'
 import { db } from '~/plugins/database.plugin'
 import {
@@ -12,49 +12,47 @@ import {
 import { authRoute } from '~/routes/auth.route'
 import { tearDownTables } from 'test/fixtures'
 
-describe('Auth Routes', () => {
-  const APP_URL = 'http://localhost/auth'
+const APP_URL = 'http://localhost/auth'
 
-  afterAll(async () => {
-    await tearDownTables(accounts, sessions, users)
+afterAll(async () => {
+  await tearDownTables(accounts, sessions, users)
+})
+
+it('should be able to crate anonymous user', async () => {
+  const response = await authRoute.handle(
+    new Request(`${APP_URL}/sign-in/anonymous`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({}),
+    }),
+  )
+
+  expect(response.status).toBe(200)
+  expect(response.headers.get('Content-Type')).toBe('application/json')
+
+  const body = (await response.json()) as { token: string; user: User }
+
+  expect(body).toEqual({
+    token: expect.any(String),
+    user: expect.objectContaining({
+      id: expect.any(String),
+      email: expect.stringContaining(ENV.APP_DOMAIN),
+      emailVerified: expect.any(Boolean),
+      name: expect.any(String),
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    }),
   })
 
-  it('should able to crate anonymous user', async () => {
-    const response = await authRoute.handle(
-      new Request(`${APP_URL}/sign-in/anonymous`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
-      }),
-    )
+  const userRepository = new UserRepository(db)
+  const sessionRepository = new SessionRepository(db)
 
-    expect(response.status).toBe(200)
-    expect(response.headers.get('Content-Type')).toBe('application/json')
+  // Ensure that the anonymous user exists
+  expect(await userRepository.exists(body.user.id)).toBeTrue()
 
-    const body = (await response.json()) as { token: string; user: User }
-
-    expect(body).toEqual({
-      token: expect.any(String),
-      user: expect.objectContaining({
-        id: expect.any(String),
-        email: expect.stringContaining(ENV.APP_DOMAIN),
-        emailVerified: expect.any(Boolean),
-        name: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-      }),
-    })
-
-    const userRepository = new UserRepository(db)
-    const sessionRepository = new SessionRepository(db)
-
-    // Ensure that the anonymous user exists
-    expect(await userRepository.exists(body.user.id)).toBeTrue()
-
-    // Ensure that the anonymous session token is valid
-    const sessions = await sessionRepository.getAllByUserId(body.user.id)
-    expect(sessions).toBeArrayOfSize(1)
-    expect(sessions[0]?.token).toBe(body.token)
-    expect(sessions[0]?.revoked).toBeFalse()
-  })
+  // Ensure that the anonymous session token is valid
+  const sessions = await sessionRepository.getAllByUserId(body.user.id)
+  expect(sessions).toBeArrayOfSize(1)
+  expect(sessions[0]?.token).toBe(body.token)
+  expect(sessions[0]?.revoked).toBeFalse()
 })
