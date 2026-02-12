@@ -10,14 +10,13 @@ import {
   type User,
 } from '~/modules/auth'
 import { authRoute } from '~/routes/auth.route'
+import { tearDownTables } from 'test/fixtures'
 
 describe('Auth Routes', () => {
   const APP_URL = 'http://localhost/auth'
 
   afterAll(async () => {
-    await db.delete(accounts)
-    await db.delete(sessions)
-    await db.delete(users)
+    await tearDownTables(accounts, sessions, users)
   })
 
   it('should able to crate anonymous user', async () => {

@@ -1,5 +1,5 @@
 import { expect } from 'bun:test'
-import { encodeToken } from '~/utils/pagination.util'
+import { encodeToken, type PaginatedMeta } from '~/utils/pagination.util'
 import type { CollectionResponse } from '~/utils/response.util'
 
 interface Entry {
@@ -43,7 +43,8 @@ export async function assertForwardPagination<
 
 export async function assertBackwardPagination<
   D extends Entry,
-  R extends CollectionResponse<D> = CollectionResponse<D>,
+  M extends PaginatedMeta = PaginatedMeta,
+  R extends CollectionResponse<D, M> = CollectionResponse<D, M>,
 >(
   body: R,
   page: number,

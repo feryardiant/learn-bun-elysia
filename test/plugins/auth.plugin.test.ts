@@ -4,6 +4,7 @@ import { Elysia } from 'elysia'
 import { db } from '~/plugins/database.plugin'
 import { accounts, sessions, users } from '~/modules/auth'
 import { auth, authPlugin } from '~/plugins/auth.plugin'
+import { tearDownTables } from 'test/fixtures'
 
 describe('Auth Plugin', () => {
   const APP_URL = 'http://localhost'
@@ -16,9 +17,7 @@ describe('Auth Plugin', () => {
   })
 
   afterAll(async () => {
-    await db.delete(accounts)
-    await db.delete(sessions)
-    await db.delete(users)
+    await tearDownTables(accounts, sessions, users)
   })
 
   describe('Middleware', () => {

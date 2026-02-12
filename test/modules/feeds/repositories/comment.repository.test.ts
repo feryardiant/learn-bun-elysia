@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { tearDownTables } from 'test/fixtures'
 import { posts, comments, CommentRepository } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
@@ -19,8 +20,7 @@ describe('Comment Repository', () => {
   })
 
   afterAll(async () => {
-    await db.delete(comments)
-    await db.delete(posts)
+    await tearDownTables(comments, posts)
   })
 
   it('should get all comments', async () => {
