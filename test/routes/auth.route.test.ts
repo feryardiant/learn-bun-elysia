@@ -18,7 +18,7 @@ afterAll(async () => {
   await tearDownTables(accounts, sessions, users)
 })
 
-it('should able to crate anonymous user', async () => {
+it('should be able to crate anonymous user', async () => {
   const response = await authRoute.handle(
     new Request(`${APP_URL}/sign-in/anonymous`, {
       method: 'POST',

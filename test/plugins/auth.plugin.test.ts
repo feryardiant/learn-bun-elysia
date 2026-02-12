@@ -11,7 +11,7 @@ const handler = mock(() => 'Auth')
 const authApp = new Elysia().use(authPlugin).get('', handler)
 
 afterEach(() => {
-  handler.mockRestore()
+  handler.mockClear()
 })
 
 afterAll(async () => {

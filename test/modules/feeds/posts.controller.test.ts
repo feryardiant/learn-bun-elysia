@@ -25,7 +25,7 @@ afterAll(async () => {
   await db.delete(posts)
 })
 
-it('should retrieve posts collection', async () => {
+it('retrieves posts collection', async () => {
   const response = await postsController.handle(new Request(APP_URL))
   const { data } = (await response.json()) as PostsResponse
 
@@ -33,7 +33,7 @@ it('should retrieve posts collection', async () => {
   expect(data).toHaveLength(FeedQuerySchema.properties.limit.default)
 })
 
-it('should retrieve a post by id', async () => {
+it('retrieves a post by id', async () => {
   const id = entries[0].id
   const response = await postsController.handle(new Request(`${APP_URL}/${id}`))
   const { data } = (await response.json()) as PostResponse
@@ -78,9 +78,9 @@ describe('Filtering', () => {
     let nextBody: PostsResponse | null = null
 
     it(`should be able to filter by ${scenario.label}`, async () => {
-      // Reset old filteried URL
+      // Reset old filtered URL
       scenario.reset(filteringUrl.searchParams)
-      // Reset new filteried URL
+      // Reset new filtered URL
       scenario.apply(filteringUrl.searchParams)
 
       do {
