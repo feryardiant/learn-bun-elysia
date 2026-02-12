@@ -22,6 +22,11 @@ services:
       file: deploy/compose.yml
       service: postgres
 
+  mailpit:
+    extends:
+      file: deploy/compose.yml
+      service: mailpit
+
 networks:
   default:
     name: elysia-stack

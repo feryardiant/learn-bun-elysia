@@ -31,6 +31,12 @@ services:
       service: postgres
     container_name: elysia-dev-db
 
+  mailpit:
+    extends:
+      file: ../deploy/compose.yml
+      service: mailpit
+    container_name: elysia-dev-mail
+
 volumes:
   node_modules:
     name: elysia-dev-node_modules
