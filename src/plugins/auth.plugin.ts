@@ -16,7 +16,7 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   trustedOrigins(request) {
-    return ENV.TRUSTED_ORIGINS
+    return ENV.TRUSTED_ORIGINS || ['*']
   },
 
   onAPIError: {
