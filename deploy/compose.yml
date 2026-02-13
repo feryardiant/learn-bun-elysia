@@ -71,3 +71,7 @@ services:
     ports:
       - ${FORWARD_MAIL_PORT:-1025}:1025
       - ${FORWARD_MAILPIT_PORT:-8025}:8025
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - ./local/mailpit:/data
