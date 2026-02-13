@@ -10,10 +10,10 @@ const transporter = createTransport(
   {
     host: ENV.SMTP_HOST,
     port: ENV.SMTP_PORT,
-    auth: {
-      user: ENV.SMTP_USER,
-      pass: ENV.SMTP_PASS,
-    },
+    auth:
+      ENV.SMTP_USER && ENV.SMTP_PASS
+        ? { user: ENV.SMTP_USER, pass: ENV.SMTP_PASS }
+        : undefined,
   },
   {
     from: ENV.SMTP_EMAIL,

@@ -40,8 +40,8 @@ services:
       # Email
       SMTP_HOST: ${SMTP_HOST:-mailpit}
       SMTP_PORT: 1025
-      SMTP_USER: ${SMTP_USER:-null}
-      SMTP_PASS: ${SMTP_PASS:-null}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
       SMTP_EMAIL: ${SMTP_EMAIL:-noreply@${APP_DOMAIN}}
     healthcheck:
       test: ["CMD-SHELL", "server health"]
