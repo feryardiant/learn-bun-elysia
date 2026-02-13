@@ -1,4 +1,4 @@
-import { AssertError, Value } from '@sinclair/typebox/value'
+import { Value } from '@sinclair/typebox/value'
 import { expect, it } from 'bun:test'
 import { mailConfig } from '~/config/mail.config'
 
