@@ -1,6 +1,6 @@
 import { NotFoundError as ElysiaNotFoundError } from 'elysia'
 
-enum ERROR_CODES {
+export enum ERROR_CODES {
   MISSING_CONFIG = 'MISSING_CONFIG',
 }
 
