@@ -1,0 +1,91 @@
+import {
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  mock,
+  spyOn,
+  type Mock,
+} from 'bun:test'
+import Mail from 'nodemailer/lib/mailer'
+import type SMTPTransport from 'nodemailer/lib/smtp-transport'
+import { logger } from '~/plugins/logger.plugin'
+import { sendMail } from '~/plugins/mail.plugin'
+
+let logInfo: Mock<typeof logger.info>
+let logError: Mock<typeof logger.error>
+let mailSender: Mock<Mail['sendMail']>
+
+beforeEach(async () => {
+  logInfo = spyOn(logger, 'info').mockImplementation(() => {})
+  logError = spyOn(logger, 'error').mockImplementation(() => {})
+  mailSender = spyOn(Mail.prototype, 'sendMail')
+
+  await mock.module('~/config', () => ({
+    ENV: {
+      SMTP_HOST: '127.0.0.1',
+      SMTP_PORT: 1025,
+      SMTP_USER: null,
+      SMTP_PASS: null,
+      SMTP_EMAIL: 'noreply@example.com',
+    },
+  }))
+})
+
+afterEach(() => {
+  logInfo.mockRestore()
+  logError.mockRestore()
+  mailSender.mockRestore()
+  mock.clearAllMocks()
+})
+
+it('should sent the email', async () => {
+  mailSender.mockImplementation(async (opts) => ({
+    // Strip down version of actual `sendMail` returns value, We exclude:
+    // `ehlo`, `rejected`, `accepted`, `response`, `messageTime` & `messageSize`
+    envelope: { from: 'noreply@example.com', to: [opts.to] },
+    messageId: '<random-uuid-from-the-smtp-server@example.com>',
+  }))
+
+  const mailOpts = { subject: 'test', to: 'test@example.com' }
+
+  await sendMail('<html><body>Hello</body></html>', mailOpts)
+
+  expect(logInfo).toHaveBeenCalled()
+  const [info, imsg] = logInfo.mock.calls[0] as [
+    Partial<SMTPTransport.SentMessageInfo>,
+    string,
+  ]
+
+  expect(imsg).toEqual('mail "test" sent')
+  expect(info).toEqual({
+    envelope: { from: 'noreply@example.com', to: [mailOpts.to] },
+    messageId: '<random-uuid-from-the-smtp-server@example.com>',
+  })
+})
+
+it('should logs error on malformed email recipient', async () => {
+  const mailOpts = { subject: 'test', to: 'test[at]example.com' }
+
+  await sendMail('<html><body>Hello</body></html>', mailOpts)
+
+  expect(logError).toHaveBeenCalled()
+  const [_, msg] = logError.mock.calls[0] as [Error & { code: string }, string]
+
+  expect(msg).toBe("[INVALID_PARAM] Expected string to match 'email' format")
+})
+
+it('should logs error on missing SMTP configs', async () => {
+  await mock.module('~/config', () => ({
+    ENV: { SMTP_HOST: undefined, SMTP_PORT: undefined },
+  }))
+
+  const mailOpts = { subject: 'test', to: 'test@example.com' }
+
+  await sendMail('<html><body>Hello</body></html>', mailOpts)
+
+  expect(logError).toHaveBeenCalled()
+  const [_, msg] = logError.mock.calls[0] as [Error & { code: string }, string]
+
+  expect(msg).toBe('[MISSING_CONFIG] SMTP_HOST or SMTP_PORT is not set')
+})
