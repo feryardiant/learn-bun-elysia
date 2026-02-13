@@ -42,6 +42,12 @@ auth:
           - 'src/config/auth.config.ts'
           - 'src/plugins/auth.plugin.ts'
 
+mail:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/config/mail.config.ts'
+          - 'src/plugins/mail.plugin.ts'
+
 feeds:
   - changed-files:
       - any-glob-to-any-file:
