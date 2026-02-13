@@ -1,10 +1,14 @@
-import { AssertError, Value } from '@sinclair/typebox/value'
+import { AssertError, Value, type ValueError } from '@sinclair/typebox/value'
 import { t } from 'elysia'
 import { createTransport } from 'nodemailer'
 import type Mail from 'nodemailer/lib/mailer'
 import { ENV } from '~/config'
 import { logger } from './logger.plugin'
-import { MissingConfigError } from '~/utils/errors.util'
+import {
+  InvalidParamError,
+  MissingConfigError,
+  type AppError,
+} from '~/utils/errors.util'
 
 const transporter = createTransport(
   {
@@ -38,15 +42,13 @@ function validateEmailFormat(path: string, email?: Mail.Options['to']) {
       { [path]: email },
     )
   } catch (err) {
-    const { error } = err as AssertError
+    // Just throw the `ValueError` instead of whole `AssertError`
+    const error = (err as AssertError).error as ValueError
 
-    if (error) {
-      // Just throw the `ValueError` instead of whole `AssertError`
-      // And with slight modification of the `path`
-      error.path = path
+    // And with slight modification of the `path`
+    error.path = path
 
-      throw error
-    }
+    throw new InvalidParamError(`${error.message}, ${path}: ${error.value}`)
   }
 }
 
@@ -73,13 +75,7 @@ export async function sendMail(
 
     logger.info(info, `mail "${opts.subject}" sent`)
   } catch (err) {
-    // See: https://nodemailer.com/errors
-    let error = err as Error & { code: string }
-
-    if ('schema' in error) {
-      // `ValueError` doesn't have `code`, so just add it ourselves
-      error.code = 'INVALID_PARAM'
-    }
+    let error = err as AppError
 
     logger.error(error, `[${error.code}] ${error.message}`)
   }

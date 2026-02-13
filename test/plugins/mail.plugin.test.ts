@@ -4,6 +4,7 @@ import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { ENV } from '~/config'
 import { logger } from '~/plugins/logger.plugin'
 import { sendMail } from '~/plugins/mail.plugin'
+import type { AppError } from '~/utils/errors.util'
 
 let logInfo: Mock<typeof logger.info>
 let logError: Mock<typeof logger.error>
@@ -54,9 +55,11 @@ it('should log error on malformed email recipient', async () => {
   await sendMail('<html><body>Hello</body></html>', mailOpts)
 
   expect(logError).toHaveBeenCalled()
-  const [_, msg] = logError.mock.calls[0] as [Error & { code: string }, string]
+  const [err, msg] = logError.mock.calls[0] as [AppError, string]
 
-  expect(msg).toBe("[INVALID_PARAM] Expected string to match 'email' format")
+  expect(msg).toBe(
+    `[${err.code}] Expected string to match 'email' format, to: ${mailOpts.to}`,
+  )
 })
 
 it('should log error on missing SMTP configs', async () => {
@@ -70,9 +73,9 @@ it('should log error on missing SMTP configs', async () => {
   await sendMail('<html><body>Hello</body></html>', mailOpts)
 
   expect(logError).toHaveBeenCalled()
-  const [_, msg] = logError.mock.calls[0] as [Error & { code: string }, string]
+  const [err, msg] = logError.mock.calls[0] as [AppError, string]
 
   expect(msg).toBe(
-    '[MISSING_CONFIG] SMTP_HOST, SMTP_PORT or SMTP_EMAIL is not set',
+    `[${err.code}] SMTP_HOST, SMTP_PORT or SMTP_EMAIL is not set`,
   )
 })
