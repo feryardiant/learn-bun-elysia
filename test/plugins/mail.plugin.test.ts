@@ -1,14 +1,7 @@
-import {
-  afterEach,
-  beforeEach,
-  expect,
-  it,
-  mock,
-  spyOn,
-  type Mock,
-} from 'bun:test'
+import { afterEach, beforeEach, expect, it, spyOn, type Mock } from 'bun:test'
 import Mail from 'nodemailer/lib/mailer'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
+import { ENV } from '~/config'
 import { logger } from '~/plugins/logger.plugin'
 import { sendMail } from '~/plugins/mail.plugin'
 
@@ -22,23 +15,12 @@ beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
   logError = spyOn(logger, 'error').mockImplementation(() => {})
   mailSender = spyOn(Mail.prototype, 'sendMail')
-
-  await mock.module('~/config', () => ({
-    ENV: {
-      SMTP_HOST: '127.0.0.1',
-      SMTP_PORT: 1025,
-      SMTP_USER: null,
-      SMTP_PASS: null,
-      SMTP_EMAIL: MAIL_FROM,
-    },
-  }))
 })
 
 afterEach(() => {
   logInfo.mockRestore()
   logError.mockRestore()
   mailSender.mockRestore()
-  mock.clearAllMocks()
 })
 
 it('should send the email', async () => {
@@ -78,9 +60,10 @@ it('should log error on malformed email recipient', async () => {
 })
 
 it('should log error on missing SMTP configs', async () => {
-  await mock.module('~/config', () => ({
-    ENV: { SMTP_HOST: undefined, SMTP_PORT: undefined },
-  }))
+  // Directly overwrite the value instead of using `mock` is
+  // the best option so far to avoid impacting other tests
+  ENV.SMTP_HOST = undefined
+  ENV.SMTP_PORT = undefined
 
   const mailOpts = { subject: 'test', to: 'test@example.com' }
 
