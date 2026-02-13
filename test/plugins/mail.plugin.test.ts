@@ -16,6 +16,8 @@ let logInfo: Mock<typeof logger.info>
 let logError: Mock<typeof logger.error>
 let mailSender: Mock<Mail['sendMail']>
 
+const MAIL_FROM = 'noreply@example.com'
+
 beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
   logError = spyOn(logger, 'error').mockImplementation(() => {})
@@ -27,7 +29,7 @@ beforeEach(async () => {
       SMTP_PORT: 1025,
       SMTP_USER: null,
       SMTP_PASS: null,
-      SMTP_EMAIL: 'noreply@example.com',
+      SMTP_EMAIL: MAIL_FROM,
     },
   }))
 })
@@ -39,11 +41,11 @@ afterEach(() => {
   mock.clearAllMocks()
 })
 
-it('should sent the email', async () => {
+it('should send the email', async () => {
   mailSender.mockImplementation(async (opts) => ({
     // Strip down version of actual `sendMail` returns value, We exclude:
     // `ehlo`, `rejected`, `accepted`, `response`, `messageTime` & `messageSize`
-    envelope: { from: 'noreply@example.com', to: [opts.to] },
+    envelope: { from: MAIL_FROM, to: [opts.to] },
     messageId: '<random-uuid-from-the-smtp-server@example.com>',
   }))
 
@@ -59,7 +61,7 @@ it('should sent the email', async () => {
 
   expect(imsg).toEqual('mail "test" sent')
   expect(info).toEqual({
-    envelope: { from: 'noreply@example.com', to: [mailOpts.to] },
+    envelope: { from: MAIL_FROM, to: [mailOpts.to] },
     messageId: '<random-uuid-from-the-smtp-server@example.com>',
   })
 })
