@@ -27,6 +27,9 @@ function validateEmailFormat(path: string, email?: Mail.Options['to']) {
     email = [email]
   }
 
+  // We only need to validate `string` email address here
+  email = email.filter((e) => typeof e === 'string')
+
   try {
     Value.Parse(
       t.Object({
@@ -56,7 +59,9 @@ export async function sendMail(
   try {
     // Ensure the configurations are valid
     if (!ENV.SMTP_HOST || !ENV.SMTP_PORT || !ENV.SMTP_EMAIL) {
-      throw new MissingConfigError('SMTP_HOST or SMTP_PORT is not set')
+      throw new MissingConfigError(
+        'SMTP_HOST, SMTP_PORT or SMTP_EMAIL is not set',
+      )
     }
 
     // Ensure the recipients are valid
