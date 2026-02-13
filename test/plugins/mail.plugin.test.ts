@@ -66,7 +66,7 @@ it('should send the email', async () => {
   })
 })
 
-it('should logs error on malformed email recipient', async () => {
+it('should log error on malformed email recipient', async () => {
   const mailOpts = { subject: 'test', to: 'test[at]example.com' }
 
   await sendMail('<html><body>Hello</body></html>', mailOpts)
@@ -77,7 +77,7 @@ it('should logs error on malformed email recipient', async () => {
   expect(msg).toBe("[INVALID_PARAM] Expected string to match 'email' format")
 })
 
-it('should logs error on missing SMTP configs', async () => {
+it('should log error on missing SMTP configs', async () => {
   await mock.module('~/config', () => ({
     ENV: { SMTP_HOST: undefined, SMTP_PORT: undefined },
   }))
@@ -89,5 +89,7 @@ it('should logs error on missing SMTP configs', async () => {
   expect(logError).toHaveBeenCalled()
   const [_, msg] = logError.mock.calls[0] as [Error & { code: string }, string]
 
-  expect(msg).toBe('[MISSING_CONFIG] SMTP_HOST or SMTP_PORT is not set')
+  expect(msg).toBe(
+    '[MISSING_CONFIG] SMTP_HOST, SMTP_PORT or SMTP_EMAIL is not set',
+  )
 })
