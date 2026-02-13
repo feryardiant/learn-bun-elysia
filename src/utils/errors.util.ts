@@ -1,8 +1,12 @@
 import { NotFoundError as ElysiaNotFoundError } from 'elysia'
 
-const codes = {
-  MISSING_CONFIG: 'MISSING_CONFIG',
-} as const
+enum ERROR_CODES {
+  MISSING_CONFIG = 'MISSING_CONFIG',
+}
+
+export interface AppError extends Error {
+  readonly code: ERROR_CODES
+}
 
 export class AuthenticationError extends Error {
   static readonly code = 'AUTHENTICATION'
@@ -27,8 +31,8 @@ export class InvalidParamError extends Error {
   readonly status = 422
 }
 
-export class MissingConfigError extends Error {
-  readonly code = codes.MISSING_CONFIG
+export class MissingConfigError extends Error implements AppError {
+  readonly code = ERROR_CODES.MISSING_CONFIG
   readonly status = 500
 }
 
@@ -37,5 +41,5 @@ export default {
   [AuthorizationError.code]: AuthorizationError,
   [NotFoundError.code]: NotFoundError,
   [InvalidParamError.code]: InvalidParamError,
-  [codes.MISSING_CONFIG]: MissingConfigError,
+  [ERROR_CODES.MISSING_CONFIG]: MissingConfigError,
 }
