@@ -3,6 +3,7 @@ import { Value } from '@sinclair/typebox/value'
 import { authConfig } from './auth.config'
 import { dbConfig } from './database.config'
 import { appConfig } from './app.config'
+import { mailConfig } from './mail.config'
 
 const envSchema = t.Object({
   HOST: t.String({ default: 'localhost' }),
@@ -21,6 +22,7 @@ const envSchema = t.Object({
   ...appConfig.properties,
   ...authConfig.properties,
   ...dbConfig.properties,
+  ...mailConfig.properties,
 })
 
 export const ENV = Value.Parse(envSchema, Bun.env)

@@ -18,6 +18,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     env_file:
       - path: ../.env
         required: true
@@ -34,6 +36,13 @@ services:
       DB_HOST: ${DB_HOST:-postgres}
       DB_USER: ${DB_USER:-postgres}
       DB_PASS: ${DB_PASS:-secret}
+
+      # Email
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: 1025
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_EMAIL: ${SMTP_EMAIL:-noreply@${APP_DOMAIN}}
     healthcheck:
       test: ["CMD-SHELL", "server health"]
       <<: *healthcheck
@@ -55,3 +64,14 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-elysia_app}"]
       <<: *healthcheck
     deploy: *resources
+
+  mailpit:
+    image: axllent/mailpit:v1.29
+    container_name: elysia-mail
+    ports:
+      - ${FORWARD_MAIL_PORT:-1025}:1025
+      - ${FORWARD_MAILPIT_PORT:-8025}:8025
+    environment:
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - ./local/mailpit:/data

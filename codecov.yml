@@ -21,12 +21,18 @@ component_management:
     - component_id: module_auth
       name: auth
       paths:
+        - src/configs/auth.config.ts
         - src/modules/auth/**
         - src/plugins/auth.plugin.ts
     - component_id: module_feed
       name: feed
       paths:
         - src/modules/feed/**
+    - component_id: mail
+      name: mail
+      paths:
+        - src/configs/mail.config.ts
+        - src/plugins/mail.plugin.ts
     - component_id: utilities
       name: utils
       paths:

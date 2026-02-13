@@ -16,6 +16,12 @@ services:
       service: postgres
     container_name: elysia-staging-db
 
+  mailpit:
+    extends:
+      file: compose.yml
+      service: mailpit
+    container_name: elysia-staging-mail
+
 networks:
   default:
     name: elysia-staging-stack
