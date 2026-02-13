@@ -1,33 +1,39 @@
 import { NotFoundError as ElysiaNotFoundError } from 'elysia'
 
 export enum ERROR_CODES {
+  AUTHENTICATION = 'AUTHENTICATION',
+  AUTHORIZATION = 'AUTHORIZATION',
+  NOT_FOUND = 'NOT_FOUND',
+  INVALID_PARAM = 'INVALID_PARAM',
   MISSING_CONFIG = 'MISSING_CONFIG',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface AppError extends Error {
   readonly code: ERROR_CODES
+  readonly status: number
 }
 
 export class AuthenticationError extends Error {
-  static readonly code = 'AUTHENTICATION'
+  readonly code = ERROR_CODES.AUTHENTICATION
   readonly status = 401
 }
 
 export class AuthorizationError extends Error {
-  static readonly code = 'AUTHORIZATION'
+  readonly code = ERROR_CODES.AUTHORIZATION
   readonly status = 403
 }
 
 export class NotFoundError extends ElysiaNotFoundError {
-  static readonly code = 'NOT_FOUND'
+  override readonly code = ERROR_CODES.NOT_FOUND
 
-  constructor() {
-    super('Page Not Found')
+  constructor(message: string = 'Page Not Found') {
+    super(message)
   }
 }
 
 export class InvalidParamError extends Error {
-  static readonly code = 'INVALID_PARAM'
+  readonly code = ERROR_CODES.INVALID_PARAM
   readonly status = 422
 }
 
@@ -37,9 +43,9 @@ export class MissingConfigError extends Error implements AppError {
 }
 
 export default {
-  [AuthenticationError.code]: AuthenticationError,
-  [AuthorizationError.code]: AuthorizationError,
-  [NotFoundError.code]: NotFoundError,
-  [InvalidParamError.code]: InvalidParamError,
+  [ERROR_CODES.AUTHENTICATION]: AuthenticationError,
+  [ERROR_CODES.AUTHORIZATION]: AuthorizationError,
+  [ERROR_CODES.NOT_FOUND]: NotFoundError,
+  [ERROR_CODES.INVALID_PARAM]: InvalidParamError,
   [ERROR_CODES.MISSING_CONFIG]: MissingConfigError,
 }

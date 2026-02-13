@@ -42,8 +42,9 @@ it('should log GET /logged request', async () => {
 
   expect(logDebug).toHaveBeenCalled()
 
-  const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
-  expect(obj).toContainKey<LogObj>('headers')
+  const [obj, msg] = logDebug.mock.calls[0] as [LogObj, string]
+
+  expect(obj).toContainKey('headers')
   expect(msg).toContain('Request received')
 })
 
@@ -57,9 +58,9 @@ it('should log POST /logged request with JSON payload', async () => {
 
   expect(logDebug).toHaveBeenCalled()
 
-  const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
+  const [obj, msg] = logDebug.mock.calls[0] as [LogObj, string]
 
-  expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
+  expect(obj).toContainKeys(['headers', 'payload'])
   expect(msg).toContain('Request received')
 })
 
@@ -78,8 +79,8 @@ it('should log POST /logged request with File payload', async () => {
 
   expect(logDebug).toHaveBeenCalled()
 
-  const [obj, msg] = logDebug.mock.calls[0] || [{}, '']
+  const [obj, msg] = logDebug.mock.calls[0] as [LogObj, string]
 
-  expect(obj).toContainKeys<LogObj>(['headers', 'payload'])
+  expect(obj).toContainKeys(['headers', 'payload'])
   expect(msg).toContain('Request received')
 })

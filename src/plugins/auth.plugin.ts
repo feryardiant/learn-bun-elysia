@@ -4,7 +4,7 @@ import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
 import type { OpenAPIV3 } from 'openapi-types'
 import { ENV } from '~/config'
-import { ApiErrorSchema } from '~/utils/response.util'
+import { ErrorResponseSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 import { db } from './database.plugin'
 import { logger } from './logger.plugin'
@@ -103,7 +103,7 @@ export const authPlugin = () =>
     .guard({
       detail: { security },
       response: {
-        401: t.Object(ApiErrorSchema.properties, {
+        401: t.Object(ErrorResponseSchema.properties, {
           description:
             'Unauthorized. Due to missing or invalid authentication.',
         }),
