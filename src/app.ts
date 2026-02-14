@@ -4,6 +4,7 @@ import { ENV } from './config'
 import { errorHandlerPlugin } from './plugins/error-handler.plugin'
 import { loggerPlugin } from './plugins/logger.plugin'
 import { openapiPlugin } from './plugins/openapi.plugin'
+import { otelPlugin } from './plugins/otel.plugin'
 import { staticPlugin } from './plugins/static.plugin'
 import { authRoute } from './routes/auth.route'
 import { baseRoute } from './routes/base.route'
@@ -14,6 +15,7 @@ export const app = new Elysia({ prefix: ENV.BASE_PATH })
   .use(errorHandlerPlugin)
   .use(staticPlugin)
   .use(openapiPlugin)
+  .use(otelPlugin)
   .use(authRoute)
   .use(baseRoute)
   .use(v1Route)
