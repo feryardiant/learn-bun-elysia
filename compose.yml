@@ -27,6 +27,11 @@ services:
       file: deploy/compose.yml
       service: mailpit
 
+  jaeger:
+    extends:
+      file: deploy/compose.yml
+      service: jaeger
+
 networks:
   default:
     name: elysia-stack

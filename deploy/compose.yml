@@ -20,6 +20,8 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+      jaeger:
+        condition: service_started
     env_file:
       - path: ../.env
         required: true
@@ -42,7 +44,10 @@ services:
       SMTP_PORT: 1025
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_EMAIL: ${SMTP_EMAIL:-noreply@${APP_DOMAIN}}
+      SMTP_EMAIL: ${SMTP_EMAIL:-noreply@${APP_DOMAIN:-example.com}}
+
+      # OTEL
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:${FORWARD_OTLP_HTTP_PORT:-4318}}
     healthcheck:
       test: ["CMD-SHELL", "server health"]
       <<: *healthcheck
@@ -75,3 +80,15 @@ services:
       MP_DATABASE: /data/mailpit.db
     volumes:
       - ./local/mailpit:/data
+
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
+    container_name: elysia-otel
+    ports:
+      - "${FORWARD_OTLP_GRPC_PORT:-4317}:4317" # OTLP gRPC
+      - "${FORWARD_OTLP_HTTP_PORT:-4318}:4318" # OTLP HTTP
+      - "${FORWARD_JAEGER_PORT:-16686}:16686"  # Jaeger UI
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    volumes:
+      - ./local/jaeger:/tmp

@@ -22,6 +22,12 @@ services:
       service: mailpit
     container_name: elysia-staging-mail
 
+  jaeger:
+    extends:
+      file: compose.yml
+      service: jaeger
+    container_name: elysia-staging-otel
+
 networks:
   default:
     name: elysia-staging-stack

@@ -23,8 +23,12 @@
     }
   },
   "remoteUser": "root",
+  "remoteEnv": {
+    "APP_DOMAIN": "localhost"
+  },
   "runServices": [
     "postgres",
-    "mailpit"
+    "mailpit",
+    "jaeger"
   ]
 }
