@@ -26,10 +26,6 @@ export class AuthorizationError extends Error {
 
 export class NotFoundError extends ElysiaNotFoundError {
   override readonly code = ERROR_CODES.NOT_FOUND
-
-  constructor(message: string = 'Page Not Found') {
-    super(message)
-  }
 }
 
 export class InvalidParamError extends Error {
