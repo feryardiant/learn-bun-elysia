@@ -31,11 +31,11 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       BASE_PATH: ${BASE_PATH:-}
       AUTH_SECRET: ${AUTH_SECRET:-}
-      DB_NAME: ${DB_NAME:-elysia_app}
-      DB_PORT: 5432
       DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
       DB_PASS: ${DB_PASS:-secret}
+      DB_NAME: ${DB_NAME:-elysia_app}
 
       # Email
       SMTP_HOST: ${SMTP_HOST:-mailpit}
