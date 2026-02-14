@@ -1,7 +1,7 @@
 import type { ObjectOptions, TSchema } from '@sinclair/typebox'
 import { t } from 'elysia'
 
-export const ApiErrorSchema = t.Object({
+export const ErrorResponseSchema = t.Object({
   code: t.String(),
   message: t.String(),
 })
@@ -22,7 +22,7 @@ export type ValidationValueError = (typeof ValidationValueErrorSchema)['static']
 
 export const ValidationErrorSchema = t.Object(
   {
-    ...ApiErrorSchema.properties,
+    ...ErrorResponseSchema.properties,
     errors: t.Array(ValidationValueErrorSchema),
   },
   {

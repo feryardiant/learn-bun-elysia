@@ -210,7 +210,7 @@ describe('Validations', () => {
 
       expect(debugLog).toHaveBeenCalled()
 
-      const [err, msg] = debugLog.mock.calls[0] || [{}, '']
+      const [err, msg] = debugLog.mock.calls[0] as [Error, string]
       const error = err as Error
 
       expect(error.message).toEqual('Mocked error')

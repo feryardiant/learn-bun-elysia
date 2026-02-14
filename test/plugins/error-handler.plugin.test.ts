@@ -47,11 +47,11 @@ it('should log error whenever an error thrown from handler', async () => {
   expect(response.status).toBe(500)
 
   const body = (await response.json()) as InternalServerError
-  const [obj, msg] = logError.mock.calls[0] || [{}]
+  const [obj, msg] = logError.mock.calls[0] as [LogObj, string]
 
   expect(msg).toBe(body.message)
 
-  expect(obj).toContainKeys<LogObj>(['headers', 'error', 'endpoint'])
+  expect(obj).toContainKeys(['headers', 'error', 'endpoint'])
 })
 
 it("should log error whenever there's a validation error thrown", async () => {
@@ -67,12 +67,12 @@ it("should log error whenever there's a validation error thrown", async () => {
   expect(response.status).toBe(422)
 
   const body = (await response.json()) as ValidationError
-  const [obj, msg] = logError.mock.calls[0] || [{}]
+  const [obj, msg] = logError.mock.calls[0] as [LogObj, string]
 
   expect(body.errors).toBeArrayOfSize(1)
   expect(msg).toBe(body.message)
 
-  expect(obj).toContainKeys<LogObj>(['headers', 'error', 'endpoint'])
+  expect(obj).toContainKeys(['headers', 'error', 'endpoint'])
 })
 
 it("should log fatal whenever there's a drizzle error thrown", async () => {
@@ -88,11 +88,11 @@ it("should log fatal whenever there's a drizzle error thrown", async () => {
   expect(response.status).toBe(500)
 
   const body = (await response.json()) as InternalServerError
-  const [obj, msg] = logFatal.mock.calls[0] || [{}]
+  const [obj, msg] = logFatal.mock.calls[0] as [LogObj, string]
 
   expect(body.message).toBe('Something went wrong in our end')
   expect(msg).toContain('ERR_POSTGRES_SERVER_ERROR')
 
   expect(obj).not.toContainKey<LogObj>('headers')
-  expect(obj).toContainKeys<LogObj>(['query', 'error', 'endpoint', 'params'])
+  expect(obj).toContainKeys(['query', 'error', 'endpoint', 'params'])
 })
