@@ -84,6 +84,7 @@ services:
   jaeger:
     image: cr.jaegertracing.io/jaegertracing/jaeger:2.15.0
     container_name: elysia-otel
+    command: ["--config=/etc/jaeger/config.yml"]
     ports:
       - "${FORWARD_OTLP_GRPC_PORT:-4317}:4317" # OTLP gRPC
       - "${FORWARD_OTLP_HTTP_PORT:-4318}:4318" # OTLP HTTP
@@ -91,5 +92,7 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     volumes:
+      - ./jaeger-ui-config.json:/etc/jaeger/config-ui.json
+      - ./jaeger-config.yml:/etc/jaeger/config.yml
       - ./local/jaeger:/tmp
     deploy: *resources
