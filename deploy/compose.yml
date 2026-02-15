@@ -47,7 +47,7 @@ services:
       SMTP_EMAIL: ${SMTP_EMAIL:-noreply@${APP_DOMAIN:-example.com}}
 
       # OTEL
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:${FORWARD_OTLP_HTTP_PORT:-4318}}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4318}
     healthcheck:
       test: ["CMD-SHELL", "server health"]
       <<: *healthcheck
@@ -92,3 +92,4 @@ services:
       - COLLECTOR_OTLP_ENABLED=true
     volumes:
       - ./local/jaeger:/tmp
+    deploy: *resources
