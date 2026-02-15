@@ -57,17 +57,15 @@ export function updateSpanName(
 
   if (!span) return
 
+  if (req instanceof Request) {
+    const url = new URL(req.url, ENV.APP_URL)
+
+    req = `${req.method} ${url.pathname}`
+  }
+
+  span.updateName(req)
+
   Object.entries(attrs).forEach(([key, value]) => {
     span.setAttribute(key, value)
   })
-
-  if (typeof req === 'string') {
-    span.updateName(req)
-
-    return
-  }
-
-  const url = new URL(req.url, ENV.APP_URL)
-
-  span.updateName(`${req.method} ${url.pathname}`)
 }

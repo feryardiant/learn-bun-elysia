@@ -15,26 +15,26 @@ import { otelPlugin } from '~/plugins/otel.plugin'
 let logInfo: Mock<typeof logger.info>
 let logError: Mock<typeof logger.error>
 let currentSpan: Mock<typeof getCurrentSpan>
+let handler: Mock<(ctx: { sessionId?: string }) => void>
 
 const APP_URL = 'http://localhost'
-
-const handler = mock((ctx = {}) => 'Auth')
-const otelApp = new Elysia()
-  .use(otelPlugin)
-  .get('', handler)
-  .get('/health', handler)
+const otelApp = new Elysia().use(otelPlugin)
 
 beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
   logError = spyOn(logger, 'error').mockImplementation(() => {})
 
+  handler = mock((ctx = {}) => {})
   currentSpan = mock(getCurrentSpan)
+
+  otelApp.get('', handler).get('/health', handler)
 })
 
 afterEach(() => {
   logInfo.mockRestore()
   logError.mockRestore()
 
+  handler.mockRestore()
   currentSpan.mockRestore()
 })
 
