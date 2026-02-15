@@ -37,6 +37,12 @@ services:
       service: mailpit
     container_name: elysia-dev-mail
 
+  jaeger:
+    extends:
+      file: ../deploy/compose.yml
+      service: jaeger
+    container_name: elysia-dev-otel
+
 volumes:
   node_modules:
     name: elysia-dev-node_modules

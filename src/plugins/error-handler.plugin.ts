@@ -10,6 +10,7 @@ import customErrors from '~/utils/errors.util'
 import { reduceHeaders } from '~/utils/request.util'
 import { logger } from './logger.plugin'
 import { APIError } from 'better-auth'
+import { updateSpanName } from './otel.plugin'
 
 /**
  * Error handler
@@ -28,6 +29,8 @@ export const errorHandlerPlugin = (app: Elysia) =>
     .error(customErrors)
     .onError({ as: 'scoped' }, ({ error, code, headers, set, request }) => {
       set.status = 'status' in error ? error.status : 500
+
+      updateSpanName('HandleError')
 
       let message = 'message' in error ? error.message : 'Unknown error'
       const { pathname, search } = new URL(request.url)

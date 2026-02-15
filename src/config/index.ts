@@ -4,6 +4,7 @@ import { authConfig } from './auth.config'
 import { dbConfig } from './database.config'
 import { appConfig } from './app.config'
 import { mailConfig } from './mail.config'
+import { otelConfig } from './otel.config'
 
 const envSchema = t.Object({
   HOST: t.String({ default: 'localhost' }),
@@ -23,6 +24,7 @@ const envSchema = t.Object({
   ...authConfig.properties,
   ...dbConfig.properties,
   ...mailConfig.properties,
+  ...otelConfig.properties,
 })
 
 export const ENV = Value.Parse(envSchema, Bun.env)
