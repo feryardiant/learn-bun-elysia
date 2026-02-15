@@ -39,23 +39,27 @@ export const otelPlugin = opentelemetry({
   resource,
   resourceDetectors: [envDetector, hostDetector, processDetector],
   traceExporter,
-}).derive({ as: 'global' }, function RequestInfo({ path, request }) {
+}).derive({ as: 'global' }, ({ path, request }) => {
   const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
-  const currentSpan = getCurrentSpan()
 
-  if (currentSpan) {
-    currentSpan.setAttribute('session.id', sessionId)
-  }
+  updateSpanName('RequestInfo', { 'session.id': sessionId })
 
   request.headers.set('x-session-id', sessionId)
 
   return { sessionId }
 })
 
-export function updateSpanName(req: Request | string) {
+export function updateSpanName(
+  req: Request | string,
+  attrs: Record<string, string> = {},
+) {
   const span = getCurrentSpan()
 
   if (!span) return
+
+  Object.entries(attrs).forEach(([key, value]) => {
+    span.setAttribute(key, value)
+  })
 
   if (typeof req === 'string') {
     span.updateName(req)
