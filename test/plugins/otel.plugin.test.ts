@@ -18,9 +18,9 @@ let logError: Mock<typeof logger.error>
 let handler: Mock<(ctx: { sessionId?: string }) => void>
 let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
 let spanUpdateName: Mock<Span['updateName']>
+let otelApp: typeof otelPlugin
 
 const APP_URL = 'http://localhost'
-const otelApp = new Elysia().use(otelPlugin)
 
 beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
@@ -34,6 +34,7 @@ beforeEach(async () => {
   )
 
   handler = mock((ctx = {}) => {})
+  otelApp = new Elysia().use(otelPlugin)
 
   otelApp.get('', handler).get('/health', handler)
 })
