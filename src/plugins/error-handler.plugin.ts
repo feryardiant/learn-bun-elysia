@@ -30,7 +30,7 @@ export const errorHandlerPlugin = (app: Elysia) =>
     .onError({ as: 'scoped' }, ({ error, code, headers, set, request }) => {
       set.status = 'status' in error ? error.status : 500
 
-      updateSpanName(request)
+      updateSpanName('HandleError')
 
       let message = 'message' in error ? error.message : 'Unknown error'
       const { pathname, search } = new URL(request.url)
