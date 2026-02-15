@@ -19,7 +19,10 @@ let currentSpan: Mock<typeof getCurrentSpan>
 const APP_URL = 'http://localhost'
 
 const handler = mock((ctx = {}) => 'Auth')
-const otelApp = new Elysia().use(otelPlugin).get('', handler)
+const otelApp = new Elysia()
+  .use(otelPlugin)
+  .get('', handler)
+  .get('/health', handler)
 
 beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
@@ -37,6 +40,20 @@ afterEach(() => {
 
 it('should generate sessionId on each request', async () => {
   await otelApp.handle(new Request(APP_URL))
+
+  expect(handler).toBeCalled()
+
+  const [ctx] = handler.mock.calls[0] || [{}]
+
+  expect(ctx.sessionId).toBeDefined()
+})
+
+it('should not trace health endpoint', async () => {
+  await otelApp.handle(
+    new Request(`${APP_URL}/health`, {
+      headers: { 'user-agent': 'Bun/v1.3.3' },
+    }),
+  )
 
   expect(handler).toBeCalled()
 
