@@ -7,15 +7,17 @@ import {
   spyOn,
   type Mock,
 } from 'bun:test'
-import { getCurrentSpan } from '@elysiajs/opentelemetry'
+import * as elysiaOtel from '@elysiajs/opentelemetry'
+import { INVALID_SPAN_CONTEXT, trace, type Span } from '@opentelemetry/api'
 import Elysia from 'elysia'
 import { logger } from '~/plugins/logger.plugin'
-import { otelPlugin } from '~/plugins/otel.plugin'
+import { otelPlugin, updateSpanName } from '~/plugins/otel.plugin'
 
 let logInfo: Mock<typeof logger.info>
 let logError: Mock<typeof logger.error>
-let currentSpan: Mock<typeof getCurrentSpan>
 let handler: Mock<(ctx: { sessionId?: string }) => void>
+let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
+let spanUpdateName: Mock<Span['updateName']>
 
 const APP_URL = 'http://localhost'
 const otelApp = new Elysia().use(otelPlugin)
@@ -24,8 +26,14 @@ beforeEach(async () => {
   logInfo = spyOn(logger, 'info').mockImplementation(() => {})
   logError = spyOn(logger, 'error').mockImplementation(() => {})
 
+  const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
+
+  spanUpdateName = spyOn(invalidSpan, 'updateName')
+  currentSpan = spyOn(elysiaOtel, 'getCurrentSpan').mockImplementation(
+    () => invalidSpan,
+  )
+
   handler = mock((ctx = {}) => {})
-  currentSpan = mock(getCurrentSpan)
 
   otelApp.get('', handler).get('/health', handler)
 })
@@ -36,6 +44,7 @@ afterEach(() => {
 
   handler.mockRestore()
   currentSpan.mockRestore()
+  spanUpdateName.mockRestore()
 })
 
 it('should generate sessionId on each request', async () => {
@@ -55,9 +64,25 @@ it('should not trace health endpoint', async () => {
     }),
   )
 
-  expect(handler).toBeCalled()
+  expect(currentSpan).toBeCalled()
+})
 
-  const [ctx] = handler.mock.calls[0] || [{}]
+it('should update span name with request instance', async () => {
+  updateSpanName(new Request(APP_URL))
 
-  expect(ctx.sessionId).toBeDefined()
+  expect(spanUpdateName).toBeCalled()
+
+  const [req] = spanUpdateName.mock.calls[0] || ''
+
+  expect(req).toEqual('GET /')
+})
+
+it('should update span name with string', async () => {
+  updateSpanName('New span name')
+
+  expect(spanUpdateName).toBeCalled()
+
+  const [req] = spanUpdateName.mock.calls[0] || ''
+
+  expect(req).toEqual('New span name')
 })
