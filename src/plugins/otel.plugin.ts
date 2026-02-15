@@ -51,3 +51,19 @@ export const otelPlugin = opentelemetry({
 
   return { sessionId }
 })
+
+export function updateSpanName(req: Request | string) {
+  const span = getCurrentSpan()
+
+  if (!span) return
+
+  if (typeof req === 'string') {
+    span.updateName(req)
+
+    return
+  }
+
+  const url = new URL(req.url, ENV.APP_URL)
+
+  span.updateName(`${req.method} ${url.pathname}`)
+}
