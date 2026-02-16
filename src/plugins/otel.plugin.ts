@@ -1,19 +1,28 @@
 import { getCurrentSpan, opentelemetry } from '@elysiajs/opentelemetry'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto'
+import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino'
 import {
   envDetector,
   hostDetector,
   processDetector,
   resourceFromAttributes,
 } from '@opentelemetry/resources'
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions'
 import { ENV } from '~/config'
+import { logger } from './logger.plugin'
+import { ignorePathnames } from '~/utils/request.util'
 
 const traceExporter = new OTLPTraceExporter({
   url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
+})
+
+const logExporter = new OTLPLogExporter({
+  url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs`,
 })
 
 const resource = resourceFromAttributes({
@@ -25,26 +34,28 @@ const resource = resourceFromAttributes({
 export const otelPlugin = opentelemetry({
   serviceName: ENV.APP_NAME,
   autoDetectResources: true,
-  checkIfShouldTrace(req) {
-    const url = new URL(req.url)
-    const userAgent = req.headers.get('user-agent')
-
-    if (userAgent) {
-      // Don't trace request from health check
-      return !(url.pathname === '/health' && userAgent.startsWith('Bun'))
-    }
-
-    return true
-  },
+  instrumentations: [
+    new PinoInstrumentation({
+      logHook(span, record) {
+        console.log('hook', record)
+      },
+    }),
+  ],
+  logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
   resource,
   resourceDetectors: [envDetector, hostDetector, processDetector],
   traceExporter,
-}).derive({ as: 'global' }, ({ path, request }) => {
+}).derive({ as: 'global' }, ({ body, path, request }) => {
   const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
+  const { pathname, search } = new URL(request.url)
 
   updateSpanName('RequestInfo', { 'session.id': sessionId })
 
   request.headers.set('x-session-id', sessionId)
+
+  if (!ignorePathnames.includes(pathname)) {
+    logger.debug({ body }, `[${request.method}] ${pathname}${search}`)
+  }
 
   return { sessionId }
 })
