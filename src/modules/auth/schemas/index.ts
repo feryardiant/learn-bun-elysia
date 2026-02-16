@@ -1,5 +1,5 @@
 import { defineRelationsPart } from 'drizzle-orm'
-import { createSelectSchema } from 'drizzle-typebox'
+import { createSelectSchema } from 'drizzle-orm/typebox-legacy'
 import { accounts } from './accounts.schema'
 import { sessions } from './sessions.schema'
 import { users } from './users.schema'
