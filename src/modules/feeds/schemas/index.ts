@@ -1,5 +1,5 @@
 import { defineRelationsPart, type RelationsFilter } from 'drizzle-orm'
-import { createSelectSchema } from 'drizzle-orm/typebox'
+import { createSelectSchema } from 'drizzle-orm/typebox-legacy'
 import { t } from 'elysia'
 import { users } from '~/modules/auth'
 import { posts } from './posts.schema'
