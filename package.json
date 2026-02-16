@@ -24,10 +24,10 @@
     "@elysiajs/openapi": "^1.4.14",
     "@elysiajs/opentelemetry": "^1.4.10",
     "@elysiajs/static": "^1.4.7",
-    "@opentelemetry/exporter-trace-otlp-proto": "0.200.0",
-    "@opentelemetry/resources": "2.0.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
+    "@opentelemetry/resources": "^2.5.1",
     "better-auth": "^1.4.18",
-    "commander": "^14.0.2",
+    "commander": "^14.0.3",
     "date-fns": "^4.1.0",
     "drizzle-orm": "1.0.0-beta.13-f728631",
     "drizzle-typebox": "1.0.0-beta.13-f728631",
@@ -52,7 +52,13 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "@types/node": "^24.9.1"
+    "@opentelemetry/exporter-logs-otlp-grpc": "^0.212.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
+    "@opentelemetry/instrumentation": "^0.212.0",
+    "@opentelemetry/sdk-node": "^0.212.0",
+    "@opentelemetry/resources": "^2.5.1",
+    "@types/node": "^24.9.1",
+    "protobufjs": "^8.0.0"
   },
   "simple-git-hooks": {
     "pre-commit": "bunx lint-staged --allow-empty"
