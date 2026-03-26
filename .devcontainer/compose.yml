@@ -30,6 +30,8 @@ services:
       file: ../deploy/compose.yml
       service: postgres
     container_name: elysia-dev-db
+    ports:
+      - ${FORWARD_DB_PORT:-5432}:5432
 
   mailpit:
     extends:
