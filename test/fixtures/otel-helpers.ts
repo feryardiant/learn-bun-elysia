@@ -1,6 +1,6 @@
 import type { Attributes, SpanContext } from '@opentelemetry/api'
 import { type Mock } from 'bun:test'
-import { spanProcessor } from '~/plugins/otel.plugin'
+import { spanProcessor, recordableClass } from '~/plugins/otel.plugin'
 
 export type SpanProcessStart = Mock<typeof spanProcessor.onStart>
 export type SpanProcessEnd = Mock<typeof spanProcessor.onEnd>
@@ -24,4 +24,11 @@ export function marshalContext({ mock }: SpanProcessStart | SpanProcessEnd) {
 
     return out
   }, [] as MarshaledSpanContext[])
+}
+
+@recordableClass()
+export class DummyRepository {
+  foo() {
+    return 'bar'
+  }
 }

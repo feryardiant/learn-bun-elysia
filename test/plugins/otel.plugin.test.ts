@@ -17,6 +17,7 @@ import {
   updateSpanName,
 } from '~/plugins/otel.plugin'
 import {
+  DummyRepository,
   marshalContext,
   type SpanProcessEnd,
   type SpanProcessStart,
@@ -24,6 +25,7 @@ import {
 
 let logDebug: Mock<typeof logger.debug>
 
+let otelRecord: Mock<typeof elysiaOtel.record>
 let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
 let spanUpdateName: Mock<Span['updateName']>
 let spanStart: SpanProcessStart
@@ -41,6 +43,7 @@ beforeEach(async () => {
 
   const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
 
+  otelRecord = spyOn(elysiaOtel, 'record').mockImplementation(() => {})
   spanStart = spyOn(spanProcessor, 'onStart')
   spanEnd = spyOn(spanProcessor, 'onEnd')
   spanUpdateName = spyOn(invalidSpan, 'updateName')
@@ -61,6 +64,7 @@ beforeEach(async () => {
 afterEach(() => {
   logDebug.mockRestore()
 
+  otelRecord.mockRestore()
   spanStart.mockRestore()
   spanEnd.mockRestore()
   spanUpdateName.mockRestore()
@@ -76,6 +80,14 @@ it('should be able to catch span start and end', async () => {
   expect(spanEnd).toBeCalledTimes(3)
 
   // console.log(marshalContext(spanStart), marshalContext(spanEnd))
+})
+
+it('should record method invocations', async () => {
+  const dummy = new DummyRepository()
+
+  dummy.foo()
+
+  expect(otelRecord).toBeCalled()
 })
 
 it('should generate sessionId without the request', async () => {

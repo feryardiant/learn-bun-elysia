@@ -1,4 +1,4 @@
-import { getCurrentSpan, opentelemetry } from '@elysiajs/opentelemetry'
+import { getCurrentSpan, opentelemetry, record } from '@elysiajs/opentelemetry'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto'
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino'
@@ -58,6 +58,34 @@ export const otelPlugin = opentelemetry({
 
   return { sessionId }
 })
+
+/**
+ * @kind decorator
+ */
+export function recordableClass() {
+  return (obj: Function) => {
+    const className = obj.name
+    const prototype = obj.prototype
+
+    for (const methodName of Object.getOwnPropertyNames(prototype)) {
+      // Skip the constructor
+      if (methodName === 'constructor') continue
+
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, methodName)
+
+      // Check if it's actually a function/method
+      if (typeof descriptor?.value === 'function') {
+        const originalMethod = descriptor.value as Function
+
+        // Overwrite the method on the prototype
+        prototype[methodName] = (...args: unknown[]) =>
+          record(`${className}.${methodName}()`, () =>
+            originalMethod.apply(obj, args),
+          )
+      }
+    }
+  }
+}
 
 export function updateSpanName(
   req: Request | string,
