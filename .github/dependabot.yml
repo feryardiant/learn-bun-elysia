@@ -23,13 +23,9 @@ updates:
         patterns: ['@types/nodemailer', 'nodemailer']
       otel:
         patterns: ['@elysiajs/opentelemetry', '@opentelemetry/*']
+        update-types: patch
       openapi:
         patterns: ['@elysiajs/openapi', 'openapi-types']
+        update-types: patch
       pino:
         patterns: ['pino', 'pino-pretty']
-      dependencies:
-        dependency-type: production
-        patterns: ['*']
-      dev-dependencies:
-        dependency-type: development
-        patterns: ['*']
