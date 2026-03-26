@@ -43,13 +43,7 @@ export const otelPlugin = opentelemetry({
   spanProcessors: [spanProcessor],
   resourceDetectors: [envDetector, hostDetector, processDetector],
   resource,
-  instrumentations: [
-    new PinoInstrumentation({
-      logHook(span, record) {
-        console.log('hook', record)
-      },
-    }),
-  ],
+  instrumentations: [new PinoInstrumentation()],
 }).derive({ as: 'global' }, ({ body, path, request }) => {
   const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
   const { pathname, search } = new URL(request.url)
