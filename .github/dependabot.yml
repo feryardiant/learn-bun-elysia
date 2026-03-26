@@ -27,10 +27,9 @@ updates:
         patterns: ['@elysiajs/openapi', 'openapi-types']
       pino:
         patterns: ['pino', 'pino-pretty']
-
-  - package-ecosystem: bun
-    directory: /
-    open-pull-requests-limit: 5
-    schedule:
-      interval: monthly
-      timezone: Asia/Jakarta
+      dependencies:
+        dependency-type: production
+        patterns: ['*']
+      dev-dependencies:
+        dependency-type: development
+        patterns: ['*']
