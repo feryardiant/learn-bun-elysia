@@ -37,6 +37,13 @@ export const auth = betterAuth({
     },
   },
 
+  /**
+   * @link https://better-auth.com/docs/reference/telemetry
+   */
+  telemetry: {
+    enabled: true,
+  },
+
   user: {
     additionalFields: {
       handle: {

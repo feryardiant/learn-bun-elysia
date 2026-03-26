@@ -32,7 +32,10 @@ services:
       APP_DOMAIN: ${APP_DOMAIN:-localhost}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       BASE_PATH: ${BASE_PATH:-}
+
       AUTH_SECRET: ${AUTH_SECRET:-}
+      BETTER_AUTH_TELEMETRY_ENDPOINT: http://jaeger:4318
+
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: 5432
       DB_USER: ${DB_USER:-postgres}
