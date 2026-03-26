@@ -1,6 +1,7 @@
 import { getCurrentSpan, opentelemetry, record } from '@elysiajs/opentelemetry'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import type { SpanOptions } from '@opentelemetry/api'
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino'
 import {
   envDetector,
@@ -15,8 +16,8 @@ import {
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions'
 import { ENV } from '~/config'
-import { logger } from './logger.plugin'
 import { ignorePathnames } from '~/utils/request.util'
+import { logger } from './logger.plugin'
 
 const traceExporter = new OTLPTraceExporter({
   url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
@@ -79,7 +80,14 @@ export function recordableClass() {
 
         // Overwrite the method on the prototype
         prototype[methodName] = function (...args: unknown[]) {
-          return record(`${className}.${methodName}()`, () =>
+          const options: SpanOptions = {
+            attributes: {
+              className,
+              methodName,
+            },
+          }
+
+          return record(`${className}.${methodName}()`, options, () =>
             originalMethod.apply(this, args),
           )
         }
