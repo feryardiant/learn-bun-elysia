@@ -41,10 +41,10 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -52,7 +52,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/${{ inputs.repo-name }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           build-args: |
             BUN_VERSION=${{ env.BUN_VERSION }}
@@ -85,7 +85,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
 
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest-build-provenance@v4
         if: ${{ github.event_name == 'push' }}
         with:
           subject-name: ghcr.io/${{ github.repository }}
@@ -151,7 +151,7 @@ jobs:
 
       - name: Upload schema artifacts
         id: api-schema
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: api-schema_${{ inputs.image-prefix }}
           path: ${{ inputs.image-name }}.schema.d.ts

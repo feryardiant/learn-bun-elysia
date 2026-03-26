@@ -16,3 +16,22 @@ updates:
     schedule:
       interval: monthly
       timezone: Asia/Jakarta
+    ignore:
+      - dependency-name: '@types/node'
+      - dependency-name: 'typescript'
+    groups:
+      drizzle:
+        patterns: ['drizzle-*']
+      elysiajs:
+        patterns: ['@elysiajs/static', '@sinclair/typebox', 'elysia']
+        update-types: [patch]
+      nodemailer:
+        patterns: ['@types/nodemailer', 'nodemailer']
+      otel:
+        patterns: ['@elysiajs/opentelemetry', '@opentelemetry/*']
+        update-types: [patch]
+      openapi:
+        patterns: ['@elysiajs/openapi', 'openapi-types']
+        update-types: [patch]
+      pino:
+        patterns: ['pino', 'pino-pretty']
