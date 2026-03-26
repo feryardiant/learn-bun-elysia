@@ -16,3 +16,20 @@ updates:
     schedule:
       interval: monthly
       timezone: Asia/Jakarta
+    groups:
+      drizzle:
+        patterns: ['drizzle-*']
+      nodemailer:
+        patterns: ['@types/nodemailer', 'nodemailer']
+      otel:
+        patterns: ['@elysiajs/opentelemetry', '@opentelemetry/*']
+      openapi:
+        patterns: ['@elysiajs/openapi', 'openapi-types']
+      pino:
+        patterns: ['pino', 'pino-pretty']
+      dependencies:
+        dependency-type: production
+        patterns: ['*']
+      dev-dependencies:
+        dependency-type: development
+        patterns: ['*']
