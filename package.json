@@ -27,7 +27,7 @@
     "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
     "@opentelemetry/resources": "^2.5.1",
     "@sinclair/typebox": "^0.34.48",
-    "better-auth": "^1.4.18",
+    "better-auth": "^1.4.20",
     "commander": "^14.0.3",
     "date-fns": "^4.1.0",
     "drizzle-orm": "1.0.0-beta.15-859cf75",
