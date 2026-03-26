@@ -1,11 +1,13 @@
+import { and, between, eq, gt, lt, or, SQL } from 'drizzle-orm'
 import type { AppDatabase } from '~/plugins/database.plugin'
-import { FeedQuerySchema, type FeedQuery, type Post } from '../types'
+import { recordableClass } from '~/plugins/otel.plugin'
+import { getRange } from '~/utils/filters.util'
 import { decodeToken, type Paginable } from '~/utils/pagination.util'
 import { posts } from '../schemas/posts.schema'
-import { and, between, eq, gt, lt, or, SQL } from 'drizzle-orm'
-import { getRange } from '~/utils/filters.util'
 import type { PostRelationsFilter } from '../schemas'
+import { FeedQuerySchema, type FeedQuery, type Post } from '../types'
 
+@recordableClass()
 export class PostRepository implements Paginable {
   constructor(private readonly db: AppDatabase) {}
 

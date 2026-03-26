@@ -88,6 +88,10 @@ it('should record method invocations', async () => {
   dummy.foo()
 
   expect(otelRecord).toBeCalled()
+
+  const [name] = otelRecord.mock.calls[0] || ['', () => {}]
+
+  expect(name).toBe('DummyRepository.foo()')
 })
 
 it('should generate sessionId without the request', async () => {

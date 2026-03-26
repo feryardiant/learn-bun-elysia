@@ -78,10 +78,11 @@ export function recordableClass() {
         const originalMethod = descriptor.value as Function
 
         // Overwrite the method on the prototype
-        prototype[methodName] = (...args: unknown[]) =>
-          record(`${className}.${methodName}()`, () =>
-            originalMethod.apply(obj, args),
+        prototype[methodName] = function (...args: unknown[]) {
+          return record(`${className}.${methodName}()`, () =>
+            originalMethod.apply(this, args),
           )
+        }
       }
     }
   }

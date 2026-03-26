@@ -1,8 +1,10 @@
 import { count, eq } from 'drizzle-orm'
 import type { AppDatabase } from '~/plugins/database.plugin'
+import { recordableClass } from '~/plugins/otel.plugin'
 import type { User } from '../types'
 import { users } from '../schemas/users.schema'
 
+@recordableClass()
 export class UserRepository {
   constructor(private readonly db: AppDatabase) {}
 
