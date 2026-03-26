@@ -11,13 +11,25 @@ import * as elysiaOtel from '@elysiajs/opentelemetry'
 import { INVALID_SPAN_CONTEXT, trace, type Span } from '@opentelemetry/api'
 import Elysia from 'elysia'
 import { logger } from '~/plugins/logger.plugin'
-import { otelPlugin, updateSpanName } from '~/plugins/otel.plugin'
+import {
+  otelPlugin,
+  spanProcessor,
+  updateSpanName,
+} from '~/plugins/otel.plugin'
+import {
+  marshalContext,
+  type SpanProcessEnd,
+  type SpanProcessStart,
+} from 'test/fixtures/otel-helpers'
 
 let logDebug: Mock<typeof logger.debug>
 
-let handler: Mock<(ctx: { sessionId?: string }) => void>
 let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
 let spanUpdateName: Mock<Span['updateName']>
+let spanStart: SpanProcessStart
+let spanEnd: SpanProcessEnd
+
+let handler: Mock<(ctx: { sessionId?: string }) => void>
 let otelApp: typeof otelPlugin
 
 const APP_URL = 'http://localhost'
@@ -29,6 +41,8 @@ beforeEach(async () => {
 
   const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
 
+  spanStart = spyOn(spanProcessor, 'onStart')
+  spanEnd = spyOn(spanProcessor, 'onEnd')
   spanUpdateName = spyOn(invalidSpan, 'updateName')
   currentSpan = spyOn(elysiaOtel, 'getCurrentSpan').mockImplementation(
     () => invalidSpan,
@@ -47,9 +61,21 @@ beforeEach(async () => {
 afterEach(() => {
   logDebug.mockRestore()
 
-  handler.mockRestore()
-  currentSpan.mockRestore()
+  spanStart.mockRestore()
+  spanEnd.mockRestore()
   spanUpdateName.mockRestore()
+  currentSpan.mockRestore()
+
+  handler.mockRestore()
+})
+
+it('should be able to catch span start and end', async () => {
+  await otelApp.handle(new Request(APP_URL))
+
+  expect(spanStart).toBeCalledTimes(4)
+  expect(spanEnd).toBeCalledTimes(3)
+
+  // console.log(marshalContext(spanStart), marshalContext(spanEnd))
 })
 
 it('should generate sessionId without the request', async () => {

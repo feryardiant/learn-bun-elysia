@@ -9,6 +9,7 @@ import {
   resourceFromAttributes,
 } from '@opentelemetry/resources'
 import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node'
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -31,9 +32,17 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_VERSION]: ENV.APP_VERSION,
 })
 
+export const spanProcessor = new BatchSpanProcessor(traceExporter)
+
+export const logRecordProcessor = new BatchLogRecordProcessor(logExporter)
+
 export const otelPlugin = opentelemetry({
   serviceName: ENV.APP_NAME,
   autoDetectResources: true,
+  logRecordProcessors: [logRecordProcessor],
+  spanProcessors: [spanProcessor],
+  resourceDetectors: [envDetector, hostDetector, processDetector],
+  resource,
   instrumentations: [
     new PinoInstrumentation({
       logHook(span, record) {
@@ -41,10 +50,6 @@ export const otelPlugin = opentelemetry({
       },
     }),
   ],
-  logRecordProcessors: [new BatchLogRecordProcessor(logExporter)],
-  resource,
-  resourceDetectors: [envDetector, hostDetector, processDetector],
-  traceExporter,
 }).derive({ as: 'global' }, ({ body, path, request }) => {
   const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
   const { pathname, search } = new URL(request.url)
