@@ -16,3 +16,21 @@ updates:
     schedule:
       interval: monthly
       timezone: Asia/Jakarta
+    groups:
+      drizzle:
+        patterns: ['drizzle-*']
+      nodemailer:
+        patterns: ['@types/nodemailer', 'nodemailer']
+      otel:
+        patterns: ['@elysiajs/opentelemetry', '@opentelemetry/*']
+      openapi:
+        patterns: ['@elysiajs/openapi', 'openapi-types']
+      pino:
+        patterns: ['pino', 'pino-pretty']
+
+  - package-ecosystem: bun
+    directory: /
+    open-pull-requests-limit: 5
+    schedule:
+      interval: monthly
+      timezone: Asia/Jakarta
