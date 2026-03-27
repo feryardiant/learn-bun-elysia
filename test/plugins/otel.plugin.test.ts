@@ -18,7 +18,7 @@ import {
   type MarshaledSpanContext,
   type SpanProcessEnd,
   type SpanProcessStart,
-} from 'test/fixtures/otel-helpers'
+} from 'test/fixtures'
 
 let logDebug: Mock<typeof logger.debug>
 
