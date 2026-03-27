@@ -46,7 +46,7 @@ export const otelPlugin = opentelemetry({
   resource,
   instrumentations: [new PinoInstrumentation()],
 })
-  .derive({ as: 'global' }, ({ body, path, request }) => {
+  .derive({ as: 'global' }, function SessionInfo({ body, request }) {
     const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
     const { pathname, search } = new URL(request.url)
 
@@ -63,7 +63,7 @@ export const otelPlugin = opentelemetry({
 
     return { sessionId }
   })
-  .onAfterHandle({ as: 'global' }, ({ set }) => {
+  .onAfterHandle({ as: 'global' }, function InjectTraceId({ set }) {
     const currentSpan = getCurrentSpan()
 
     if (currentSpan) {

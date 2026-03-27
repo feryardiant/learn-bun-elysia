@@ -10,9 +10,11 @@ export const postsController = new Elysia({
   prefix: '/posts',
   tags: ['Feed'],
 })
-  .resolve(() => ({
-    repo: new PostRepository(db),
-  }))
+  .resolve(function ResolveControllerDependencies() {
+    return {
+      repo: new PostRepository(db),
+    }
+  })
   .get(
     '/',
     async ({ query, repo }) => {
