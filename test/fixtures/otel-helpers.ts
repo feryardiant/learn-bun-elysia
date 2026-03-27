@@ -7,19 +7,29 @@ export type SpanProcessEnd = Mock<typeof spanProcessor.onEnd>
 
 export interface MarshaledSpanContext extends SpanContext {
   name: string
+  traceId: string
+  spanId: string
   parent?: SpanContext
-  resource: Attributes
   attributes: Attributes
 }
 
 export function marshalContext({ mock }: SpanProcessStart | SpanProcessEnd) {
   return mock.calls.reduce((out, [span]) => {
+    const attributes = {
+      ...span.attributes,
+      ...span.resource.attributes,
+    }
+
     out.push({
       name: span.name,
       ...span.spanContext(),
       parent: span.parentSpanContext,
-      resource: span.resource.attributes,
-      attributes: span.attributes,
+      attributes: Object.keys(attributes)
+        .sort()
+        .reduce((obj, key) => {
+          obj[key] = attributes[key]
+          return obj
+        }, {} as Attributes),
     })
 
     return out

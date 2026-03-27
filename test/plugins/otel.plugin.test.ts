@@ -15,6 +15,7 @@ import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
 import {
   DummyRepository,
   marshalContext,
+  type MarshaledSpanContext,
   type SpanProcessEnd,
   type SpanProcessStart,
 } from 'test/fixtures/otel-helpers'
@@ -23,7 +24,6 @@ let logDebug: Mock<typeof logger.debug>
 
 let otelRecord: Mock<typeof elysiaOtel.record>
 let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
-let spanUpdateName: Mock<Span['updateName']>
 let spanStart: SpanProcessStart
 let spanEnd: SpanProcessEnd
 
@@ -42,10 +42,7 @@ beforeEach(async () => {
   otelRecord = spyOn(elysiaOtel, 'record').mockImplementation(() => {})
   spanStart = spyOn(spanProcessor, 'onStart')
   spanEnd = spyOn(spanProcessor, 'onEnd')
-  spanUpdateName = spyOn(invalidSpan, 'updateName')
-  currentSpan = spyOn(elysiaOtel, 'getCurrentSpan').mockImplementation(
-    () => invalidSpan,
-  )
+  currentSpan = spyOn(elysiaOtel, 'getCurrentSpan')
 
   handler = mock((ctx = {}) => {})
   otelApp = new Elysia().use(otelPlugin)
@@ -63,19 +60,9 @@ afterEach(() => {
   otelRecord.mockRestore()
   spanStart.mockRestore()
   spanEnd.mockRestore()
-  spanUpdateName.mockRestore()
   currentSpan.mockRestore()
 
   handler.mockRestore()
-})
-
-it('should be able to catch span start and end', async () => {
-  await otelApp.handle(new Request(APP_URL))
-
-  expect(spanStart).toBeCalledTimes(4)
-  expect(spanEnd).toBeCalledTimes(3)
-
-  // console.log(marshalContext(spanStart), marshalContext(spanEnd))
 })
 
 it('should record method invocations', async () => {
@@ -87,7 +74,19 @@ it('should record method invocations', async () => {
 
   const [name] = otelRecord.mock.calls[0] || ['', () => {}]
 
-  expect(name).toBe('DummyRepository.foo()')
+  expect(name).toBe('DummyRepository.foo')
+})
+
+it('should be able to catch span start and end', async () => {
+  const response = await otelApp.handle(new Request(APP_URL))
+
+  expect(spanStart).toBeCalledTimes(4)
+  expect(spanEnd).toBeCalledTimes(3)
+
+  const ctxs = marshalContext(spanStart)
+  const span = ctxs.at(0) as MarshaledSpanContext
+
+  expect(response.headers.get('x-trace-id')).toEqual(span.traceId)
 })
 
 it('should generate sessionId without the request', async () => {

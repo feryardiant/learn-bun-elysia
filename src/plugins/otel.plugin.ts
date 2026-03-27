@@ -45,33 +45,25 @@ export const otelPlugin = opentelemetry({
   resourceDetectors: [envDetector, hostDetector, processDetector],
   resource,
   instrumentations: [new PinoInstrumentation()],
+}).derive({ as: 'global' }, function SessionInfo({ body, request, set }) {
+  const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
+  const { pathname, search } = new URL(request.url)
+  const span = getCurrentSpan()
+
+  if (span) {
+    span.setAttribute('session.id', sessionId)
+
+    set.headers['x-trace-id'] = span.spanContext().traceId
+  }
+
+  request.headers.set('x-session-id', sessionId)
+
+  if (!ignorePathnames.includes(pathname)) {
+    logger.debug({ body }, `[${request.method}] ${pathname}${search}`)
+  }
+
+  return { sessionId }
 })
-  .derive({ as: 'global' }, function SessionInfo({ body, request }) {
-    const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
-    const { pathname, search } = new URL(request.url)
-
-    updateSpanName('RequestInfo', {
-      'http.route': path,
-      'session.id': sessionId,
-    })
-
-    request.headers.set('x-session-id', sessionId)
-
-    if (!ignorePathnames.includes(pathname)) {
-      logger.debug({ body }, `[${request.method}] ${pathname}${search}`)
-    }
-
-    return { sessionId }
-  })
-  .onAfterHandle({ as: 'global' }, function InjectTraceId({ set }) {
-    const currentSpan = getCurrentSpan()
-
-    if (currentSpan) {
-      const { traceId } = currentSpan.spanContext()
-
-      set.headers['x-trace-id'] = traceId
-    }
-  })
 
 /**
  * @kind decorator
@@ -100,7 +92,7 @@ export function recordableClass() {
             },
           }
 
-          return record(`${className}.${methodName}()`, options, () =>
+          return record(`${className}.${methodName}`, options, () =>
             originalMethod.apply(this, args),
           )
         }
