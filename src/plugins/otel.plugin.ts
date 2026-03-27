@@ -108,24 +108,3 @@ export function recordableClass() {
     }
   }
 }
-
-export function updateSpanName(
-  req: Request | string,
-  attrs: Record<string, string> = {},
-) {
-  const span = getCurrentSpan()
-
-  if (!span) return
-
-  if (req instanceof Request) {
-    const url = new URL(req.url, ENV.APP_URL)
-
-    req = `${req.method} ${url.pathname}`
-  }
-
-  span.updateName(req)
-
-  Object.entries(attrs).forEach(([key, value]) => {
-    span.setAttribute(key, value)
-  })
-}

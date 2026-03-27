@@ -11,11 +11,7 @@ import * as elysiaOtel from '@elysiajs/opentelemetry'
 import { INVALID_SPAN_CONTEXT, trace, type Span } from '@opentelemetry/api'
 import Elysia from 'elysia'
 import { logger } from '~/plugins/logger.plugin'
-import {
-  otelPlugin,
-  spanProcessor,
-  updateSpanName,
-} from '~/plugins/otel.plugin'
+import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
 import {
   DummyRepository,
   marshalContext,
@@ -144,24 +140,4 @@ it('should log other POST endpoint with body', async () => {
   expect(obj).toContainKey('body')
   expect(obj.body).toBeDefined()
   expect(msg).toEqual('[POST] /other')
-})
-
-it('should update span name with request instance', async () => {
-  updateSpanName(new Request(APP_URL))
-
-  expect(spanUpdateName).toBeCalled()
-
-  const [req] = spanUpdateName.mock.calls[0] || ''
-
-  expect(req).toEqual('GET /')
-})
-
-it('should update span name with string', async () => {
-  updateSpanName('New span name')
-
-  expect(spanUpdateName).toBeCalled()
-
-  const [req] = spanUpdateName.mock.calls[0] || ''
-
-  expect(req).toEqual('New span name')
 })
