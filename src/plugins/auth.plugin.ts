@@ -32,12 +32,7 @@ export const auth = betterAuth({
     level: 'error',
     disabled: ENV.NODE_ENV === 'test',
     log(level, message, ...args) {
-      logger[level](
-        {
-          args: args.length > 0 ? args : undefined,
-        },
-        message,
-      )
+      logger[level]({ args: args.length > 0 ? args : undefined }, message)
     },
   },
 
