@@ -27,6 +27,10 @@ export const authConfig = t.Object({
         }
       }
 
+      if (origins.length === 0) {
+        origins = ['*']
+      }
+
       return origins
     })
     .Encode((value) => value.join(',')),

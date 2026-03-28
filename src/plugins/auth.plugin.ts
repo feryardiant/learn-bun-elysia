@@ -16,7 +16,7 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   trustedOrigins(request) {
-    return ENV.TRUSTED_ORIGINS || ['*']
+    return ENV.TRUSTED_ORIGINS
   },
 
   onAPIError: {
@@ -32,7 +32,12 @@ export const auth = betterAuth({
     level: 'error',
     disabled: ENV.NODE_ENV === 'test',
     log(level, message, ...args) {
-      logger[level]({ args }, message)
+      logger[level](
+        {
+          args: args.length > 0 ? args : undefined,
+        },
+        message,
+      )
     },
   },
 
