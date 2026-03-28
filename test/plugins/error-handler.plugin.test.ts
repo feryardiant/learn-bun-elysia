@@ -1,3 +1,4 @@
+import { APIError } from 'better-auth'
 import { afterEach, beforeEach, expect, it, spyOn, type Mock } from 'bun:test'
 import { sql } from 'drizzle-orm'
 import { Elysia, InternalServerError, t } from 'elysia'
@@ -24,6 +25,16 @@ const errorHandlerApp = new Elysia()
     body: t.Object({
       foo: t.Literal('bar'),
     }),
+  })
+  .put('/', async ({ request }) => {
+    // Emulate error thrown from Better-Auth
+    throw new APIError(
+      'UNAUTHORIZED',
+      {
+        message: 'Not authorized',
+      },
+      request.headers,
+    )
   })
   .patch('/', async () => {
     // Emulate error thrown from Drizzle ORM
@@ -71,6 +82,28 @@ it("should log error whenever there's a validation error thrown", async () => {
 
   expect(body.errors).toBeArrayOfSize(1)
   expect(msg).toBe(body.message)
+
+  expect(obj).toContainKeys(['headers', 'error', 'endpoint'])
+})
+
+it("should log error whenever there's a better-auth error thrown", async () => {
+  const response = await errorHandlerApp.handle(
+    new Request(APP_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }),
+  )
+
+  expect(logError).toHaveBeenCalled()
+  expect(response.status).toBe(401)
+
+  const body = (await response.json()) as { code: string; message: string }
+  const [obj, msg] = logError.mock.calls[0] as [LogObj, string]
+
+  expect(body.code).toBe('UNAUTHORIZED')
+  expect(body.message).toBe('Not authorized')
+  expect(msg).toBe('AuthError: Not authorized')
 
   expect(obj).toContainKeys(['headers', 'error', 'endpoint'])
 })
