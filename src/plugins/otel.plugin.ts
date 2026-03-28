@@ -18,7 +18,6 @@ import {
 import { ENV } from '~/config'
 import { ignorePathnames } from '~/utils/request.util'
 import { logger } from './logger.plugin'
-import { instrumentedDb } from './database.plugin'
 
 const traceExporter = new OTLPTraceExporter({
   url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
@@ -62,8 +61,6 @@ export const otelPlugin = opentelemetry({
   if (!ignorePathnames.includes(pathname)) {
     logger.debug({ body }, `[${request.method}] ${pathname}${search}`)
   }
-
-  instrumentedDb()
 
   return { sessionId }
 })
