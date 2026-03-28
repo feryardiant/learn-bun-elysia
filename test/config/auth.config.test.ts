@@ -69,11 +69,3 @@ it('should handle wildcard origin', () => {
 
   expect(config.TRUSTED_ORIGINS).toEqual(['*'])
 })
-
-it('should handle empty config and fallback to wildcard', () => {
-  const config = Value.Parse(authConfig, {
-    TRUSTED_ORIGINS: '',
-  })
-
-  expect(config.TRUSTED_ORIGINS).toEqual(['*'])
-})

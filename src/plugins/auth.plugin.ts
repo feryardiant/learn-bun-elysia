@@ -3,7 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
 import type { OpenAPIV3 } from 'openapi-types'
-import { ENV } from '~/config'
+import { ENV, isLocal } from '~/config'
 import { ErrorResponseSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 import { db } from './database.plugin'
@@ -16,7 +16,10 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   trustedOrigins(request) {
-    return ENV.TRUSTED_ORIGINS
+    const isEmptyOrigins = ENV.TRUSTED_ORIGINS.length === 0
+
+    // Enforce wildcard origins on local and test environments
+    return isLocal && isEmptyOrigins ? ['*'] : ENV.TRUSTED_ORIGINS
   },
 
   onAPIError: {
