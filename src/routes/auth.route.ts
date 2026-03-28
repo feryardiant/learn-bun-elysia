@@ -4,7 +4,7 @@ import { auth } from '~/plugins/auth.plugin'
 
 export const authRoute = new Elysia({
   name: 'auth-route',
-  prefix: auth.options.basePath,
+  prefix: 'auth',
 }).mount(async (request) => {
   const span = getCurrentSpan()
   const { pathname } = new URL(request.url)
