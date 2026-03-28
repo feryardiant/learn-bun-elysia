@@ -34,7 +34,9 @@ export const db = drizzle({
   },
 })
 
-instrumentDrizzleClient(db)
+export function instrumentedDb() {
+  instrumentDrizzleClient(db)
+}
 
 export type AppDatabase = typeof db
 
