@@ -18,6 +18,27 @@ afterAll(async () => {
   await tearDownTables(accounts, sessions, users)
 })
 
+it('should respond non-JSON body as is', async () => {
+  const response = await authRoute.handle(new Request(`${APP_URL}/error`, {}))
+
+  // The better-auth error endpoint is actually return 200
+  expect(response.status).toBe(200)
+  expect(response.headers.get('Content-Type')).toBe('text/html')
+})
+
+it('should respond with valid JSON body', async () => {
+  const response = await authRoute.handle(
+    new Request(`${APP_URL}/get-session`, {}),
+  )
+
+  expect(response.status).toBe(200)
+  expect(response.headers.get('Content-Type')).toBe('application/json')
+
+  const body = (await response.json()) as {}
+
+  expect(body).toEqual({})
+})
+
 it('should be able to crate anonymous user', async () => {
   const response = await authRoute.handle(
     new Request(`${APP_URL}/sign-in/anonymous`, {
