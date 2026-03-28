@@ -24,6 +24,7 @@
     "@elysiajs/openapi": "^1.4.14",
     "@elysiajs/opentelemetry": "^1.4.10",
     "@elysiajs/static": "^1.4.7",
+    "@kubiks/otel-drizzle": "^2.1.0",
     "@opentelemetry/exporter-logs-otlp-proto": "^0.212.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
     "@opentelemetry/instrumentation-pino": "^0.57.0",

@@ -1,3 +1,4 @@
+import { instrumentDrizzleClient } from '@kubiks/otel-drizzle'
 import type { DrizzleError } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/bun-sql'
 import { migrate as migrator } from 'drizzle-orm/bun-sql/migrator'
@@ -32,6 +33,8 @@ export const db = drizzle({
     ...feedRelations,
   },
 })
+
+instrumentDrizzleClient(db)
 
 export type AppDatabase = typeof db
 
