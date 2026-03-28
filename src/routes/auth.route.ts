@@ -16,14 +16,15 @@ export const authRoute = new Elysia({
   // The `auth.handler` might response with a non-JSON content type
   // e.g. `/auth/error` endpoint will return HTML content type
   const response = await auth.handler(request)
+  const contentType = response.headers.get('content-type') || ''
 
-  if (response.headers.get('content-type') !== 'application/json') {
+  if (!contentType.startsWith('application/json')) {
     // For non-JSON responses, return them directly
     return response
   }
 
   // Meanwhile the JSON content type might return `null` body
-  const json = (await response.json()) || {}
+  const json = (await response.json()) ?? {}
 
   return new Response(JSON.stringify(json), {
     status: response.status,
