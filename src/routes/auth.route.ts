@@ -1,11 +1,33 @@
+import { getCurrentSpan } from '@elysiajs/opentelemetry'
 import { Elysia } from 'elysia'
 import { auth } from '~/plugins/auth.plugin'
-import { updateSpanName } from '~/plugins/otel.plugin'
 
-export const authRoute = new Elysia({ name: 'auth-route' }).mount(
-  async (req) => {
-    updateSpanName(req)
+export const authRoute = new Elysia({
+  name: 'auth-route',
+  prefix: 'auth',
+}).mount(async (request) => {
+  const span = getCurrentSpan()
+  const { pathname } = new URL(request.url)
 
-    return await auth.handler(req)
-  },
-)
+  if (span) {
+    span.updateName(`${request.method} ${pathname}`)
+  }
+
+  // The `auth.handler` might response with a non-JSON content type
+  // e.g. `/auth/error` endpoint will return HTML content type
+  const response = await auth.handler(request)
+  const contentType = response.headers.get('content-type') || ''
+
+  if (!contentType.startsWith('application/json')) {
+    // For non-JSON responses, return them directly
+    return response
+  }
+
+  // Meanwhile the JSON content type might return `null` body
+  const json = (await response.json()) ?? {}
+
+  return new Response(JSON.stringify(json), {
+    status: response.status,
+    headers: response.headers,
+  })
+})

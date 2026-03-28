@@ -1,19 +1,30 @@
-import { getCurrentSpan, opentelemetry } from '@elysiajs/opentelemetry'
+import { getCurrentSpan, opentelemetry, record } from '@elysiajs/opentelemetry'
+import type { SpanOptions } from '@opentelemetry/api'
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino'
 import {
   envDetector,
   hostDetector,
   processDetector,
   resourceFromAttributes,
 } from '@opentelemetry/resources'
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node'
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions'
 import { ENV } from '~/config'
+import { ignorePathnames } from '~/utils/request.util'
+import { logger } from './logger.plugin'
 
 const traceExporter = new OTLPTraceExporter({
   url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces`,
+})
+
+const logExporter = new OTLPLogExporter({
+  url: `${ENV.OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs`,
 })
 
 const resource = resourceFromAttributes({
@@ -22,50 +33,70 @@ const resource = resourceFromAttributes({
   [ATTR_SERVICE_VERSION]: ENV.APP_VERSION,
 })
 
+export const spanProcessor = new BatchSpanProcessor(traceExporter)
+
+export const logRecordProcessor = new BatchLogRecordProcessor(logExporter)
+
 export const otelPlugin = opentelemetry({
   serviceName: ENV.APP_NAME,
   autoDetectResources: true,
-  checkIfShouldTrace(req) {
-    const url = new URL(req.url)
-    const userAgent = req.headers.get('user-agent')
-
-    if (userAgent) {
-      // Don't trace request from health check
-      return !(url.pathname === '/health' && userAgent.startsWith('Bun'))
-    }
-
-    return true
-  },
-  resource,
+  logRecordProcessors: [logRecordProcessor],
+  spanProcessors: [spanProcessor],
   resourceDetectors: [envDetector, hostDetector, processDetector],
-  traceExporter,
-}).derive({ as: 'global' }, ({ path, request }) => {
+  resource,
+  instrumentations: [new PinoInstrumentation()],
+}).derive({ as: 'global' }, function SessionInfo({ body, request, set }) {
   const sessionId = request.headers.get('x-session-id') || crypto.randomUUID()
+  const { pathname, search } = new URL(request.url)
+  const span = getCurrentSpan()
 
-  updateSpanName('RequestInfo', { 'session.id': sessionId })
+  if (span) {
+    span.setAttribute('session.id', sessionId)
+
+    set.headers['x-trace-id'] = span.spanContext().traceId
+  }
 
   request.headers.set('x-session-id', sessionId)
+
+  if (!ignorePathnames.includes(pathname)) {
+    logger.debug({ body }, `[${request.method}] ${pathname}${search}`)
+  }
 
   return { sessionId }
 })
 
-export function updateSpanName(
-  req: Request | string,
-  attrs: Record<string, string> = {},
-) {
-  const span = getCurrentSpan()
+/**
+ * @kind decorator
+ */
+export function recordableClass() {
+  return (obj: Function) => {
+    const className = obj.name
+    const prototype = obj.prototype
 
-  if (!span) return
+    for (const methodName of Object.getOwnPropertyNames(prototype)) {
+      // Skip the constructor
+      if (methodName === 'constructor') continue
 
-  if (req instanceof Request) {
-    const url = new URL(req.url, ENV.APP_URL)
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, methodName)
 
-    req = `${req.method} ${url.pathname}`
+      // Check if it's actually a function/method
+      if (typeof descriptor?.value === 'function') {
+        const originalMethod = descriptor.value as Function
+
+        // Overwrite the method on the prototype
+        prototype[methodName] = function (...args: unknown[]) {
+          const options: SpanOptions = {
+            attributes: {
+              className,
+              methodName,
+            },
+          }
+
+          return record(`${className}.${methodName}`, options, () =>
+            originalMethod.apply(this, args),
+          )
+        }
+      }
+    }
   }
-
-  span.updateName(req)
-
-  Object.entries(attrs).forEach(([key, value]) => {
-    span.setAttribute(key, value)
-  })
 }

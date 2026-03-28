@@ -3,12 +3,11 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
 import type { OpenAPIV3 } from 'openapi-types'
-import { ENV } from '~/config'
+import { ENV, isLocal } from '~/config'
 import { ErrorResponseSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
 import { db } from './database.plugin'
 import { logger } from './logger.plugin'
-import { updateSpanName } from './otel.plugin'
 
 export const auth = betterAuth({
   appName: ENV.APP_NAME,
@@ -17,7 +16,10 @@ export const auth = betterAuth({
   secret: ENV.AUTH_SECRET,
 
   trustedOrigins(request) {
-    return ENV.TRUSTED_ORIGINS || ['*']
+    const isEmptyOrigins = ENV.TRUSTED_ORIGINS.length === 0
+
+    // Enforce wildcard origins on local and test environments
+    return isLocal && isEmptyOrigins ? ['*'] : ENV.TRUSTED_ORIGINS
   },
 
   onAPIError: {
@@ -33,8 +35,15 @@ export const auth = betterAuth({
     level: 'error',
     disabled: ENV.NODE_ENV === 'test',
     log(level, message, ...args) {
-      logger[level]({ args }, message)
+      logger[level]({ args: args.length > 0 ? args : undefined }, message)
     },
+  },
+
+  /**
+   * @link https://better-auth.com/docs/reference/telemetry
+   */
+  telemetry: {
+    enabled: true,
   },
 
   user: {
@@ -110,12 +119,10 @@ export const authPlugin = () =>
         }),
       },
     })
-    .resolve(async ({ request }) => {
+    .resolve(async function Authenticate({ request }) {
       const authenticated = await auth.api.getSession({
         headers: request.headers,
       })
-
-      updateSpanName('Authenticate')
 
       if (!authenticated) {
         throw new AuthenticationError('Invalid credentials')

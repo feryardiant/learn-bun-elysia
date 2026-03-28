@@ -18,6 +18,12 @@ afterAll(async () => {
   await tearDownTables(accounts, sessions, users)
 })
 
+it('should fallback to wildcard if TRUSTED_ORIGIN is empty on local environment', async () => {
+  const origins = auth.options.trustedOrigins(new Request(APP_URL))
+
+  expect(origins).toEqual(['*'])
+})
+
 it('returns 401 status when no authorization header', async () => {
   const response = await authApp.handle(new Request('http://localhost'))
 

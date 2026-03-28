@@ -3,6 +3,7 @@ import type { Post } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
 export * from './post-filters'
+export * from './otel-helpers'
 
 export async function tearDownTables(...tables: PgTable[]) {
   await db.transaction(async (tx) =>

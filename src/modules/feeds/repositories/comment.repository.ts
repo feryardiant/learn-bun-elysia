@@ -1,7 +1,9 @@
 import type { AppDatabase } from '~/plugins/database.plugin'
+import { recordableClass } from '~/plugins/otel.plugin'
 import type { Comment, Post } from '~/modules/feeds/types'
 import { PostRepository } from './post.repository'
 
+@recordableClass()
 export class CommentRepository {
   private readonly postRepo: PostRepository
 

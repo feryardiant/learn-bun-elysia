@@ -11,54 +11,96 @@ import * as elysiaOtel from '@elysiajs/opentelemetry'
 import { INVALID_SPAN_CONTEXT, trace, type Span } from '@opentelemetry/api'
 import Elysia from 'elysia'
 import { logger } from '~/plugins/logger.plugin'
-import { otelPlugin, updateSpanName } from '~/plugins/otel.plugin'
+import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
+import {
+  DummyRepository,
+  marshalContext,
+  type MarshaledSpanContext,
+  type SpanProcessEnd,
+  type SpanProcessStart,
+} from 'test/fixtures'
 
-let logInfo: Mock<typeof logger.info>
-let logError: Mock<typeof logger.error>
-let handler: Mock<(ctx: { sessionId?: string }) => void>
+let logDebug: Mock<typeof logger.debug>
+
+let otelRecord: Mock<typeof elysiaOtel.record>
 let currentSpan: Mock<typeof elysiaOtel.getCurrentSpan>
-let spanUpdateName: Mock<Span['updateName']>
+let spanStart: SpanProcessStart
+let spanEnd: SpanProcessEnd
+
+let handler: Mock<(ctx: { sessionId?: string }) => void>
 let otelApp: typeof otelPlugin
 
 const APP_URL = 'http://localhost'
 
+type Obj = Record<string, unknown>
+
 beforeEach(async () => {
-  logInfo = spyOn(logger, 'info').mockImplementation(() => {})
-  logError = spyOn(logger, 'error').mockImplementation(() => {})
+  logDebug = spyOn(logger, 'debug').mockImplementation(() => {})
 
   const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
 
-  spanUpdateName = spyOn(invalidSpan, 'updateName')
-  currentSpan = spyOn(elysiaOtel, 'getCurrentSpan').mockImplementation(
-    () => invalidSpan,
-  )
+  otelRecord = spyOn(elysiaOtel, 'record').mockImplementation(() => {})
+  spanStart = spyOn(spanProcessor, 'onStart')
+  spanEnd = spyOn(spanProcessor, 'onEnd')
+  currentSpan = spyOn(elysiaOtel, 'getCurrentSpan')
 
   handler = mock((ctx = {}) => {})
   otelApp = new Elysia().use(otelPlugin)
 
-  otelApp.get('', handler).get('/health', handler)
+  otelApp
+    .get('', handler)
+    .get('/health', handler)
+    .get('/other', handler)
+    .post('/other', handler)
 })
 
 afterEach(() => {
-  logInfo.mockRestore()
-  logError.mockRestore()
+  logDebug.mockRestore()
+
+  otelRecord.mockRestore()
+  spanStart.mockRestore()
+  spanEnd.mockRestore()
+  currentSpan.mockRestore()
 
   handler.mockRestore()
-  currentSpan.mockRestore()
-  spanUpdateName.mockRestore()
 })
 
-it('should generate sessionId on each request', async () => {
+it('should record method invocations', async () => {
+  const dummy = new DummyRepository()
+
+  dummy.foo()
+
+  expect(otelRecord).toBeCalled()
+
+  const [name] = otelRecord.mock.calls[0] || ['', () => {}]
+
+  expect(name).toBe('DummyRepository.foo')
+})
+
+it('should be able to catch span start and end', async () => {
+  const response = await otelApp.handle(new Request(APP_URL))
+
+  expect(spanStart).toBeCalledTimes(4)
+  expect(spanEnd).toBeCalledTimes(3)
+
+  const ctxs = marshalContext(spanStart)
+  const span = ctxs.at(0) as MarshaledSpanContext
+
+  expect(response.headers.get('x-trace-id')).toEqual(span.traceId)
+})
+
+it('should generate sessionId without the request', async () => {
   await otelApp.handle(new Request(APP_URL))
 
   expect(handler).toBeCalled()
+  expect(logDebug).not.toBeCalled()
 
   const [ctx] = handler.mock.calls[0] || [{}]
 
   expect(ctx.sessionId).toBeDefined()
 })
 
-it('should not trace health endpoint', async () => {
+it('should not trace and log health endpoint', async () => {
   await otelApp.handle(
     new Request(`${APP_URL}/health`, {
       headers: { 'user-agent': 'Bun/v1.3.3' },
@@ -66,24 +108,35 @@ it('should not trace health endpoint', async () => {
   )
 
   expect(currentSpan).toBeCalled()
+  expect(logDebug).not.toBeCalled()
 })
 
-it('should update span name with request instance', async () => {
-  updateSpanName(new Request(APP_URL))
+it('should log other GET endpoint without body', async () => {
+  await otelApp.handle(new Request(`${APP_URL}/other`))
 
-  expect(spanUpdateName).toBeCalled()
+  expect(logDebug).toBeCalled()
 
-  const [req] = spanUpdateName.mock.calls[0] || ''
+  const [obj, msg] = logDebug.mock.calls[0] as [Obj, string]
 
-  expect(req).toEqual('GET /')
+  expect(obj).toContainKey('body')
+  expect(obj.body).toBeUndefined()
+  expect(msg).toEqual('[GET] /other')
 })
 
-it('should update span name with string', async () => {
-  updateSpanName('New span name')
+it('should log other POST endpoint with body', async () => {
+  await otelApp.handle(
+    new Request(`${APP_URL}/other`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ foo: 'bar' }),
+    }),
+  )
 
-  expect(spanUpdateName).toBeCalled()
+  expect(logDebug).toBeCalled()
 
-  const [req] = spanUpdateName.mock.calls[0] || ''
+  const [obj, msg] = logDebug.mock.calls[0] as [Obj, string]
 
-  expect(req).toEqual('New span name')
+  expect(obj).toContainKey('body')
+  expect(obj.body).toBeDefined()
+  expect(msg).toEqual('[POST] /other')
 })

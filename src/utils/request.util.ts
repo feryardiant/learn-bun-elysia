@@ -1,3 +1,11 @@
+export const ignorePathnames = [
+  '/',
+  '/docs',
+  '/docs/json',
+  '/favicon.ico',
+  '/health',
+]
+
 export const reduceHeaders = (headers?: Record<string, string | undefined>) => {
   if (!headers) return {}
 
