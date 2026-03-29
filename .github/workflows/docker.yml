@@ -28,7 +28,7 @@ on:
         type: string
 
 env:
-  BUN_VERSION: ${{ vars.BUN_VERSION || '1.3.3' }}
+  BUN_VERSION: ${{ vars.BUN_VERSION || '1.3.10' }}
 
 jobs:
   build-push:
