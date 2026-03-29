@@ -25,8 +25,6 @@ function finalizeSpan(span: Span, error?: Error | unknown) {
  * @kind decorator
  */
 export function recordableClass() {
-  const tracer = trace.getTracer(ENV.APP_NAME)
-
   return (obj: Function) => {
     const className = obj.name
     const prototype = obj.prototype
@@ -44,6 +42,8 @@ export function recordableClass() {
 
       // Overwrite the method on the prototype
       prototype[methodName] = function (...args: unknown[]) {
+        const tracer = trace.getTracer(ENV.APP_NAME)
+
         const attributes: Attributes = {
           [ATTR_OTEL_SCOPE_VERSION]: ENV.APP_VERSION,
           'repository.name': className,
