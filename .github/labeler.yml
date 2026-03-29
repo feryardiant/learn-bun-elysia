@@ -34,23 +34,26 @@ api:
       - any-glob-to-any-file:
           - 'src/modules/*/*.controller.ts'
           - 'src/routes/*.route.ts'
+          - 'test/routes/*.route.test.ts'
 
 auth:
   - changed-files:
       - any-glob-to-any-file:
           - 'src/modules/auth/**'
           - 'src/*/auth.*.ts'
+          - 'test/*/auth.*.test.ts'
 
 mail:
   - changed-files:
       - any-glob-to-any-file:
           - 'src/*/mail.*.ts'
+          - 'test/*/mail.*.test.ts'
 
 otel:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/modules/otel/**'
           - 'src/*/otel.*.ts'
+          - 'test/*/otel.*.test.ts'
 
 feeds:
   - changed-files:
