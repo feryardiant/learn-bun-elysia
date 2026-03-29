@@ -63,39 +63,44 @@ export function record<F extends () => unknown>(
   fn: F,
 ) {
   const tracer = trace.getTracer(ENV.APP_NAME)
+  const parentContext = context.active()
   const span = tracer.startSpan(
     name,
     {
       attributes: attrs,
       kind: SpanKind.CLIENT,
     },
-    context.active(),
+    parentContext,
   )
 
-  try {
-    const result = fn()
+  const activeContext = trace.setSpan(parentContext, span)
 
-    if (result instanceof Promise) {
-      return Promise.resolve(result).then(
-        (value) => {
-          finalizeSpan(span)
-          return value
-        },
-        (error) => {
-          finalizeSpan(span, error)
-          throw error
-        },
-      )
+  return context.with(activeContext, () => {
+    try {
+      const result = fn()
+
+      if (result instanceof Promise) {
+        return Promise.resolve(result).then(
+          (value) => {
+            finalizeSpan(span)
+            return value
+          },
+          (error) => {
+            finalizeSpan(span, error)
+            throw error
+          },
+        )
+      }
+
+      finalizeSpan(span)
+
+      return result
+    } catch (error) {
+      finalizeSpan(span, error)
+
+      throw error
     }
-
-    finalizeSpan(span)
-
-    return result
-  } catch (error) {
-    finalizeSpan(span, error)
-
-    throw error
-  }
+  })
 }
 
 /**
