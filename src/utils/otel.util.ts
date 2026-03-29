@@ -16,12 +16,13 @@ const instrumented: Record<string, boolean> = {}
  */
 export function recordableClass(): ClassDecorator {
   return (obj: Function) => {
-    const className = obj.name
-    const prototype = obj.prototype
+    const { name: className, prototype } = obj
 
     for (const methodName of Object.getOwnPropertyNames(prototype)) {
+      const spanName = `${className}.${methodName}`
+
       // Skip the constructor or already instrumented methods
-      if (methodName === 'constructor' || instrumented[methodName]) continue
+      if (methodName === 'constructor' || instrumented[spanName]) continue
 
       const descriptor = Object.getOwnPropertyDescriptor(prototype, methodName)
 
@@ -29,7 +30,6 @@ export function recordableClass(): ClassDecorator {
       if (typeof descriptor?.value !== 'function') continue
 
       const originalMethod = descriptor.value as Function
-      const spanName = `${className}.${methodName}`
       const attributes: Attributes = {
         [ATTR_OTEL_SCOPE_VERSION]: ENV.APP_VERSION,
         'repository.name': className,
