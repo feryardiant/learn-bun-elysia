@@ -33,8 +33,10 @@ api:
   - changed-files:
       - any-glob-to-any-file:
           - 'src/modules/*/*.controller.ts'
+          - 'src/utils/*.util.ts'
           - 'src/routes/*.route.ts'
           - 'test/routes/*.route.test.ts'
+          - 'test/utils/*.util.test.ts'
 
 auth:
   - changed-files:
@@ -66,6 +68,7 @@ database:
           - 'database/**'
           - 'src/*/database.*.ts'
           - 'src/modules/*/schemas/*.schema.ts'
+          - 'test/*/database.*.test.ts'
 
 tests:
   - changed-files:
