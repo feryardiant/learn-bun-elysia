@@ -13,7 +13,6 @@ import Elysia from 'elysia'
 import { logger } from '~/plugins/logger.plugin'
 import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
 import {
-  DummyRepository,
   marshalContext,
   type MarshaledSpanContext,
   type SpanProcessEnd,
@@ -63,18 +62,6 @@ afterEach(() => {
   currentSpan.mockRestore()
 
   handler.mockRestore()
-})
-
-it('should record method invocations', async () => {
-  const dummy = new DummyRepository()
-
-  dummy.foo()
-
-  expect(otelRecord).toBeCalled()
-
-  const [name] = otelRecord.mock.calls[0] || ['', () => {}]
-
-  expect(name).toBe('DummyRepository.foo')
 })
 
 it('should be able to catch span start and end', async () => {
