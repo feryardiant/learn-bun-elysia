@@ -21,10 +21,7 @@ function finalizeSpan(span: Span, error?: Error | unknown) {
   span.end()
 }
 
-/**
- * @kind decorator
- */
-export function recordableClass() {
+export function recordableClass(): ClassDecorator {
   return (obj: Function) => {
     const className = obj.name
     const prototype = obj.prototype
