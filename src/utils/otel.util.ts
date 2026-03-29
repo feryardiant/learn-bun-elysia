@@ -15,10 +15,6 @@ const instrumented: Record<string, boolean> = {}
  * Decorator to mark a class as recordable for OpenTelemetry tracing.
  */
 export function recordableClass(): ClassDecorator {
-  const attributes: Attributes = {
-    [ATTR_OTEL_SCOPE_VERSION]: ENV.APP_VERSION,
-  }
-
   return (obj: Function) => {
     const className = obj.name
     const prototype = obj.prototype
@@ -33,19 +29,22 @@ export function recordableClass(): ClassDecorator {
       if (typeof descriptor?.value !== 'function') continue
 
       const originalMethod = descriptor.value as Function
-
-      attributes['repository.name'] = className
-      attributes['repository.operation'] = methodName
+      const spanName = `${className}.${methodName}`
+      const attributes: Attributes = {
+        [ATTR_OTEL_SCOPE_VERSION]: ENV.APP_VERSION,
+        'repository.name': className,
+        'repository.operation': methodName,
+      }
 
       // Overwrite the method on the prototype
       prototype[methodName] = function (...args: unknown[]) {
-        return record(`${className}.${methodName}`, attributes, () =>
+        return record(spanName, attributes, () =>
           originalMethod.apply(this, args),
         )
       }
 
       // Mark the method as instrumented
-      instrumented[methodName] = true
+      instrumented[spanName] = true
     }
   }
 }
