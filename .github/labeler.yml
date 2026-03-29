@@ -39,14 +39,18 @@ auth:
   - changed-files:
       - any-glob-to-any-file:
           - 'src/modules/auth/**'
-          - 'src/config/auth.config.ts'
-          - 'src/plugins/auth.plugin.ts'
+          - 'src/*/auth.*.ts'
 
 mail:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/config/mail.config.ts'
-          - 'src/plugins/mail.plugin.ts'
+          - 'src/*/mail.*.ts'
+
+otel:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/modules/otel/**'
+          - 'src/*/otel.*.ts'
 
 feeds:
   - changed-files:
@@ -57,9 +61,8 @@ database:
   - changed-files:
       - any-glob-to-any-file:
           - 'database/**'
-          - 'src/config/db.config.ts'
+          - 'src/*/database.*.ts'
           - 'src/modules/*/schemas/*.schema.ts'
-          - 'src/plugins/database.plugin.ts'
 
 tests:
   - changed-files:
