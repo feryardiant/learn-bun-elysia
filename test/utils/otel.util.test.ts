@@ -16,6 +16,11 @@ import {
 import { recordableClass } from '~/utils/otel.util'
 import { ENV } from '~/config'
 
+let tracer: Mock<typeof trace.getTracer>
+let startSpan: Mock<Tracer['startSpan']>
+let spanEnd: Mock<Span['end']>
+let spanRecordException: Mock<Span['recordException']>
+
 const dummyError = Error('Something when wrong')
 
 @recordableClass()
@@ -34,12 +39,21 @@ class DummyRepository {
   }
 }
 
-let tracer: Mock<typeof trace.getTracer>
-let startSpan: Mock<Tracer['startSpan']>
-let spanEnd: Mock<Span['end']>
-let spanRecordException: Mock<Span['recordException']>
-
 const dummy = new DummyRepository()
+
+function assertTraceName(name: string) {
+  expect(tracer).toBeCalled()
+
+  const [traceName] = tracer.mock.calls[0] || ['']
+  expect(traceName).toEqual(name)
+}
+
+function assertSpanName(name: string) {
+  expect(startSpan).toBeCalled()
+
+  const [spanName] = startSpan.mock.calls[0] || ['']
+  expect(spanName).toEqual(name)
+}
 
 beforeEach(async () => {
   const dummySpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
@@ -69,15 +83,8 @@ afterEach(() => {
 it('should record method invocations', async () => {
   expect(dummy.foo()).toEqual('bar')
 
-  expect(tracer).toBeCalled()
-
-  const [traceName] = tracer.mock.calls[0] || ['']
-  expect(traceName).toEqual(ENV.APP_NAME)
-
-  expect(startSpan).toBeCalled()
-
-  const [spanName] = startSpan.mock.calls[0] || ['', {}]
-  expect(spanName).toEqual('DummyRepository.foo')
+  assertTraceName(ENV.APP_NAME)
+  assertSpanName('DummyRepository.foo')
 
   expect(spanEnd).toBeCalled()
   expect(spanRecordException).not.toBeCalled()
@@ -86,15 +93,8 @@ it('should record method invocations', async () => {
 it('should record thrown exception', async () => {
   expect(() => dummy.errorFoo()).toThrowError(dummyError)
 
-  expect(tracer).toBeCalled()
-
-  const [traceName] = tracer.mock.calls[0] || ['']
-  expect(traceName).toEqual(ENV.APP_NAME)
-
-  expect(startSpan).toBeCalled()
-
-  const [spanName] = startSpan.mock.calls[0] || ['', {}]
-  expect(spanName).toEqual('DummyRepository.errorFoo')
+  assertTraceName(ENV.APP_NAME)
+  assertSpanName('DummyRepository.errorFoo')
 
   expect(spanEnd).toBeCalled()
   expect(spanRecordException).toBeCalled()
@@ -103,15 +103,8 @@ it('should record thrown exception', async () => {
 it('should record async method invocations', async () => {
   expect(await dummy.bar()).toEqual('foo')
 
-  expect(tracer).toBeCalled()
-
-  const [traceName] = tracer.mock.calls[0] || ['']
-  expect(traceName).toEqual(ENV.APP_NAME)
-
-  expect(startSpan).toBeCalled()
-
-  const [spanName] = startSpan.mock.calls[0] || ['', {}]
-  expect(spanName).toEqual('DummyRepository.bar')
+  assertTraceName(ENV.APP_NAME)
+  assertSpanName('DummyRepository.bar')
 
   expect(spanEnd).toBeCalled()
   expect(spanRecordException).not.toBeCalled()
@@ -120,15 +113,8 @@ it('should record async method invocations', async () => {
 it('should record async thrown exception', async () => {
   expect(() => dummy.errorBar()).toThrowError(dummyError)
 
-  expect(tracer).toBeCalled()
-
-  const [traceName] = tracer.mock.calls[0] || ['']
-  expect(traceName).toEqual(ENV.APP_NAME)
-
-  expect(startSpan).toBeCalled()
-
-  const [spanName] = startSpan.mock.calls[0] || ['', {}]
-  expect(spanName).toEqual('DummyRepository.errorBar')
+  assertTraceName(ENV.APP_NAME)
+  assertSpanName('DummyRepository.errorBar')
 
   expect(spanEnd).toBeCalled()
   expect(spanRecordException).toBeCalled()
