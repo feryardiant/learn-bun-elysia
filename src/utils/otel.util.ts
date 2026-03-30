@@ -61,7 +61,7 @@ export function record<F extends () => unknown>(
   name: string,
   attrs: Attributes,
   fn: F,
-) {
+): ReturnType<F> {
   const tracer = trace.getTracer(ENV.APP_NAME)
   const parentContext = context.active()
   const span = tracer.startSpan(
@@ -75,6 +75,7 @@ export function record<F extends () => unknown>(
 
   const activeContext = trace.setSpan(parentContext, span)
 
+  // @ts-expect-error
   return context.with(activeContext, () => {
     try {
       const result = fn()
