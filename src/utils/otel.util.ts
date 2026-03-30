@@ -8,7 +8,9 @@ import {
   type Tracer,
 } from '@opentelemetry/api'
 import { ATTR_OTEL_SCOPE_VERSION } from '@opentelemetry/semantic-conventions'
+import type { PgSession } from 'drizzle-orm/pg-core'
 import { ENV } from '~/config'
+import type { AppDatabase } from '~/plugins/database.plugin'
 
 const instrumented: Record<string, boolean> = {}
 
@@ -49,6 +51,27 @@ export function recordableClass(): ClassDecorator {
       // Mark the method as instrumented
       instrumented[spanName] = true
     }
+  }
+}
+
+function traceRelationalQuery(db?: AppDatabase) {
+  // @ts-ignore private property
+  const session = db?.session as PgSession
+
+  if (typeof session?.prepareRelationalQuery !== 'function') return
+
+  const originalMethod = session.prepareRelationalQuery
+  const attributes: Attributes = {
+    'db.adapter': db?.$client.options.adapter,
+  }
+
+  session.prepareRelationalQuery = function (query, ...args) {
+    attributes['db.statement'] = query.sql
+    console.log(args)
+
+    return record('spanName', attributes, () =>
+      originalMethod.apply(this, [query, ...args]),
+    )
   }
 }
 
