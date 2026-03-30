@@ -5,6 +5,7 @@ import {
   trace,
   type Attributes,
   type Span,
+  type Tracer,
 } from '@opentelemetry/api'
 import { ATTR_OTEL_SCOPE_VERSION } from '@opentelemetry/semantic-conventions'
 import { ENV } from '~/config'
@@ -38,7 +39,9 @@ export function recordableClass(): ClassDecorator {
 
       // Overwrite the method on the prototype
       prototype[methodName] = function (...args: unknown[]) {
-        return record(spanName, attributes, () =>
+        const tracer = trace.getTracer(ENV.APP_NAME)
+
+        return record(tracer, spanName, attributes, () =>
           originalMethod.apply(this, args),
         )
       }
@@ -52,17 +55,18 @@ export function recordableClass(): ClassDecorator {
 /**
  * Records a span for the given function, automatically naming it based on the class and method.
  *
+ * @param tracer Tracer to use for recording the span.
  * @param name Span name.
  * @param attrs Span attributes.
  * @param fn Callback.
  * @returns Callback return value.
  */
 export function record<F extends () => unknown>(
+  tracer: Tracer,
   name: string,
   attrs: Attributes,
   fn: F,
 ): ReturnType<F> {
-  const tracer = trace.getTracer(ENV.APP_NAME)
   const parentContext = context.active()
   const span = tracer.startSpan(
     name,
