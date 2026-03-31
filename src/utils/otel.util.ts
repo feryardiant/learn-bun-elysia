@@ -91,7 +91,9 @@ function wrapPreparedQuery<T extends PatchedPrepareQuery>(prepared: T) {
     }
 
     for (const p in query.params) {
-      attributes[`db.params.$${Number(p) + 1}`] = query.params[p] as string
+      const key = getQueryParamKey(p)
+
+      attributes[`db.params.${key}`] = query.params[p] as string
     }
 
     return record(tracer, `drizzle.${operation}`, attributes, () =>
@@ -100,6 +102,10 @@ function wrapPreparedQuery<T extends PatchedPrepareQuery>(prepared: T) {
   }
 
   return prepared
+}
+
+function getQueryParamKey(p: string) {
+  return `$${Number(p) + 1}`
 }
 
 /**
