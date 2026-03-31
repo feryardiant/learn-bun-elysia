@@ -50,7 +50,7 @@ jobs:
   secrets:
     name: Sync Secrets
     if: ${{ needs.prepare.outputs.deployable == '1' }}
-    needs: [prepare, docker]
+    needs: [prepare]
     runs-on: ubuntu-latest
 
     environment:
