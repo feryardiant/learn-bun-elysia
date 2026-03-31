@@ -55,7 +55,7 @@ export function recordableClass(): ClassDecorator {
 }
 
 function wrapDatabaseSession(db: AppDatabase) {
-  // @ts-ignore private property
+  // @ts-expect-error accessing private `session` property
   const session = db.session as PgSession & {
     __otelPatched_session_prepareRelationalQuery?: boolean
   }
@@ -90,10 +90,9 @@ function wrapPreparedQuery<T extends PatchedPrepareQuery>(prepared: T) {
       'db.statement': query.sql,
     }
 
-    for (const p in query.params) {
+    for (const [p, value] of Object.entries(query.params)) {
       const key = getQueryParamKey(p)
-
-      attributes[`db.params.${key}`] = query.params[p] as string
+      attributes[`db.params.${key}`] = value as string
     }
 
     return record(tracer, `drizzle.${operation}`, attributes, () =>
