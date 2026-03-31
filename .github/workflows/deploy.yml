@@ -67,7 +67,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
 
       - name: Set up Kubeconfig
-        uses: azure/k8s-set-context@4
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
