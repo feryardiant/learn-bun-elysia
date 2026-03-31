@@ -63,8 +63,14 @@ jobs:
       NAMESPACE: ${{ needs.prepare.outputs.deploy-env }}
 
     steps:
+      - name: Set up Kubectl
+        uses: Azure/setup-kubectl@v5
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
+
       - name: Set up Kubeconfig
-        uses: azure/k8s-set-context@v3
+        uses: azure/k8s-set-context@4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
