@@ -34,8 +34,7 @@ jobs:
 
   docker:
     name: Docker Images for elysia-app
-    needs: [prepare, tests]
-    if: needs.tests.result == 'success'
+    needs: [prepare]
     uses: ./.github/workflows/docker.yml
     with:
       buildable: ${{ needs.prepare.outputs.buildable == '1' }}
