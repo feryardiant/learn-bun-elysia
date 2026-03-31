@@ -7,12 +7,9 @@ import {
   type Span,
   type Tracer,
 } from '@opentelemetry/api'
-import { ATTR_OTEL_SCOPE_VERSION } from '@opentelemetry/semantic-conventions'
-import type { PgSession } from 'drizzle-orm/pg-core'
+import type { PgBasePreparedQuery, PgSession } from 'drizzle-orm/pg-core'
 import { ENV } from '~/config'
 import type { AppDatabase } from '~/plugins/database.plugin'
-
-const instrumented: Record<string, boolean> = {}
 
 /**
  * Decorator to mark a class as recordable for OpenTelemetry tracing.
@@ -23,9 +20,10 @@ export function recordableClass(): ClassDecorator {
 
     for (const methodName of Object.getOwnPropertyNames(prototype)) {
       const spanName = `${className}.${methodName}`
+      const instrumentFlag = `__otelPatched_${spanName}`
 
       // Skip the constructor or already instrumented methods
-      if (methodName === 'constructor' || instrumented[spanName]) continue
+      if (methodName === 'constructor' || prototype[instrumentFlag]) continue
 
       const descriptor = Object.getOwnPropertyDescriptor(prototype, methodName)
 
@@ -34,45 +32,74 @@ export function recordableClass(): ClassDecorator {
 
       const originalMethod = descriptor.value as Function
       const attributes: Attributes = {
-        [ATTR_OTEL_SCOPE_VERSION]: ENV.APP_VERSION,
         'repository.name': className,
         'repository.operation': methodName,
       }
+
+      // Mark the method as instrumented
+      prototype[instrumentFlag] = true
 
       // Overwrite the method on the prototype
       prototype[methodName] = function (...args: unknown[]) {
         const tracer = trace.getTracer(ENV.APP_NAME)
 
+        // Patch database instance when this decorator applied in repository class
+        this.db && wrapDatabaseSession(this.db)
+
         return record(tracer, spanName, attributes, () =>
           originalMethod.apply(this, args),
         )
       }
-
-      // Mark the method as instrumented
-      instrumented[spanName] = true
     }
   }
 }
 
-function traceRelationalQuery(db?: AppDatabase) {
+function wrapDatabaseSession(db: AppDatabase) {
   // @ts-ignore private property
-  const session = db?.session as PgSession
-
-  if (typeof session?.prepareRelationalQuery !== 'function') return
-
-  const originalMethod = session.prepareRelationalQuery
-  const attributes: Attributes = {
-    'db.adapter': db?.$client.options.adapter,
+  const session = db.session as PgSession & {
+    __otelPatched_session_prepareRelationalQuery?: boolean
   }
 
-  session.prepareRelationalQuery = function (query, ...args) {
-    attributes['db.statement'] = query.sql
-    console.log(args)
+  if (!session.__otelPatched_session_prepareRelationalQuery) {
+    const originalRelationalQuery = session.prepareRelationalQuery
 
-    return record('spanName', attributes, () =>
-      originalMethod.apply(this, [query, ...args]),
+    session.__otelPatched_session_prepareRelationalQuery = true
+    session.prepareRelationalQuery = function (...args) {
+      return wrapPreparedQuery(originalRelationalQuery.apply(this, args))
+    }
+  }
+}
+
+interface PatchedPrepareQuery extends PgBasePreparedQuery {
+  __otelPatched_preparedQuery_execute?: boolean
+}
+
+function wrapPreparedQuery<T extends PatchedPrepareQuery>(prepared: T) {
+  if (prepared.__otelPatched_preparedQuery_execute) return prepared
+
+  const originalExecute = prepared.execute
+
+  prepared.__otelPatched_preparedQuery_execute = true
+  prepared.execute = function (...args) {
+    const query = prepared.getQuery()
+    const [operation] = query.sql.split(' ')
+
+    const tracer = trace.getTracer(ENV.APP_NAME)
+    const attributes: Attributes = {
+      'db.operation': operation?.toUpperCase(),
+      'db.statement': query.sql,
+    }
+
+    for (const p in query.params) {
+      attributes[`db.params.$${Number(p) + 1}`] = query.params[p] as string
+    }
+
+    return record(tracer, `drizzle.${operation}`, attributes, () =>
+      originalExecute.apply(this, args),
     )
   }
+
+  return prepared
 }
 
 /**
