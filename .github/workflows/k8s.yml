@@ -71,7 +71,8 @@ jobs:
       - name: Sync application secrets and configmap
         run: |
           kubectl create configmap elysia-app-config \
-            --from-literal=NODE_ENV=${{ vars.NODE_ENV || 'debug' }} \
+            --from-literal=NODE_ENV=${{ vars.NAMESPACE }} \
+            --from-literal=LOG_LEVEL=${{ vars.LOG_LEVEL }} \
             --namespace="$NAMESPACE" \
             --dry-run=client -o yaml | kubectl apply -f -
 
