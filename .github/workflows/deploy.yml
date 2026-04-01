@@ -35,7 +35,7 @@ jobs:
     needs: [prepare]
     uses: ./.github/workflows/docker.yml
     with:
-      buildable: ${{ needs.prepare.outputs.buildable == '1' }}
+      # buildable: ${{ needs.prepare.outputs.buildable == '1' }}
       image-name: elysia-app
       image-prefix: ${{ needs.prepare.outputs.image-prefix }}
       image-tag: ${{ needs.prepare.outputs.image-tag }}
