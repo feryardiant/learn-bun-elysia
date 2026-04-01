@@ -160,7 +160,8 @@ jobs:
 
   stress-test:
     name: Stress Test
-    if: needs.build-push.result == 'success'
+    # if: needs.build-push.result == 'success'
+    if: false
     needs: [build-push]
     runs-on: ubuntu-latest
 

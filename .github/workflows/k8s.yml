@@ -1,0 +1,181 @@
+name: Kubernetes
+run-name: 'k8s: deployment for `${{ github.ref_name }}`'
+
+on:
+  workflow_call:
+    inputs:
+      deploy-env:
+        description: Deployment environment
+        required: true
+        type: string
+      image-tag:
+        description: Docker image tag
+        required: true
+        type: string
+      repo-name:
+        description: Repository name
+        required: true
+        type: string
+      service-name:
+        description: Service name
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to `${{ inputs.deploy-env }}`
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ inputs.deploy-env }}
+
+    env:
+      NAMESPACE: ${{ inputs.deploy-env }}
+      OVERLAY_PATH: deploy/k8s/${{ inputs.deploy-env }}
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          token: ${{ github.token }}
+
+      - name: Set up Kubectl
+        uses: Azure/setup-kubectl@v5
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
+
+      - name: Set up Kubeconfig
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
+
+      - name: Set up kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Sync image pull secrets
+        run: |
+          kubectl create secret docker-registry staging-ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ secrets.DEPLOY_USER }} \
+            --docker-password=${{ secrets.DEPLOY_PAT }} \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Sync application secrets and configmap
+        run: |
+          kubectl create configmap elysia-app-config \
+            --from-literal=NODE_ENV="$NAMESPACE" \
+            --from-literal=LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic elysia-app-secret \
+            --from-literal=AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
+            \
+            --from-literal=SMTP_HOST="${{ secrets.SMTP_HOST }}" \
+            --from-literal=SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+            --from-literal=SMTP_USER="${{ secrets.SMTP_USER }}" \
+            --from-literal=SMTP_PASS="${{ secrets.SMTP_PASS }}" \
+            --from-literal=SMTP_EMAIL="${{ secrets.SMTP_EMAIL }}" \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic elysia-db-secret \
+            --from-literal=DB_HOST="${{ vars.DB_HOST }}" \
+            --from-literal=DB_PORT="${{ vars.DB_PORT }}" \
+            --from-literal=DB_USER="${{ secrets.DB_USER }}" \
+            --from-literal=DB_PASS="${{ secrets.DB_PASS }}" \
+            --from-literal=DB_NAME="${{ secrets.DB_NAME }}" \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy image
+        id: deploy
+        working-directory: ${{ env.OVERLAY_PATH }}
+        env:
+          DEPLOY_ANNOTATION: CI deployment by ${{ github.actor }} on ${{ inputs.image-tag }}
+        run: |
+          # Update image tag in kustomization
+          kustomize edit set image ${{ inputs.service-name }}=ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-tag }}
+
+          # Build and apply manifests
+          kustomize build . | kubectl apply -f -
+
+          # Annotate deployment
+          kubectl annotate deployment/${{ inputs.service-name }} kubernetes.io/change-cause="$DEPLOY_ANNOTATION" -n $NAMESPACE --overwrite
+
+          echo "Waiting for rollout to complete..."
+          kubectl rollout status deployment/${{ inputs.service-name }} -n $NAMESPACE --timeout=5m
+
+          echo "Deployment status:"
+          kubectl get deployment ${{ inputs.service-name }} -n $NAMESPACE
+          kubectl get pods -l app=${{ inputs.service-name }} -n $NAMESPACE
+
+          echo "::notice::✅ Successfully deploy the service"
+
+      - name: Commit image tag changes
+        if: steps.deploy.outcome == 'success'
+        continue-on-error: true
+        run: |
+          if git diff --quiet "$OVERLAY_PATH"; then
+            echo "::notice::ℹ️ No changes to kustomization.yaml to commit"
+            exit 0
+          fi
+
+          # Configure git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage the changes
+          git add "$OVERLAY_PATH"
+
+          # Commit
+          git commit -m "deploy: update $NAMESPACE image tag to \`${{ inputs.image-tag }}\` after deployment"
+
+          # Check for any unstaged changes before pulling
+          if ! git diff --quiet "$OVERLAY_PATH" || ! git diff --cached --quiet "$OVERLAY_PATH"; then
+            echo "⚠️  Found unstaged changes, adding them..."
+            git add "$OVERLAY_PATH"
+            git commit --amend --no-edit
+
+            # Pull latest changes before pushing to avoid conflicts
+            git pull --rebase origin ${{ github.ref_name }}
+          fi
+
+          git push origin ${{ github.ref_name }}
+
+          echo "::notice::✅ Successfully committed updated kustomization.yaml"
+
+      - name: Summary
+        if: always()
+        env:
+          DEPLOY_RESULT: ${{ steps.deploy.outcome }}
+        run: |
+          echo "### 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "Deployment: $DEPLOY_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "Environment: \`${{ inputs.deploy-env }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Service: \`${{ inputs.service-name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$DEPLOY_RESULT" == "success" ]]; then
+            echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$DEPLOY_RESULT" == "failure" ]]; then
+            echo "❌ Deployment failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
+            echo "> Please check the deployment logs for details"
+            echo "> Rollback may have been initiated automatically"
+          else
+            echo "⚠️ Deployment was skipped or cancelled"
+          fi

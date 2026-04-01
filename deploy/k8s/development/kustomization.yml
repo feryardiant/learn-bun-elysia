@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: development
+
+resources:
+  - ../base
+
+images:
+  - name: elysia-app
+    newName: ghcr.io/feryardiant/learn-bun-elysia
+    newTag: d46ce2464a735a86843d7677c36b6724e61fd6f9
