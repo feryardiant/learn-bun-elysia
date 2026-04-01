@@ -39,6 +39,16 @@ instrumentDrizzleClient(db)
 export type AppDatabase = typeof db
 
 export async function migrate() {
+  logger.debug(
+    {
+      host: ENV.DB_HOST,
+      port: ENV.DB_PORT,
+      username: ENV.DB_USER,
+      database: ENV.DB_NAME,
+    },
+    'DB config',
+  )
+
   try {
     await migrator(db, {
       migrationsFolder: './database/migrations',
@@ -48,15 +58,6 @@ export async function migrate() {
     return true
   } catch (err) {
     const error = err as DrizzleError
-    logger.debug(
-      {
-        host: ENV.DB_HOST,
-        port: ENV.DB_PORT,
-        username: ENV.DB_USER,
-        database: ENV.DB_NAME,
-      },
-      'DB config',
-    )
     logger.error(error, 'Failed to migrate database')
 
     return false
