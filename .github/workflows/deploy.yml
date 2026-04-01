@@ -92,7 +92,7 @@ jobs:
           kubectl create secret generic elysia-app-secret \
             --from-literal=AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
             \
-            --from-literal=DB_HOST="${{ secrets.DB_HOST }}" \
+            --from-literal=DB_HOST="${{ vars.DB_HOST }}" \
             --from-literal=DB_PORT="${{ vars.DB_PORT }}" \
             --from-literal=DB_USER="${{ secrets.DB_USER }}" \
             --from-literal=DB_PASS="${{ secrets.DB_PASS }}" \
