@@ -38,9 +38,9 @@ spec:
               value: '3000'
           envFrom:
             - configMapRef:
-              name: elysia-app-config
+                name: elysia-app-config
             - secretRef:
-              name: elysia-app-secret
+                name: elysia-app-secret
           livenessProbe:
             httpGet:
               path: /health
@@ -67,7 +67,7 @@ spec:
           command: [sh, -c, server migrate]
           envFrom:
             - secretRef:
-              name: elysia-app-secret
+                name: elysia-app-secret
 
       imagePullSecrets:
         - name: staging-ghcr-secret
