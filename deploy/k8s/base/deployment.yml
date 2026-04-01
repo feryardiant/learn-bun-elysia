@@ -22,9 +22,6 @@ spec:
         stack: learn-bun-elysia
 
     spec:
-      nodeSelector:
-        workload: elysia-app
-
       containers:
         - name: elysia-app
           image: learn-bun-elysia
