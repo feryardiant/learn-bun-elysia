@@ -107,7 +107,7 @@ jobs:
 
   k8s:
     name: Kubernetes
-    if: ${{ needs.prepare.outputs.deployable == '1' && needs.prepare.outputs.buildable == '1' }}
+    # if: ${{ needs.prepare.outputs.deployable == '1' && needs.prepare.outputs.buildable == '1' }}
     needs: [prepare, docker, secrets]
     uses: ./.github/workflows/k8s.yml
     secrets: inherit
