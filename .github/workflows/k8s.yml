@@ -71,7 +71,7 @@ jobs:
       - name: Sync application secrets and configmap
         run: |
           kubectl create configmap elysia-app-config \
-            --from-literal=NODE_ENV=${{ vars.NAMESPACE }} \
+            --from-literal=NODE_ENV="$NAMESPACE" \
             --from-literal=LOG_LEVEL=${{ vars.LOG_LEVEL }} \
             --namespace="$NAMESPACE" \
             --dry-run=client -o yaml | kubectl apply -f -
@@ -97,7 +97,10 @@ jobs:
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy image
+        id: deploy
         working-directory: ${{ env.OVERLAY_PATH }}
+        env:
+          DEPLOY_ANNOTATION: CI deployment by ${{ github.actor }} on ${{ inputs.image-tag }}
         run: |
           # Update image tag in kustomization
           kustomize edit set image ${{ inputs.service-name }}=ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-tag }}
@@ -106,11 +109,8 @@ jobs:
           kustomize build . | kubectl apply -f -
 
           # Annotate deployment
-          kubectl annotate deployment/${{ inputs.service-name }} kubernetes.io/change-cause="CI deployment by ${{ github.actor }} on ${{ inputs.image-tag }}" -n $NAMESPACE --overwrite
+          kubectl annotate deployment/${{ inputs.service-name }} kubernetes.io/change-cause="$DEPLOY_ANNOTATION" -n $NAMESPACE --overwrite
 
-      - name: Verify deployment
-        id: verify
-        run: |
           echo "Waiting for rollout to complete..."
           kubectl rollout status deployment/${{ inputs.service-name }} -n $NAMESPACE --timeout=5m
 
@@ -118,8 +118,10 @@ jobs:
           kubectl get deployment ${{ inputs.service-name }} -n $NAMESPACE
           kubectl get pods -l app=${{ inputs.service-name }} -n $NAMESPACE
 
+          echo "::notice::✅ Successfully deploy the service"
+
       - name: Commit image tag changes
-        if: steps.verify.outcome == 'success'
+        if: steps.deploy.outcome == 'success'
         continue-on-error: true
         run: |
           if git diff --quiet "$OVERLAY_PATH"; then
@@ -154,7 +156,7 @@ jobs:
       - name: Summary
         if: always()
         env:
-          DEPLOY_RESULT: ${{ steps.verify.outcome }}
+          DEPLOY_RESULT: ${{ steps.deploy.outcome }}
         run: |
           echo "### 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
