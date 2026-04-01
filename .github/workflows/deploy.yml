@@ -31,7 +31,7 @@ jobs:
       actions: read
 
   docker:
-    name: Docker Images for elysia-app
+    name: Build images
     needs: [prepare]
     uses: ./.github/workflows/docker.yml
     with:

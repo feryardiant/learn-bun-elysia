@@ -49,6 +49,13 @@ export async function migrate() {
   } catch (err) {
     const error = err as DrizzleError
     logger.error(error, 'Failed to migrate database')
+    logger.debug({
+      host: ENV.DB_HOST,
+      port: ENV.DB_PORT,
+      username: ENV.DB_USER,
+      database: ENV.DB_NAME,
+    })
+
     return false
   }
 }
