@@ -27,8 +27,9 @@ jobs:
     secrets: inherit
 
     permissions:
-      contents: read
       actions: read
+      contents: read
+      pull-requests: write
 
   docker:
     name: Build images
