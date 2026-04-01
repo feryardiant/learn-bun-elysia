@@ -59,7 +59,43 @@ jobs:
           curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
 
-      - name: Update image tag and deploy
+      - name: Sync image pull secrets
+        run: |
+          kubectl create secret docker-registry staging-ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ secrets.DEPLOY_USER }} \
+            --docker-password=${{ secrets.DEPLOY_PAT }} \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Sync application secrets and configmap
+        run: |
+          kubectl create configmap elysia-app-config \
+            --from-literal=NODE_ENV=${{ vars.NODE_ENV || 'debug' }} \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic elysia-app-secret \
+            --from-literal=AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
+            \
+            --from-literal=SMTP_HOST="${{ secrets.SMTP_HOST }}" \
+            --from-literal=SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+            --from-literal=SMTP_USER="${{ secrets.SMTP_USER }}" \
+            --from-literal=SMTP_PASS="${{ secrets.SMTP_PASS }}" \
+            --from-literal=SMTP_EMAIL="${{ secrets.SMTP_EMAIL }}" \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic elysia-db-secret \
+            --from-literal=DB_HOST="${{ vars.DB_HOST }}" \
+            --from-literal=DB_PORT="${{ vars.DB_PORT }}" \
+            --from-literal=DB_USER="${{ secrets.DB_USER }}" \
+            --from-literal=DB_PASS="${{ secrets.DB_PASS }}" \
+            --from-literal=DB_NAME="${{ secrets.DB_NAME }}" \
+            --namespace="$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy image
         working-directory: ${{ env.OVERLAY_PATH }}
         run: |
           # Update image tag in kustomization

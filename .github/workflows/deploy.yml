@@ -48,68 +48,10 @@ jobs:
       id-token: write
       attestations: write
 
-  secrets:
-    name: Sync Secrets
-    # if: ${{ needs.prepare.outputs.deployable == '1' }}
-    needs: [prepare]
-    runs-on: ubuntu-latest
-
-    environment:
-      name: ${{ needs.prepare.outputs.deploy-env }}
-
-    env:
-      NAMESPACE: ${{ needs.prepare.outputs.deploy-env }}
-
-    steps:
-      - name: Set up Kubectl
-        uses: Azure/setup-kubectl@v5
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
-
-      - name: Set up Kubeconfig
-        uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
-
-      - name: Sync deployment image pull secrets
-        run: |
-          kubectl create secret docker-registry staging-ghcr-secret \
-            --docker-server=ghcr.io \
-            --docker-username=${{ secrets.DEPLOY_USER }} \
-            --docker-password=${{ secrets.DEPLOY_PAT }} \
-            --namespace="$NAMESPACE" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Sync application secrets
-        run: |
-          kubectl create configmap elysia-app-config \
-            --from-literal=key1=config1 \
-            --namespace="$NAMESPACE" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-          kubectl create secret generic elysia-app-secret \
-            --from-literal=AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
-            \
-            --from-literal=DB_HOST="${{ vars.DB_HOST }}" \
-            --from-literal=DB_PORT="${{ vars.DB_PORT }}" \
-            --from-literal=DB_USER="${{ secrets.DB_USER }}" \
-            --from-literal=DB_PASS="${{ secrets.DB_PASS }}" \
-            --from-literal=DB_NAME="${{ secrets.DB_NAME }}" \
-            \
-            --from-literal=SMTP_HOST="${{ secrets.SMTP_HOST }}" \
-            --from-literal=SMTP_PORT="${{ secrets.SMTP_PORT }}" \
-            --from-literal=SMTP_USER="${{ secrets.SMTP_USER }}" \
-            --from-literal=SMTP_PASS="${{ secrets.SMTP_PASS }}" \
-            --from-literal=SMTP_EMAIL="${{ secrets.SMTP_EMAIL }}" \
-            --namespace="$NAMESPACE" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
   k8s:
     name: Kubernetes
     # if: ${{ needs.prepare.outputs.deployable == '1' && needs.prepare.outputs.buildable == '1' }}
-    needs: [prepare, docker, secrets]
+    needs: [prepare, docker]
     uses: ./.github/workflows/k8s.yml
     secrets: inherit
 

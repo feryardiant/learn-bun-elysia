@@ -33,13 +33,13 @@ spec:
               value: 0.0.0.0
             - name: PORT
               value: '3000'
-            - name: LOG_LEVEL
-              value: debug
           envFrom:
             - configMapRef:
                 name: elysia-app-config
             - secretRef:
                 name: elysia-app-secret
+            - secretRef:
+                name: elysia-db-secret
           livenessProbe:
             httpGet:
               path: /health
@@ -61,17 +61,14 @@ spec:
               memory: 512Mi
 
       initContainers:
-        - name: elysia-app-migration
+        - name: elysia-db-migration
           image: elysia-app
           command: [sh, -c, server migrate]
-          env:
-            - name: LOG_LEVEL
-              value: debug
           envFrom:
             - configMapRef:
                 name: elysia-app-config
             - secretRef:
-                name: elysia-app-secret
+                name: elysia-db-secret
 
       imagePullSecrets:
         - name: staging-ghcr-secret
