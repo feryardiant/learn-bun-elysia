@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: elysia-app
-          image: learn-bun-elysia
+          image: elysia-app
           ports:
             - containerPort: 3000
               name: http

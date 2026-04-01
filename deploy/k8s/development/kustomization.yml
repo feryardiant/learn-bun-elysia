@@ -7,6 +7,6 @@ resources:
   - ../base
 
 images:
-  - name: learn-bun-elysia
+  - name: elysia-app
     newName: ghcr.io/feryardiant/learn-bun-elysia
     newTag: d46ce2464a735a86843d7677c36b6724e61fd6f9
