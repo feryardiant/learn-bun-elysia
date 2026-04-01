@@ -104,3 +104,19 @@ jobs:
             --from-literal=SMTP_EMAIL="${{ secrets.SMTP_EMAIL }}" \
             --namespace="$NAMESPACE" \
             --dry-run=client -o yaml | kubectl apply -f -
+
+  k8s:
+    name: Kubernetes
+    if: ${{ needs.prepare.outputs.deployable == '1' && needs.prepare.outputs.buildable == '1' }}
+    needs: [prepare, docker, secrets]
+    uses: ./.github/workflows/k8s.yml
+    secrets: inherit
+
+    permissions:
+      contents: write
+
+    with:
+      deploy-env: ${{ needs.prepare.outputs.deploy-env }}
+      image-tag: ${{ needs.prepare.outputs.image-tag }}
+      repo-name: ${{ needs.prepare.outputs.repo-name }}
+      service-name: elysia-app

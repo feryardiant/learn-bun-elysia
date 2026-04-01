@@ -1,0 +1,142 @@
+name: Kubernetes
+run-name: 'k8s: deployment for `${{ github.ref_name }}`'
+
+on:
+  workflow_call:
+    inputs:
+      deploy-env:
+        description: Deployment environment
+        required: true
+        type: string
+      image-tag:
+        description: Docker image tag
+        required: true
+        type: string
+      repo-name:
+        description: Repository name
+        required: true
+        type: string
+      service-name:
+        description: Service name
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to `${{ inputs.deploy-env }}`
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ inputs.deploy-env }}
+
+    env:
+      NAMESPACE: ${{ inputs.deploy-env }}
+      OVERLAY_PATH: deploy/k8s/${{ inputs.deploy-env }}
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          token: ${{ github.token }}
+
+      - name: Set up Kubectl
+        uses: Azure/setup-kubectl@v5
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
+
+      - name: Set up Kubeconfig
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DATA }}
+
+      - name: Set up kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Update image tag and deploy
+        working-directory: ${{ env.OVERLAY_PATH }}
+        run: |
+          # Update image tag in kustomization
+          kustomize edit set image ${{ inputs.service-name }}=ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-tag }}
+
+          # Build and apply manifests
+          kustomize build . | kubectl apply -f -
+
+          # Annotate deployment
+          kubectl annotate deployment/${{ inputs.service-name }} kubernetes.io/change-cause="CI deployment by ${{ github.actor }} on ${{ inputs.image-tag }}" -n $NAMESPACE --overwrite
+
+      - name: Verify deployment
+        id: verify
+        run: |
+          echo "Waiting for rollout to complete..."
+          kubectl rollout status deployment/${{ inputs.service-name }} -n $NAMESPACE --timeout=5m
+
+          echo "Deployment status:"
+          kubectl get deployment ${{ inputs.service-name }} -n $NAMESPACE
+          kubectl get pods -l app=${{ inputs.service-name }} -n $NAMESPACE
+
+      - name: Commit image tag changes
+        if: steps.verify.outcome == 'success'
+        continue-on-error: true
+        run: |
+          if git diff --quiet "$OVERLAY_PATH"; then
+            echo "::notice::ℹ️ No changes to kustomization.yaml to commit"
+            exit 0
+          fi
+
+          # Configure git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage the changes
+          git add "$OVERLAY_PATH"
+
+          # Commit
+          git commit -m "deploy: update $NAMESPACE image tag to \`${{ inputs.image-tag }}\` after deployment"
+
+          # Check for any unstaged changes before pulling
+          if ! git diff --quiet "$OVERLAY_PATH" || ! git diff --cached --quiet "$OVERLAY_PATH"; then
+            echo "⚠️  Found unstaged changes, adding them..."
+            git add "$OVERLAY_PATH"
+            git commit --amend --no-edit
+
+            # Pull latest changes before pushing to avoid conflicts
+            git pull --rebase origin ${{ github.ref_name }}
+          fi
+
+          git push origin ${{ github.ref_name }}
+
+          echo "::notice::✅ Successfully committed updated kustomization.yaml"
+
+      - name: Summary
+        if: always()
+        env:
+          DEPLOY_RESULT: ${{ steps.verify.outcome }}
+        run: |
+          echo "### 📊 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "Deployment: $DEPLOY_RESULT" >> $GITHUB_STEP_SUMMARY
+          echo "Environment: \`${{ inputs.deploy-env }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Service: \`${{ inputs.service-name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$DEPLOY_RESULT" == "success" ]]; then
+            echo "✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$DEPLOY_RESULT" == "failure" ]]; then
+            echo "❌ Deployment failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
+            echo "> Please check the deployment logs for details"
+            echo "> Rollback may have been initiated automatically"
+          else
+            echo "⚠️ Deployment was skipped or cancelled"
+          fi
