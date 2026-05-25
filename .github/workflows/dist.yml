@@ -1,100 +1,54 @@
-name: Docker
+name: Distribute
+run-name: "dist(${{ github.event.workflow_run.head_branch }}): docker build for `${{ github.event.workflow_run.head_sha }}`"
 
 on:
-  workflow_call:
-    outputs:
-      artifact-id:
-        value: ${{ jobs.api-schema.outputs.artifact-id }}
-    inputs:
-      buildable:
-        description: Whether we need to build new image
-        default: true
-        type: boolean
-      image-name:
-        description: Docker image name
-        required: true
-        type: string
-      image-prefix:
-        description: Docker image prefix
-        required: true
-        type: string
-      image-tag:
-        description: Docker image tag
-        required: true
-        type: string
-      repo-name:
-        description: Repository name
-        required: true
-        type: string
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
-env:
-  BUN_VERSION: ${{ vars.BUN_VERSION || '1.3.10' }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-push:
-    name: Build and Push
-    runs-on: ubuntu-latest
-    if: ${{ inputs.buildable }}
+  prepare:
+    name: Prepare
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: projek-xyz/actions/.github/workflows/prepare.yml@main
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+    permissions:
+      contents: read
+      pull-requests: write
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+  docker:
+    name: Build Docker Images
+    needs: prepare
+    if: needs.prepare.outputs.should-build == '1'
+    uses: projek-xyz/actions/.github/workflows/docker.yml@main
+    with:
+      build-args: |
+        BUN_VERSION=${{ vars.BUN_VERSION || '1.3.10' }}
+        BASE_OS=alpine
+        APP_NAME=elysia-app
+        APP_VERSION=${{ needs.prepare.outputs.project-version }}
+      docker-file: deploy/docker/elysia-app.dockerfile
+      image-tag: ${{ needs.prepare.outputs.project-version }}
+      image-slug: ${{ needs.prepare.outputs.branch-slug }}
+      image-labels: |
+        org.opencontainers.image.author=${{ github.repository_owner }}
+        org.opencontainers.image.licenses=MIT
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: |
-            ghcr.io/${{ inputs.repo-name }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ inputs.image-tag }}
-            type=raw,value=${{ inputs.image-prefix }}
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}.{{minor}}
-            type=semver,pattern=v{{major}}
-            type=sha,prefix=,format=long
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v7
-        with:
-          build-args: |
-            BUN_VERSION=${{ env.BUN_VERSION }}
-            BASE_OS=${{ vars.BASE_OS || 'alpine' }}
-            APP_NAME=${{ inputs.image-name }}
-            APP_VERSION=${{ inputs.image-tag }}
-          context: .
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          file: deploy/docker/${{ inputs.image-name }}.dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-
-      - uses: actions/attest-build-provenance@v4
-        if: ${{ github.event_name == 'push' }}
-        with:
-          subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
 
   api-schema:
     name: API Schema Artifact
-    if: needs.build-push.result == 'success'
-    needs: [build-push]
+    if: needs.docker.result == 'success'
+    needs: [prepare, docker]
     runs-on: ubuntu-latest
     outputs:
       artifact-id: ${{ steps.api-schema.outputs.artifact-id }}
@@ -106,6 +60,7 @@ jobs:
       DB_NAME: ${{ github.repository_owner }}
       DB_USER: ${{ github.repository_owner }}
       DB_PASS: secret
+      BUN_VERSION: ${{ vars.BUN_VERSION || '1.3.10' }}
 
     services:
       postgres:
@@ -122,7 +77,7 @@ jobs:
           --health-timeout=5s
           --health-retries=3
       app:
-        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        image: ${{ needs.docker.outputs.image-url }}
         credentials:
           username: ${{ github.actor }}
           password: ${{ github.token }}
@@ -147,21 +102,21 @@ jobs:
         env:
           APP_URL: http://localhost:${{ job.services.app.ports['3000'] }}
         run: |
-          bunx openapi-typescript $APP_URL/docs/json -o ${{ inputs.image-name }}.schema.d.ts
+          bunx openapi-typescript $APP_URL/docs/json -o elysia-app.schema.d.ts
 
       - name: Upload schema artifacts
         id: api-schema
         uses: actions/upload-artifact@v7
         with:
-          name: api-schema_${{ inputs.image-prefix }}
-          path: ${{ inputs.image-name }}.schema.d.ts
+          name: api-schema_${{ needs.prepare.outputs.branch-slug }}
+          path: elysia-app.schema.d.ts
           retention-days: 30
           overwrite: true
 
   stress-test:
     name: Stress Test
-    if: needs.build-push.result == 'success'
-    needs: [build-push]
+    if: needs.docker.result == 'success'
+    needs: [prepare, docker]
     runs-on: ubuntu-latest
 
     permissions:
@@ -187,7 +142,7 @@ jobs:
           --health-timeout=5s
           --health-retries=3
       app:
-        image: ghcr.io/${{ inputs.repo-name }}:${{ inputs.image-prefix }}
+        image: ${{ needs.docker.outputs.image-url }}
         credentials:
           username: ${{ github.actor }}
           password: ${{ github.token }}
