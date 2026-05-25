@@ -12,7 +12,7 @@ env:
 jobs:
   prepare:
     name: Prepare
-    uses: projek-xyz/actions/.github/workflows/prepare.yml@b4c6ccfdd4f5421e1f1ab0b580d7da51f1c5f309
+    uses: projek-xyz/actions/.github/workflows/prepare.yml@fc2127c17fff83111c9b8f34e403e0d40ee7d770
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -85,7 +85,7 @@ jobs:
     name: Docker Images for elysia-app
     needs: [prepare, tests]
     if: ${{ needs.prepare.outputs.should-build == '1' && needs.tests.result == 'success' }}
-    uses: projek-xyz/actions/.github/workflows/docker.yml@b4c6ccfdd4f5421e1f1ab0b580d7da51f1c5f309
+    uses: projek-xyz/actions/.github/workflows/docker.yml@fc2127c17fff83111c9b8f34e403e0d40ee7d770
     with:
       build-args: |
         BUN_VERSION=${{ vars.BUN_VERSION || '1.3.10' }}
