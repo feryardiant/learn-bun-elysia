@@ -1,0 +1,65 @@
+name: Deploy
+run-name: 'Deploy `${{ github.ref_name }}` to ${{ inputs.environment }}'
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for deployment"
+        default: development
+        type: choice
+        options:
+          - development
+          - staging
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare
+    uses: ./.github/workflows/prepare.yml
+    secrets: inherit
+
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+
+  docker:
+    name: Build images
+    needs: [prepare]
+    uses: ./.github/workflows/docker.yml
+    with:
+      # buildable: ${{ needs.prepare.outputs.buildable == '1' }}
+      image-name: elysia-app
+      image-prefix: ${{ needs.prepare.outputs.image-prefix }}
+      image-tag: ${{ needs.prepare.outputs.image-tag }}
+      repo-name: ${{ needs.prepare.outputs.repo-name }}
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+  k8s:
+    name: Kubernetes
+    # if: ${{ needs.prepare.outputs.deployable == '1' && needs.prepare.outputs.buildable == '1' }}
+    needs: [prepare, docker]
+    uses: ./.github/workflows/k8s.yml
+    secrets: inherit
+
+    permissions:
+      contents: write
+
+    with:
+      deploy-env: ${{ needs.prepare.outputs.deploy-env }}
+      image-tag: ${{ needs.prepare.outputs.image-tag }}
+      repo-name: ${{ needs.prepare.outputs.repo-name }}
+      service-name: elysia-app
