@@ -12,7 +12,7 @@ env:
 jobs:
   prepare:
     name: Prepare
-    uses: projek-xyz/actions/.github/workflows/prepare.yml@main
+    uses: projek-xyz/actions/.github/workflows/prepare.yml@b4c6ccfdd4f5421e1f1ab0b580d7da51f1c5f309
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -84,8 +84,8 @@ jobs:
   docker:
     name: Docker Images for elysia-app
     needs: [prepare, tests]
-    if: needs.tests.result == 'success'
-    uses: projek-xyz/actions/.github/workflows/docker.yml@f9466e45da0df78825b265cc8e05d793a3290f4a
+    if: ${{ needs.prepare.outputs.should-build == '1' && needs.tests.result == 'success' }}
+    uses: projek-xyz/actions/.github/workflows/docker.yml@b4c6ccfdd4f5421e1f1ab0b580d7da51f1c5f309
     with:
       build-args: |
         BUN_VERSION=${{ vars.BUN_VERSION || '1.3.10' }}
@@ -94,6 +94,7 @@ jobs:
         APP_VERSION=${{ needs.prepare.outputs.project-version }}
       docker-file: deploy/docker/elysia-app.dockerfile
       image-tag: ${{ needs.prepare.outputs.project-version }}
+      image-slug: ${{ needs.prepare.outputs.branch-slug }}
       image-labels: |
         org.opencontainers.image.author=${{ github.repository_owner }}
         org.opencontainers.image.licenses=MIT
