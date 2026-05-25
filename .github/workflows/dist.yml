@@ -5,10 +5,9 @@ on:
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_sha }}
   cancel-in-progress: true
 
 jobs:
@@ -47,7 +46,7 @@ jobs:
 
   api-schema:
     name: API Schema Artifact
-    if: needs.docker.result == 'success'
+    if: github.event_name != 'pull_request' || needs.prepare.outputs.pr-number == ''
     needs: [prepare, docker]
     runs-on: ubuntu-latest
     outputs:
@@ -115,7 +114,7 @@ jobs:
 
   stress-test:
     name: Stress Test
-    if: needs.docker.result == 'success'
+    if: github.event_name != 'pull_request' || needs.prepare.outputs.pr-number == ''
     needs: [prepare, docker]
     runs-on: ubuntu-latest
 
@@ -129,7 +128,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:17
+        image: postgres:${{ vars.DB_VERSION || '17.7' }}
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
