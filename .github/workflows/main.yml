@@ -85,7 +85,7 @@ jobs:
     name: Docker Images for elysia-app
     needs: [prepare, tests]
     if: needs.tests.result == 'success'
-    uses: projek-xyz/actions/.github/workflows/docker.yml@d53cdda838d97391ac3aeae6ae818672f28741ea
+    uses: projek-xyz/actions/.github/workflows/docker.yml@f9466e45da0df78825b265cc8e05d793a3290f4a
     with:
       build-args: |
         BUN_VERSION=${{ vars.BUN_VERSION || '1.3.10' }}
@@ -94,6 +94,9 @@ jobs:
         APP_VERSION=${{ needs.prepare.outputs.project-version }}
       docker-file: deploy/docker/elysia-app.dockerfile
       image-tag: ${{ needs.prepare.outputs.project-version }}
+      image-labels: |
+        org.opencontainers.image.author=${{ github.repository_owner }}
+        org.opencontainers.image.licenses=MIT
 
     permissions:
       contents: read
