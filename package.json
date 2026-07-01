@@ -21,7 +21,7 @@
     "test:load": "set -a && if [ -f .env.local ]; then . .env.local; else . .env; fi && set +a && k6 run scripts/throughput.ts"
   },
   "dependencies": {
-    "@elysiajs/openapi": "^1.4.14",
+    "@elysiajs/openapi": "^1.4.15",
     "@elysiajs/opentelemetry": "^1.4.10",
     "@elysiajs/static": "^1.4.7",
     "@kubiks/otel-drizzle": "^2.1.0",
