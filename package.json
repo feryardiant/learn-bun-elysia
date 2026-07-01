@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@elysiajs/openapi": "^1.4.14",
-    "@elysiajs/opentelemetry": "^1.4.10",
+    "@elysiajs/opentelemetry": "^1.4.11",
     "@elysiajs/static": "^1.4.7",
     "@kubiks/otel-drizzle": "^2.1.0",
     "@opentelemetry/exporter-logs-otlp-proto": "^0.214.0",
