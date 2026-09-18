@@ -3,5 +3,5 @@ import { recordableClass } from '~/utils/otel.util'
 
 @recordableClass()
 export class AccountRepository {
-  constructor(private readonly db: AppDatabase) {}
+  constructor(private readonly db: AppDatabase) {} //·biome-ignore lint
 }

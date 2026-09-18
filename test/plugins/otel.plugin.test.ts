@@ -3,21 +3,20 @@ import {
   beforeEach,
   expect,
   it,
+  type Mock,
   mock,
   spyOn,
-  type Mock,
 } from 'bun:test'
 import * as elysiaOtel from '@elysiajs/opentelemetry'
-import { INVALID_SPAN_CONTEXT, trace, type Span } from '@opentelemetry/api'
 import Elysia from 'elysia'
-import { logger } from '~/plugins/logger.plugin'
-import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
 import {
-  marshalContext,
   type MarshaledSpanContext,
+  marshalContext,
   type SpanProcessEnd,
   type SpanProcessStart,
 } from 'test/fixtures'
+import { logger } from '~/plugins/logger.plugin'
+import { otelPlugin, spanProcessor } from '~/plugins/otel.plugin'
 
 let logDebug: Mock<typeof logger.debug>
 
@@ -36,14 +35,14 @@ type Obj = Record<string, unknown>
 beforeEach(async () => {
   logDebug = spyOn(logger, 'debug').mockImplementation(() => {})
 
-  const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
+  // const invalidSpan = trace.wrapSpanContext(INVALID_SPAN_CONTEXT)
 
   otelRecord = spyOn(elysiaOtel, 'record').mockImplementation(() => {})
   spanStart = spyOn(spanProcessor, 'onStart')
   spanEnd = spyOn(spanProcessor, 'onEnd')
   currentSpan = spyOn(elysiaOtel, 'getCurrentSpan')
 
-  handler = mock((ctx = {}) => {})
+  handler = mock((_ctx = {}) => {})
   otelApp = new Elysia().use(otelPlugin)
 
   otelApp

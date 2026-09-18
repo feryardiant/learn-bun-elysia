@@ -1,9 +1,9 @@
 import { Command } from 'commander'
 import { description, version } from 'package.json'
-import { ENV } from './config'
-import { SWAGGER_PATH } from './plugins/openapi.plugin'
 import { app } from './app'
+import { ENV } from './config'
 import { migrate } from './plugins/database.plugin'
+import { SWAGGER_PATH } from './plugins/openapi.plugin'
 
 const program = new Command(ENV.APP_NAME)
 

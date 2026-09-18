@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, expect, it, type Mock, spyOn } from 'bun:test'
 import { Value } from '@sinclair/typebox/value'
-import { afterEach, beforeEach, expect, it, spyOn, type Mock } from 'bun:test'
 import type { LogFn } from 'pino'
 import { authConfig } from '~/config/auth.config'
 

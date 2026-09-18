@@ -2,8 +2,8 @@ import { defineRelationsPart, type RelationsFilter } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-orm/typebox-legacy'
 import { t } from 'elysia'
 import { users } from '~/modules/auth'
-import { posts } from './posts.schema'
 import { comments } from './comments.schema'
+import { posts } from './posts.schema'
 
 export const PostSchema = createSelectSchema(posts, {
   createdById: t.Nullable(

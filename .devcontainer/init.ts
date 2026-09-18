@@ -46,7 +46,7 @@ const cleanup = (signal: NodeJS.Signals) => {
   for (const proc of processes) {
     try {
       proc.kill(signal)
-    } catch (e) {
+    } catch {
       // Ignore errors if process is already dead
     }
   }

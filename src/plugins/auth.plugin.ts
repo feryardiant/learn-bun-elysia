@@ -4,8 +4,8 @@ import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
 import type { OpenAPIV3 } from 'openapi-types'
 import { ENV, isLocal } from '~/config'
-import { ErrorResponseSchema } from '~/utils/response.util'
 import { AuthenticationError } from '~/utils/errors.util'
+import { ErrorResponseSchema } from '~/utils/response.util'
 import { db } from './database.plugin'
 import { logger } from './logger.plugin'
 
@@ -15,7 +15,7 @@ export const auth = betterAuth({
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
 
-  trustedOrigins(request) {
+  trustedOrigins() {
     const isEmptyOrigins = ENV.TRUSTED_ORIGINS.length === 0
 
     // Enforce wildcard origins on local and test environments

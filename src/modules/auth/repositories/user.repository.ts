@@ -1,8 +1,8 @@
 import { count, eq } from 'drizzle-orm'
 import type { AppDatabase } from '~/plugins/database.plugin'
 import { recordableClass } from '~/utils/otel.util'
-import type { User } from '../types'
 import { users } from '../schemas/users.schema'
+import type { User } from '../types'
 
 @recordableClass()
 export class UserRepository {

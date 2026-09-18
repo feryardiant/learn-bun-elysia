@@ -4,10 +4,9 @@ import { drizzle } from 'drizzle-orm/bun-sql'
 import { migrate as migrator } from 'drizzle-orm/bun-sql/migrator'
 import { Elysia } from 'elysia'
 import { ENV, isLocal } from '~/config'
-import { logger } from './logger.plugin'
-
 import { authRelations, authTables } from '~/modules/auth/schemas'
 import { feedRelations, feedTables } from '~/modules/feeds/schemas'
+import { logger } from './logger.plugin'
 
 export const db = drizzle({
   connection: {

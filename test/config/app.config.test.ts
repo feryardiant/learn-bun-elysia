@@ -1,5 +1,5 @@
-import { Value } from '@sinclair/typebox/value'
 import { expect, it } from 'bun:test'
+import { Value } from '@sinclair/typebox/value'
 import { name, version } from 'package.json'
 import { appConfig } from '~/config/app.config'
 

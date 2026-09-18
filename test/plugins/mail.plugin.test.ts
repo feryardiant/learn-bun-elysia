@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, it, spyOn, type Mock } from 'bun:test'
+import { afterEach, beforeEach, expect, it, type Mock, spyOn } from 'bun:test'
 import Mail from 'nodemailer/lib/mailer'
 import type SMTPTransport from 'nodemailer/lib/smtp-transport'
 import { ENV } from '~/config'

@@ -1,8 +1,8 @@
-import { t } from 'elysia'
 import { Value } from '@sinclair/typebox/value'
+import { t } from 'elysia'
+import { appConfig } from './app.config'
 import { authConfig } from './auth.config'
 import { dbConfig } from './database.config'
-import { appConfig } from './app.config'
 import { mailConfig } from './mail.config'
 import { otelConfig } from './otel.config'
 

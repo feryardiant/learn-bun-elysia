@@ -1,9 +1,9 @@
-import type { UserWithAnonymous, AnonymousSession } from 'better-auth/plugins'
 import { afterAll, afterEach, expect, it, mock } from 'bun:test'
+import type { AnonymousSession, UserWithAnonymous } from 'better-auth/plugins'
 import { Elysia } from 'elysia'
+import { tearDownTables } from 'test/fixtures'
 import { accounts, sessions, users } from '~/modules/auth'
 import { auth, authPlugin } from '~/plugins/auth.plugin'
-import { tearDownTables } from 'test/fixtures'
 
 const APP_URL = 'http://localhost'
 

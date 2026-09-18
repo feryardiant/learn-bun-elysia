@@ -1,16 +1,16 @@
 import { afterAll, expect, it } from 'bun:test'
+import { tearDownTables } from 'test/fixtures'
 import { ENV } from '~/config'
-import { db } from '~/plugins/database.plugin'
 import {
   accounts,
   SessionRepository,
   sessions,
+  type User,
   UserRepository,
   users,
-  type User,
 } from '~/modules/auth'
+import { db } from '~/plugins/database.plugin'
 import { authRoute } from '~/routes/auth.route'
-import { tearDownTables } from 'test/fixtures'
 
 const APP_URL = 'http://localhost/auth'
 
@@ -34,7 +34,7 @@ it('should respond with valid JSON body', async () => {
   expect(response.status).toBe(200)
   expect(response.headers.get('Content-Type')).toBe('application/json')
 
-  const body = (await response.json()) as {}
+  const body = await response.json()
 
   expect(body).toEqual({})
 })

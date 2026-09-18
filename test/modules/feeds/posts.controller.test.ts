@@ -1,17 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { createPosts, dateRanges, createScenario } from 'test/fixtures'
+import { endOfDay } from 'date-fns'
+import { createPosts, createScenario, dateRanges } from 'test/fixtures'
 import {
   FeedQuerySchema,
-  posts,
-  postsController,
   type Post,
   type PostResponse,
   type PostsResponse,
+  posts,
+  postsController,
 } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
+import { type DateRange, getRange } from '~/utils/filters.util'
 import { assertBackwardPagination, assertForwardPagination } from '../helpers'
-import { getRange, type DateRange } from '~/utils/filters.util'
-import { endOfDay } from 'date-fns'
 
 const APP_URL = 'http://localhost/posts'
 const entries = createPosts() as [Post, ...Post[]]
