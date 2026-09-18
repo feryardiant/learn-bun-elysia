@@ -1,5 +1,5 @@
 import { index, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
-import { users } from '~/modules/auth'
+import { users } from '~/modules/auth/schemas/users.schema'
 import { posts } from './posts.schema'
 
 export const comments = pgTable(
