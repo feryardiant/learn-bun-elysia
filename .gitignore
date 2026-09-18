@@ -1,49 +1,58 @@
-# dependencies (bun install)
-node_modules
-
-# output
-dist
-*.bun-build
-
-# Finder (MacOS) folder config
-*.DS_Store
+# Generic
+# --------------------------
+Thumbs.db
+Desktop.ini
 .DS_Store
-
-# Misc
-*.bun
+.directory
+._*
+*.DS_Store
 *.log
+*.key
 *.pem
-*.tgz
-*.tar.gz
-*.trace
-*.zip
+*.old
+*.tmp
 
-# code coverage
-coverage
-*.lcov
-
-# caches
+# Caches
 .cache
+*~
+*.cache
 *.tsbuildinfo
 
-# IDE and AI Agents
+dist
+
+# IDE Project Configurations
+# --------------------------
 .idea
+.project
+.settings
 .vscode
 .zed
-GEMINI.md
+*.sublime-*
 
-# Local Docker Compose Files
-compose.*.yml
-
-# Other package managers
-yarn.lock
-pnpm-lock.yaml
-package-lock.json
-bun.lockb
-
-# dotenv environment variable files
+# Development
+# --------------------------
 .env
 .env.*
+compose.*.yml
+coverage
+node_modules
+*.lcov
+
+# AI Agents
+.agents
+.ai
+.claude
+.mcp.json
+opencode.json
+CLAUDE.md
+
+# Package managers
+.npmrc
+.pnpm-store
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
 
 # Do not ignore template files
 !.env.example
