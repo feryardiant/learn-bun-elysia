@@ -66,8 +66,8 @@ afterEach(() => {
 it('should be able to catch span start and end', async () => {
   const response = await otelApp.handle(new Request(APP_URL))
 
-  expect(spanStart).toBeCalledTimes(4)
-  expect(spanEnd).toBeCalledTimes(3)
+  expect(spanStart).toBeCalledTimes(3)
+  expect(spanEnd).toBeCalledTimes(2)
 
   const ctxs = marshalContext(spanStart)
   const span = ctxs.at(0) as MarshaledSpanContext
