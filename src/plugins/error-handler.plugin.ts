@@ -1,15 +1,15 @@
 import type { ValueError } from '@sinclair/typebox/errors'
+import { APIError } from 'better-auth'
 import { DrizzleQueryError } from 'drizzle-orm'
-import { Elysia, t } from 'elysia'
+import { type Elysia, t } from 'elysia'
+import customErrors from '~/utils/errors.util'
+import { reduceHeaders } from '~/utils/request.util'
 import {
   ErrorResponseSchema,
   ValidationErrorSchema,
   type ValidationValueError,
 } from '~/utils/response.util'
-import customErrors from '~/utils/errors.util'
-import { reduceHeaders } from '~/utils/request.util'
 import { logger } from './logger.plugin'
-import { APIError } from 'better-auth'
 
 /**
  * Error handler

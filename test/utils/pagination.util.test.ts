@@ -4,17 +4,17 @@ import {
   describe,
   expect,
   it,
-  spyOn,
   type Mock,
+  spyOn,
 } from 'bun:test'
 import { logger } from '~/plugins/logger.plugin'
 import { InvalidParamError } from '~/utils/errors.util'
 import {
   decodeToken,
-  encodeToken,
   ERRORS,
-  paginate,
+  encodeToken,
   type Paginable,
+  paginate,
 } from '~/utils/pagination.util'
 
 const validTimestamp = 1768232385000

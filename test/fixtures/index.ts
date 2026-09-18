@@ -2,8 +2,8 @@ import type { PgTable } from 'drizzle-orm/pg-core'
 import type { Post } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
-export * from './post-filters'
 export * from './otel-helpers'
+export * from './post-filters'
 
 export async function tearDownTables(...tables: PgTable[]) {
   await db.transaction(async (tx) =>

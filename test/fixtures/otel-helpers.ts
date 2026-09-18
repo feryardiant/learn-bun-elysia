@@ -1,6 +1,6 @@
+import type { Mock } from 'bun:test'
 import type { Attributes, SpanContext } from '@opentelemetry/api'
-import { type Mock } from 'bun:test'
-import { spanProcessor } from '~/plugins/otel.plugin'
+import type { spanProcessor } from '~/plugins/otel.plugin'
 
 export type SpanProcessStart = Mock<typeof spanProcessor.onStart>
 export type SpanProcessEnd = Mock<typeof spanProcessor.onEnd>

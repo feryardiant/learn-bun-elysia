@@ -1,6 +1,6 @@
 import { t } from 'elysia'
-import { InvalidParamError } from './errors.util'
 import { logger } from '~/plugins/logger.plugin'
+import { InvalidParamError } from './errors.util'
 
 /**
  * Interface for objects that support pagination operations.

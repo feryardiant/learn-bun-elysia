@@ -1,11 +1,11 @@
 import {
+  type Attributes,
   context,
+  type Span,
   SpanKind,
   SpanStatusCode,
-  trace,
-  type Attributes,
-  type Span,
   type Tracer,
+  trace,
 } from '@opentelemetry/api'
 import type { PgBasePreparedQuery, PgSession } from 'drizzle-orm/pg-core'
 import { ENV } from '~/config'
@@ -15,9 +15,7 @@ import type { AppDatabase } from '~/plugins/database.plugin'
  * Decorator to mark a class as recordable for OpenTelemetry tracing.
  */
 export function recordableClass(): ClassDecorator {
-  return (obj: Function) => {
-    const { name: className, prototype } = obj
-
+  return ({ name: className, prototype }) => {
     for (const methodName of Object.getOwnPropertyNames(prototype)) {
       const spanName = `${className}.${methodName}`
       const instrumentFlag = `__otelPatched_${spanName}`

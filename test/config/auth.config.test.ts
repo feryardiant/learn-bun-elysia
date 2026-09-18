@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, expect, it, type Mock, spyOn } from 'bun:test'
 import { Value } from '@sinclair/typebox/value'
-import { afterEach, beforeEach, expect, it, spyOn, type Mock } from 'bun:test'
 import type { LogFn } from 'pino'
 import { authConfig } from '~/config/auth.config'
 
@@ -43,6 +43,18 @@ it('should ignore empty and invalid origins', () => {
   expect(config.TRUSTED_ORIGINS).toEqual([
     'http://localhost:3000',
     'https://example.com',
+  ])
+})
+
+it('should handle wildcard subdomains', () => {
+  const config = Value.Parse(authConfig, {
+    TRUSTED_ORIGINS: 'http://*.example.com, https://*.dev.example.com',
+  })
+
+  expect(config.TRUSTED_ORIGINS).toBeArrayOfSize(2)
+  expect(config.TRUSTED_ORIGINS).toEqual([
+    'http://*.example.com',
+    'https://*.dev.example.com',
   ])
 })
 

@@ -3,18 +3,18 @@ import {
   beforeEach,
   expect,
   it,
+  type Mock,
   mock,
   spyOn,
-  type Mock,
 } from 'bun:test'
 import {
   INVALID_SPAN_CONTEXT,
-  trace,
   type Span,
   type Tracer,
+  trace,
 } from '@opentelemetry/api'
-import { recordableClass } from '~/utils/otel.util'
 import { ENV } from '~/config'
+import { recordableClass } from '~/utils/otel.util'
 
 let tracer: Mock<typeof trace.getTracer>
 let startSpan: Mock<Tracer['startSpan']>
@@ -66,7 +66,7 @@ beforeEach(async () => {
   })
 
   tracer = spyOn(trace, 'getTracer').mockImplementation(
-    (name): Tracer => ({
+    (): Tracer => ({
       startActiveSpan() {},
       startSpan,
     }),

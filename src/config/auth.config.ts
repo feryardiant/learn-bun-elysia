@@ -39,7 +39,7 @@ function verifyOrigin(url: string) {
     return url
   } catch (error) {
     // At this point we cannot use `logger.plugin`
-    console.warn(`Invalid origin: ${url}`)
+    console.warn(`Invalid origin: ${url}`, error)
 
     return
   }
