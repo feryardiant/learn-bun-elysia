@@ -23,6 +23,11 @@ export const db = drizzle({
           }
         : false,
   },
+  logger: {
+    logQuery(query, params) {
+      logger.debug({ query, params }, 'drizzle')
+    },
+  },
   relations: {
     ...authRelations,
     ...feedRelations,
