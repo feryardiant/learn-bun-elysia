@@ -27,7 +27,7 @@ jobs:
     uses: projek-xyz/actions/.github/workflows/docker.yml@main
     with:
       build-args: |
-        BUN_VERSION=${{ vars.BUN_VERSION || '1.3.10' }}
+        BUN_VERSION=${{ vars.BUN_VERSION || '1.4.2' }}
         BASE_OS=alpine
         APP_NAME=elysia-app
         APP_VERSION=${{ needs.prepare.outputs.project-version }}
@@ -59,7 +59,7 @@ jobs:
       DB_NAME: ${{ github.repository_owner }}
       DB_USER: ${{ github.repository_owner }}
       DB_PASS: secret
-      BUN_VERSION: ${{ vars.BUN_VERSION || '1.3.10' }}
+      BUN_VERSION: ${{ vars.BUN_VERSION || '1.4.2' }}
 
     services:
       postgres:
