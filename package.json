@@ -21,6 +21,7 @@
     "test:load": "set -a && if [ -f .env.local ]; then . .env.local; else . .env; fi && set +a && k6 run scripts/throughput.ts"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.5",
     "@elysiajs/openapi": "^1.4.16",
     "@elysiajs/opentelemetry": "^1.4.11",
     "@elysiajs/static": "^1.4.10",

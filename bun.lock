@@ -5,6 +5,7 @@
     "": {
       "name": "learn-elysia",
       "dependencies": {
+        "@better-auth/drizzle-adapter": "^1.7.5",
         "@elysiajs/openapi": "^1.4.16",
         "@elysiajs/opentelemetry": "^1.4.11",
         "@elysiajs/static": "^1.4.10",
