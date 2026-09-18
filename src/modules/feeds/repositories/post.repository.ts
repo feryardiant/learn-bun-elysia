@@ -1,11 +1,12 @@
-import { and, between, eq, gt, lt, or, SQL } from 'drizzle-orm'
+import { and, between, eq, gt, lt, or, type SQL } from 'drizzle-orm'
 import type { AppDatabase } from '~/plugins/database.plugin'
+import { NotFoundError } from '~/utils/errors.util'
 import { getRange } from '~/utils/filters.util'
 import { recordableClass } from '~/utils/otel.util'
 import { decodeToken, type Paginable } from '~/utils/pagination.util'
-import { posts } from '../schemas/posts.schema'
 import type { PostRelationsFilter } from '../schemas'
-import { FeedQuerySchema, type FeedQuery, type Post } from '../types'
+import { posts } from '../schemas/posts.schema'
+import { type FeedQuery, FeedQuerySchema, type Post } from '../types'
 
 @recordableClass()
 export class PostRepository implements Paginable {
@@ -117,7 +118,7 @@ export class PostRepository implements Paginable {
     })
 
     if (!item) {
-      throw new Error('Post not found')
+      throw new NotFoundError('Post not found')
     }
 
     return item

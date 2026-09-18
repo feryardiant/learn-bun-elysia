@@ -1,5 +1,5 @@
 import type { FeedQuery, Post } from '~/modules/feeds'
-import { type DateRange } from '~/utils/filters.util'
+import type { DateRange } from '~/utils/filters.util'
 
 export const dateRanges: DateRange[] = ['24 hours', '7 days', '30 days']
 
@@ -43,7 +43,7 @@ export interface FilterObject {
 }
 
 export const createScenario = (filters: FilterObject) => {
-  let combinations: string[] = []
+  const combinations: string[] = []
 
   return Object.entries(filters).reduce((out, [query, filter]) => {
     for (const [scope, assertion] of Object.entries(filter)) {

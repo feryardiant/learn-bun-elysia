@@ -1,5 +1,5 @@
-import { Value } from '@sinclair/typebox/value'
 import { expect, it } from 'bun:test'
+import { Value } from '@sinclair/typebox/value'
 import { mailConfig } from '~/config/mail.config'
 
 it('should have default values', () => {
@@ -14,7 +14,7 @@ it('should have default values', () => {
 
 it('throws an error on invalid host', () => {
   expect(() => {
-    const config = Value.Parse(mailConfig, {
+    Value.Parse(mailConfig, {
       SMTP_HOST: '/invalid-host',
     })
   }).toThrow("Expected string to match 'hostname' format")
@@ -22,7 +22,7 @@ it('throws an error on invalid host', () => {
 
 it('throws an error on invalid email', () => {
   expect(() => {
-    const config = Value.Parse(mailConfig, {
+    Value.Parse(mailConfig, {
       SMTP_EMAIL: 'invalid-email',
     })
   }).toThrow("Expected string to match 'email' format")

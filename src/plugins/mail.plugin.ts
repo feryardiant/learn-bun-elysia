@@ -1,14 +1,18 @@
-import { AssertError, Value, type ValueError } from '@sinclair/typebox/value'
+import {
+  type AssertError,
+  Value,
+  type ValueError,
+} from '@sinclair/typebox/value'
 import { t } from 'elysia'
 import { createTransport } from 'nodemailer'
 import type Mail from 'nodemailer/lib/mailer'
 import { ENV } from '~/config'
-import { logger } from './logger.plugin'
 import {
+  type AppError,
   InvalidParamError,
   MissingConfigError,
-  type AppError,
 } from '~/utils/errors.util'
+import { logger } from './logger.plugin'
 
 const transporter = createTransport(
   {
@@ -75,7 +79,7 @@ export async function sendMail(
 
     logger.info(info, `mail "${opts.subject}" sent`)
   } catch (err) {
-    let error = err as AppError
+    const error = err as AppError
 
     logger.error(error, `[${error.code}] ${error.message}`)
   }

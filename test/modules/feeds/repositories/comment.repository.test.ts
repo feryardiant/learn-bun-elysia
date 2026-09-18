@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, expect, it } from 'bun:test'
 import { tearDownTables } from 'test/fixtures'
-import { posts, comments, CommentRepository } from '~/modules/feeds'
+import { CommentRepository, comments, posts } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
 let commentRepository: CommentRepository

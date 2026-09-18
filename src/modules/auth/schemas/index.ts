@@ -1,10 +1,10 @@
 import { defineRelationsPart } from 'drizzle-orm'
 import { createSelectSchema } from 'drizzle-orm/typebox-legacy'
+import { comments, posts } from '~/modules/feeds'
 import { accounts } from './accounts.schema'
 import { sessions } from './sessions.schema'
 import { users } from './users.schema'
 import { verifications } from './verifications.schema'
-import { comments, posts } from '~/modules/feeds'
 
 export const AccountSchema = createSelectSchema(accounts)
 

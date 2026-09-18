@@ -2,9 +2,9 @@ import { afterEach, beforeAll, beforeEach, expect, it } from 'bun:test'
 import { createPosts } from 'test/fixtures'
 import {
   FeedQuerySchema,
+  type Post,
   PostRepository,
   posts,
-  type Post,
 } from '~/modules/feeds'
 import { db } from '~/plugins/database.plugin'
 
