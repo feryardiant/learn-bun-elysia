@@ -49,8 +49,6 @@ jobs:
     if: github.event_name != 'pull_request' || needs.prepare.outputs.pr-number == ''
     needs: [prepare, docker]
     runs-on: ubuntu-latest
-    outputs:
-      artifact-id: ${{ steps.api-schema.outputs.artifact-id }}
 
     permissions:
       packages: read
@@ -178,4 +176,20 @@ jobs:
           echo "| Total Requests | $(jq .metrics.http_reqs.count load-performance.json) |" >> $GITHUB_STEP_SUMMARY
           echo "| Failed Requests | $(jq .metrics.http_req_failed.count load-performance.json) |" >> $GITHUB_STEP_SUMMARY
           echo "| Avg Duration | $(jq .metrics.http_req_duration.avg load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
-          echo "| P95 Duration | $(jq '.metrics.http_req_duration["p(95)"]' load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
+           echo "| P95 Duration | $(jq '.metrics.http_req_duration["p(95)"]' load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
+
+  k8s:
+    name: Kubernetes
+    if: github.event.workflow_run.event == 'push' && needs.prepare.outputs.should-deploy == '1'
+    needs: [prepare, docker, stress-test]
+    uses: ./.github/workflows/k8s.yml
+    secrets: inherit
+
+    permissions:
+      contents: write
+
+    with:
+      deploy-env: ${{ needs.prepare.outputs.deploy-env }}
+      image-tag: ${{ needs.prepare.outputs.image-tag }}
+      repo-name: ${{ needs.prepare.outputs.repo-name }}
+      service-name: elysia-app
