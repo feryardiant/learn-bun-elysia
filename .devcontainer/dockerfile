@@ -12,7 +12,7 @@ COPY . .
 
 RUN apk add --no-cache git
 
-RUN bun ci --no-cache --ignore-scripts
+RUN bun i --no-cache --ignore-scripts --frozen-lockfile
 
 ENV NODE_ENV=devcontainer PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
 

@@ -12,6 +12,7 @@ services:
         BASE_OS: ${BASE_OS:-alpine}
     image: ghcr.io/feryardiant/learn-bun-elysia:devcontainer
     container_name: elysia-dev-app
+    pull_policy: never
     ports:
       - ${FORWARD_STUDIO_PORT:-4000}:4000
     volumes:
