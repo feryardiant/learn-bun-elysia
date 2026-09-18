@@ -49,8 +49,6 @@ jobs:
     if: github.event_name != 'pull_request' || needs.prepare.outputs.pr-number == ''
     needs: [prepare, docker]
     runs-on: ubuntu-latest
-    outputs:
-      artifact-id: ${{ steps.api-schema.outputs.artifact-id }}
 
     permissions:
       packages: read
@@ -93,7 +91,7 @@ jobs:
 
     steps:
       - name: Set up bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: ${{ env.BUN_VERSION }}
 
@@ -105,7 +103,7 @@ jobs:
 
       - name: Upload schema artifacts
         id: api-schema
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: api-schema_${{ needs.prepare.outputs.branch-slug }}
           path: elysia-app.schema.d.ts
@@ -158,10 +156,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup k6
-        uses: grafana/setup-k6-action@v1
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
 
       - name: Run k6 load test
         env:
@@ -179,3 +177,19 @@ jobs:
           echo "| Failed Requests | $(jq .metrics.http_req_failed.count load-performance.json) |" >> $GITHUB_STEP_SUMMARY
           echo "| Avg Duration | $(jq .metrics.http_req_duration.avg load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
           echo "| P95 Duration | $(jq '.metrics.http_req_duration["p(95)"]' load-performance.json)ms |" >> $GITHUB_STEP_SUMMARY
+
+  k8s:
+    name: Kubernetes
+    if: github.event.workflow_run.event == 'push' && needs.prepare.outputs.should-deploy == '1'
+    needs: [prepare, docker, stress-test]
+    uses: ./.github/workflows/k8s.yml
+    secrets: inherit
+
+    permissions:
+      contents: write
+
+    with:
+      deploy-env: development # make it static for now
+      image-tag: ${{ needs.prepare.outputs.project-version }}
+      repo-name: ${{ needs.prepare.outputs.project-repo-name }}
+      service-name: elysia-app

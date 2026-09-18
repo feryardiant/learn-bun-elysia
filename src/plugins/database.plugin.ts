@@ -49,6 +49,7 @@ export async function migrate() {
   } catch (err) {
     const error = err as DrizzleError
     logger.error(error, 'Failed to migrate database')
+
     return false
   }
 }

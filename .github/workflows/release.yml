@@ -5,57 +5,9 @@ on:
     tags: ['v*.*.*']
 
 jobs:
-  prepare:
-    name: Prepare
-    uses: ./.github/workflows/prepare.yml
-
-    permissions:
-      contents: read
-      pull-requests: write
-
-  docker:
-    name: Docker Images for elysia-app
-    needs: [prepare]
-    uses: ./.github/workflows/docker.yml
-    with:
-      image-name: elysia-app
-      image-prefix: ${{ needs.prepare.outputs.image-prefix }}
-      image-tag: ${{ needs.prepare.outputs.image-tag }}
-      repo-name: ${{ needs.prepare.outputs.repo-name }}
-
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
-
   publish:
     name: Publish
     uses: projek-xyz/actions/.github/workflows/release.yml@main
 
     permissions:
       contents: write
-
-  upload-assets:
-    name: Upload Release Assets
-    needs: [docker, publish]
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Download API Schema artifact
-        uses: actions/download-artifact@v8
-        with:
-          artifact-ids: ${{ needs.docker.outputs.artifact-id }}
-          path: assets
-
-      - name: Upload assets to release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh release upload ${{ github.ref_name }} assets/*.schema.d.ts --clobber
