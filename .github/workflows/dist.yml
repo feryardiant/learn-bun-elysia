@@ -189,7 +189,7 @@ jobs:
       contents: write
 
     with:
-      deploy-env: ${{ needs.prepare.outputs.deploy-env }}
-      image-tag: ${{ needs.prepare.outputs.image-tag }}
-      repo-name: ${{ needs.prepare.outputs.repo-name }}
+      deploy-env: development # make it static for now
+      image-tag: ${{ needs.prepare.outputs.project-version }}
+      repo-name: ${{ needs.prepare.outputs.project-repo-name }}
       service-name: elysia-app
