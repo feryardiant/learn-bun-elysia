@@ -1,9 +1,10 @@
+import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { betterAuth, type Path } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { anonymous, bearer, openAPI } from 'better-auth/plugins'
 import { Elysia, t } from 'elysia'
 import type { OpenAPIV3 } from 'openapi-types'
 import { ENV, isLocal } from '~/config'
+import { authTables } from '~/modules/auth/schemas'
 import { AuthenticationError } from '~/utils/errors.util'
 import { ErrorResponseSchema } from '~/utils/response.util'
 import { db } from './database.plugin'
@@ -23,6 +24,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
+    schema: authTables,
   }),
 
   logger: {
