@@ -8,6 +8,8 @@ services:
         required: false
     environment:
       NODE_ENV: ${NODE_ENV:-staging}
+    ports:
+      - ${FORWARD_APP_PORT:-3000}:3000
     container_name: elysia-staging-app
 
   postgres:

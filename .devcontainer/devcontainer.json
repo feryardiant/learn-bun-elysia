@@ -8,8 +8,9 @@
       "type": "bind",
       "source": "..",
       "target": "/app"
-    }
+    },
   ],
+  "postStartCommand": "bun install && bun run src/server.ts migrate",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -24,7 +25,9 @@
   },
   "remoteUser": "root",
   "remoteEnv": {
-    "APP_DOMAIN": "localhost"
+    "APP_DOMAIN": "localhost",
+    "APP_VERSION": "0.0.0-devcontainer",
+    "NODE_ENV": "devcontainer"
   },
   "runServices": [
     "postgres",

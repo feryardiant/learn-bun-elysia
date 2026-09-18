@@ -14,6 +14,7 @@ const envSchema = t.Object({
       t.Literal('local'),
       t.Literal('test'),
       t.Literal('staging'),
+      t.Literal('devcontainer'),
       t.Literal('development'),
       t.Literal('production'),
     ],
@@ -29,4 +30,4 @@ const envSchema = t.Object({
 
 export const ENV = Value.Parse(envSchema, Bun.env)
 
-export const isLocal = ['local', 'test'].includes(ENV.NODE_ENV)
+export const isLocal = ['devcontainer', 'local', 'test'].includes(ENV.NODE_ENV)

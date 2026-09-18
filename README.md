@@ -145,14 +145,14 @@ Run the application locally with a Dockerized database.
 
 ### Run with Docker
 
-**Build vs Runtime ([`deploy/docker/elysia-app.dockerfile`](deploy/docker/elysia-app.dockerfile))**:
+**Build vs Runtime ([`deploy/docker/dockerfile`](deploy/docker/dockerfile))**:
 | Variable | Type | Stage | Description |
 | :--- | :--- | :--- | :--- |
 | **BUN_VERSION** | `ARG` | Build | Selects the Bun version for the builder image. |
 | **BASE_OS** | `ARG` | Build | Selects the OS (Alpine) for builder and runtime images. |
 | **BASE_VERSION** | `ARG` | Build | Selects the OS version. |
 | **APP_NAME** | `ARG` → `ENV` | **Both** | Passed as an ARG during build, then baked into the image as a default ENV. |
-| **APP_VERSION** | `ARG` → `ENV` | **Both** | Same as above. Allows `server health` to report version without needing `.env` at runtime. |
+| **APP_VERSION** | `ARG` → `ENV` | **Both** | Same as above. Allows `server health` to report the version without needing `.env` at runtime. |
 | **LOG_LEVEL** | `ARG` → `ENV` | **Both** | Sets default logging verbosity. |
 | **NODE_ENV** | `ENV` | Run | Hardcoded to `production` in the final stage. |
 | **PORT / HOST** | `ENV` | Run | Hardcoded to `3000` / `0.0.0.0` for container compatibility. |
@@ -161,7 +161,6 @@ Run the application locally with a Dockerized database.
 1. **[`deploy/compose.yml`](deploy/compose.yml) (Base)**:
    * Defines the core services (`app`, `postgres`).
    * Uses shell expansion (`${VAR:-default}`) to allow `.env` overrides but provides sane defaults (e.g., `DB_HOST` defaults to `postgres`).
-   * **Crucial**: It loads the `.env` file (`env_file: - path: ../.env`) so your local config works immediately.
 
 2. **[`deploy/compose.staging.yml`](deploy/compose.staging.yml)**:
    * Extends the base.
@@ -192,8 +191,7 @@ This project includes a [`.devcontainer`](.devcontainer) configuration for VS Co
 
 **Initialization Script ([`.devcontainer/init.ts`](.devcontainer/init.ts))**
 The container uses a custom initialization script as its entry point instead of a simple shell command. This script:
-1. **Runs Migrations**: Automatically applies pending database migrations (`bun run src/server.ts migrate`) before starting the app. If migrations fail, the container stops to prevent inconsistent states.
-2. **Concurrent Services**: Spawns both the **Elysia Dev Server** (with hot-reload) and **Drizzle Studio** in parallel.
-3. **Graceful Shutdown**: Listens for termination signals (SIGINT/SIGTERM) to clean up all child processes ensuring no zombie processes are left behind.
+1. **Concurrent Services**: Spawns both the **Elysia Dev Server** (with hot-reload) and **Drizzle Studio** in parallel.
+2. **Graceful Shutdown**: Listens for termination signals (SIGINT/SIGTERM) to clean up all child processes ensuring no zombie processes are left behind.
 
 This will set up a complete development environment with Bun, PostgreSQL, Drizzle Studio and all extensions pre-installed.

@@ -1,24 +1,17 @@
 # syntax=docker/dockerfile:1.4
 # -----------------------------------
 # Stage 1: Build
-ARG BUN_VERSION="1.4.2"
+ARG BUN_VERSION="1.4"
 ARG BASE_OS="alpine"
 
 FROM oven/bun:${BUN_VERSION}-${BASE_OS} AS build
 
 WORKDIR /app
 
-COPY . .
-
 RUN apk add --no-cache git
 
-RUN bun i --no-cache --ignore-scripts --frozen-lockfile
-
-ENV NODE_ENV=devcontainer PORT=3000 HOST=0.0.0.0 PATH="/app:$PATH"
+ENV NODE_ENV=devcontainer PORT=3000 HOST=0.0.0.0
 
 EXPOSE ${PORT} 4000
-
-HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
-  CMD bun run src/server.ts health
 
 ENTRYPOINT [ "bun", "run", ".devcontainer/init.ts" ]
