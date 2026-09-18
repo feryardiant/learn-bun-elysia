@@ -23,9 +23,7 @@ program
   .description('Health check')
   .action(async () => {
     try {
-      const response = await fetch(
-        `http://${ENV.APP_DOMAIN}:${ENV.PORT}/health`,
-      )
+      const response = await fetch(`http://localhost:${ENV.PORT}/health`)
 
       process.exit(response.ok ? 0 : 1)
     } catch {
