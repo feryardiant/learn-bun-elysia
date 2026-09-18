@@ -46,6 +46,18 @@ it('should ignore empty and invalid origins', () => {
   ])
 })
 
+it('should handle wildcard subdomains', () => {
+  const config = Value.Parse(authConfig, {
+    TRUSTED_ORIGINS: 'http://*.example.com, https://*.dev.example.com',
+  })
+
+  expect(config.TRUSTED_ORIGINS).toBeArrayOfSize(2)
+  expect(config.TRUSTED_ORIGINS).toEqual([
+    'http://*.example.com',
+    'https://*.dev.example.com',
+  ])
+})
+
 it('should handle a mixed origin', () => {
   const config = Value.Parse(authConfig, {
     TRUSTED_ORIGINS: 'http://localhost,*,http://example.com',

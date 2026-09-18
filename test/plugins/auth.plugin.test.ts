@@ -19,9 +19,7 @@ afterAll(async () => {
 })
 
 it('should fallback to wildcard if TRUSTED_ORIGIN is empty on local environment', async () => {
-  const origins = auth.options.trustedOrigins(new Request(APP_URL))
-
-  expect(origins).toEqual(['*'])
+  expect(auth.options.trustedOrigins).toEqual(['*'])
 })
 
 it('returns 401 status when no authorization header', async () => {

@@ -14,13 +14,7 @@ export const auth = betterAuth({
   baseURL: ENV.APP_URL,
   basePath: `${ENV.BASE_PATH}/auth`,
   secret: ENV.AUTH_SECRET,
-
-  trustedOrigins() {
-    const isEmptyOrigins = ENV.TRUSTED_ORIGINS.length === 0
-
-    // Enforce wildcard origins on local and test environments
-    return isLocal && isEmptyOrigins ? ['*'] : ENV.TRUSTED_ORIGINS
-  },
+  trustedOrigins: isLocal ? ['*'] : ENV.TRUSTED_ORIGINS,
 
   onAPIError: {
     throw: true,
