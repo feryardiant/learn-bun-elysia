@@ -8,7 +8,7 @@ All commands use `bun`.
 
 - Install deps: `bun install` (postinstall registers `simple-git-hooks` unless `CI` is set)
 - Dev server (watch): `bun dev`
-- Build: `bun build` → compiled binary at `dist/server`
+- Build: `bun run build` → compiled binary at `dist/server`
 - Lint: `bun lint` (`biome check`, does **not** write)
 - Format: `bun format` (`biome format --write`)
 - Test: `bun test`
