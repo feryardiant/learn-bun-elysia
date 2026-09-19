@@ -33,7 +33,7 @@ There is no `typecheck` script. Biome is the only static check; run `bun lint` a
 
 - Bun auto-loads `.env`; `.env.local` overrides it locally (non-test), `.env.test` is used for tests. Copy `.env.example` first.
 - `src/config/index.ts` validates the full env with TypeBox at import time and throws on missing/invalid values. Config modules live in `src/config/*.config.ts`.
-- `NODE_ENV` also gates behavior (e.g. local/test use wildcard CORS and disable DB SSL).
+- `NODE_ENV` accepts `local`, `test`, `devcontainer`, `development`, `staging`, `production`. Only `local`/`test`/`devcontainer` set `isLocal` (wildcard auth origins, DB SSL disabled).
 - `BASE_PATH` prefixes the entire app; API routes are additionally versioned under `/v1`. Swagger UI is at `/docs`.
 
 ## Architecture
@@ -57,6 +57,13 @@ There is no `typecheck` script. Biome is the only static check; run `bun lint` a
 - Drizzle is `1.0.0-rc` and uses the new relational API: relations are declared with `defineRelationsPart` and consumed as relational filters (see `src/modules/feeds/repositories/post.repository.ts`).
 - `drizzle.config.ts` globs `./src/modules/*/schemas/*.schema.ts`; migrations live in `database/migrations` and apply to `postgres_test` in tests. Never hand-edit generated migrations.
 - The Docker image runs `server health` as its healthcheck and the app reports migrations through `src/server.ts migrate`.
+
+## Docker & Devcontainer
+
+- The deploy image must build the **`runtime`** stage (`deploy/docker/dockerfile`, defined via `deploy/compose.yml`). `.devcontainer/dockerfile` only has a `build` stage, so `.devcontainer/compose.yml` overrides `target: build` there — never set `target: build` on the deploy image.
+- Port publishing lives in the overlays (`compose.yml`, `deploy/compose.staging.yml`, `.devcontainer/compose.yml`), not in the shared `deploy/compose.yml`.
+- The devcontainer installs deps and runs migrations via `onCreateCommand` (`bun install --frozen-lockfile && bun run src/server.ts migrate`), not `.devcontainer/init.ts`. On success it touches `/tmp/devcontainer-ready`; `.devcontainer/init.ts` polls for that marker before spawning the server/Studio, so a fresh `node_modules` volume never starts services early.
+- Image builds take `BUN_VERSION` (default `1.4`); keep `.env.example` and the workflow defaults in sync.
 
 ## Verification before finishing
 

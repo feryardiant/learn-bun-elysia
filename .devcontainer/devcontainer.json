@@ -8,8 +8,9 @@
       "type": "bind",
       "source": "..",
       "target": "/app"
-    }
+    },
   ],
+  "onCreateCommand": "rm -f /tmp/devcontainer-ready && bun install --frozen-lockfile && bun run src/server.ts migrate && touch /tmp/devcontainer-ready",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -24,7 +25,9 @@
   },
   "remoteUser": "root",
   "remoteEnv": {
-    "APP_DOMAIN": "localhost"
+    "APP_DOMAIN": "localhost",
+    "APP_VERSION": "0.0.0-devcontainer",
+    "NODE_ENV": "devcontainer"
   },
   "runServices": [
     "postgres",

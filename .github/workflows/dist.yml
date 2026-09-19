@@ -27,11 +27,11 @@ jobs:
     uses: projek-xyz/actions/.github/workflows/docker.yml@main
     with:
       build-args: |
-        BUN_VERSION=${{ vars.BUN_VERSION || '1.4.2' }}
+        BUN_VERSION=${{ vars.BUN_VERSION || '1.4' }}
         BASE_OS=alpine
         APP_NAME=elysia-app
         APP_VERSION=${{ needs.prepare.outputs.project-version }}
-      docker-file: deploy/docker/elysia-app.dockerfile
+      docker-file: deploy/docker/dockerfile
       image-tag: ${{ needs.prepare.outputs.project-version }}
       image-slug: ${{ needs.prepare.outputs.branch-slug }}
       image-labels: |
@@ -57,7 +57,7 @@ jobs:
       DB_NAME: ${{ github.repository_owner }}
       DB_USER: ${{ github.repository_owner }}
       DB_PASS: secret
-      BUN_VERSION: ${{ vars.BUN_VERSION || '1.4.2' }}
+      BUN_VERSION: ${{ vars.BUN_VERSION || '1.4' }}
 
     services:
       postgres:

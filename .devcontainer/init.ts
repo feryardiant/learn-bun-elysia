@@ -1,16 +1,40 @@
-import { spawn, spawnSync } from 'bun'
+import { existsSync } from 'node:fs'
+import { spawn } from 'bun'
 
 console.info('🚀 Starting dev container services...')
 
-const migration = spawnSync(['bun', 'run', 'src/server.ts', 'migrate'], {
-  stdout: 'inherit',
-  stderr: 'inherit',
-})
+// The `onCreateCommand` hook installs dependencies and applies migrations before
+// touching the ready file, so wait for it before spawning anything that needs them.
+async function waitForDependencies(
+  readyFile: string,
+  timeout: number,
+  poll: number = 250,
+) {
+  if (existsSync(readyFile)) {
+    console.info('✅ Dependencies already installed, starting services...')
+    return
+  }
 
-if (migration.exitCode !== 0) {
-  console.error('❌ migration failed with code', migration.exitCode)
-  process.exit(1)
+  console.info('⏳ Waiting for dependencies to be installed...')
+
+  const startedAt = Date.now()
+
+  while (!existsSync(readyFile)) {
+    if (Date.now() - startedAt >= timeout) {
+      console.error(
+        `❌ Dependencies were not installed within ${timeout / 1000}s.`,
+      )
+
+      process.exit(1)
+    }
+
+    await Bun.sleep(poll)
+  }
+
+  console.info('✅ Dependencies installed, starting services...')
 }
+
+await waitForDependencies('/tmp/devcontainer-ready', 5 * 60 * 1000)
 
 const processes: ReturnType<typeof spawn>[] = []
 
