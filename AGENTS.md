@@ -62,7 +62,7 @@ There is no `typecheck` script. Biome is the only static check; run `bun lint` a
 
 - The deploy image must build the **`runtime`** stage (`deploy/docker/dockerfile`, defined via `deploy/compose.yml`). `.devcontainer/dockerfile` only has a `build` stage, so `.devcontainer/compose.yml` overrides `target: build` there — never set `target: build` on the deploy image.
 - Port publishing lives in the overlays (`compose.yml`, `deploy/compose.staging.yml`, `.devcontainer/compose.yml`), not in the shared `deploy/compose.yml`.
-- The devcontainer installs deps and runs migrations via `postStartCommand` (`bun install && bun run src/server.ts migrate`), not `.devcontainer/init.ts`; keep it a single sequential command.
+- The devcontainer installs deps and runs migrations via `onCreateCommand` (`bun install --frozen-lockfile && bun run src/server.ts migrate`), not `.devcontainer/init.ts`. On success it touches `/tmp/devcontainer-ready`; `.devcontainer/init.ts` polls for that marker before spawning the server/Studio, so a fresh `node_modules` volume never starts services early.
 - Image builds take `BUN_VERSION` (default `1.4`); keep `.env.example` and the workflow defaults in sync.
 
 ## Verification before finishing

@@ -10,7 +10,7 @@
       "target": "/app"
     },
   ],
-  "postStartCommand": "bun install && bun run src/server.ts migrate",
+  "onCreateCommand": "rm -f /tmp/devcontainer-ready && bun install --frozen-lockfile && bun run src/server.ts migrate && touch /tmp/devcontainer-ready",
   "customizations": {
     "vscode": {
       "extensions": [
