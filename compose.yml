@@ -6,8 +6,8 @@ services:
     image: ghcr.io/feryardiant/learn-bun-elysia:local
     pull_policy: never
     ports:
-      - ${FORWARD_APP_PORT:-3000}:3000
-      - ${FORWARD_STUDIO_PORT:-4000}:4000
+      - 127.0.0.1:${FORWARD_APP_PORT:-3000}:3000
+      - 127.0.0.1:${FORWARD_STUDIO_PORT:-4000}:4000
     environment:
       NODE_ENV: ${NODE_ENV:-local}
 
@@ -16,24 +16,24 @@ services:
       file: deploy/compose.yml
       service: postgres
     ports:
-      - ${FORWARD_DB_PORT:-5432}:5432
+      - 127.0.0.1:${FORWARD_DB_PORT:-5432}:5432
 
   mailpit:
     extends:
       file: deploy/compose.yml
       service: mailpit
     ports:
-      - ${FORWARD_SMTP_PORT:-1025}:1025
-      - ${FORWARD_MAILPIT_PORT:-8025}:8025
+      - 127.0.0.1:${FORWARD_SMTP_PORT:-1025}:1025
+      - 127.0.0.1:${FORWARD_MAILPIT_PORT:-8025}:8025
 
   jaeger:
     extends:
       file: deploy/compose.yml
       service: jaeger
     ports:
-      - "${FORWARD_JAEGER_PORT:-16686}:16686"  # Jaeger UI
-      - "${FORWARD_OTLP_GRPC_PORT:-4317}:4317" # OTLP gRPC
-      - "${FORWARD_OTLP_HTTP_PORT:-4318}:4318" # OTLP HTTP
+      - 127.0.0.1:${FORWARD_JAEGER_PORT:-16686}:16686  # Jaeger UI
+      - 127.0.0.1:${FORWARD_OTLP_GRPC_PORT:-4317}:4317 # OTLP gRPC
+      - 127.0.0.1:${FORWARD_OTLP_HTTP_PORT:-4318}:4318 # OTLP HTTP
 
 networks:
   default:
