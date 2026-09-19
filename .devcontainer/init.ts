@@ -7,8 +7,8 @@ console.info('🚀 Starting dev container services...')
 // touching the ready file, so wait for it before spawning anything that needs them.
 async function waitForDependencies(
   readyFile: string,
-  poll: number = 250,
   timeout: number,
+  poll: number = 250,
 ) {
   if (existsSync(readyFile)) {
     console.info('✅ Dependencies already installed, starting services...')
@@ -21,16 +21,10 @@ async function waitForDependencies(
 
   while (!existsSync(readyFile)) {
     if (Date.now() - startedAt >= timeout) {
-      if (existsSync('node_modules')) {
-        console.warn(
-          '⚠️ Timed out waiting for the install marker, but `node_modules` exists. Continuing.',
-        )
-        return
-      }
-
       console.error(
-        `❌ Dependencies were not installed within ${timeout / 1000}s. Run \`bun install\` and restart the container.`,
+        `❌ Dependencies were not installed within ${timeout / 1000}s.`,
       )
+
       process.exit(1)
     }
 
@@ -40,7 +34,7 @@ async function waitForDependencies(
   console.info('✅ Dependencies installed, starting services...')
 }
 
-await waitForDependencies('/tmp/devcontainer-ready', 250, 5 * 60 * 1000)
+await waitForDependencies('/tmp/devcontainer-ready', 5 * 60 * 1000)
 
 const processes: ReturnType<typeof spawn>[] = []
 
