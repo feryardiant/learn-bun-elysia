@@ -14,7 +14,7 @@
         "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
         "@opentelemetry/instrumentation-pino": "^0.60.0",
         "@opentelemetry/resources": "^2.11.0",
-        "@opentelemetry/sdk-logs": "^0.212.0",
+        "@opentelemetry/sdk-logs": "^0.222.0",
         "@opentelemetry/sdk-trace-node": "^2.11.0",
         "@sinclair/typebox": "^0.34.52",
         "better-auth": "^1.7.5",
