@@ -33,7 +33,7 @@
     "@opentelemetry/sdk-logs": "^0.222.0",
     "@opentelemetry/sdk-trace-node": "^2.11.0",
     "@sinclair/typebox": "^0.34.52",
-    "better-auth": "^1.7.5",
+    "better-auth": "^1.7.6",
     "commander": "^15.0.0",
     "date-fns": "^4.4.0",
     "drizzle-orm": "1.0.0-rc.5-5935859",
