@@ -14,7 +14,7 @@ jobs:
   prepare:
     name: Prepare
     if: github.event.workflow_run.conclusion == 'success'
-    uses: projek-xyz/actions/.github/workflows/prepare.yml@main
+    uses: projek-xyz/actions/.github/workflows/prepare.yml@711af5ee0f1a28b1554022d28d3e147c6a9df1fe # main @ 2026-11-01
 
     permissions:
       contents: read
@@ -24,7 +24,7 @@ jobs:
     name: Build Docker Images
     needs: prepare
     if: needs.prepare.outputs.should-build == '1'
-    uses: projek-xyz/actions/.github/workflows/docker.yml@main
+    uses: projek-xyz/actions/.github/workflows/docker.yml@711af5ee0f1a28b1554022d28d3e147c6a9df1fe # main @ 2026-11-01
     with:
       build-args: |
         BUN_VERSION=${{ vars.BUN_VERSION || '1.4' }}
